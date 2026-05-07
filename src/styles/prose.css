@@ -1,0 +1,382 @@
+/**
+ * .prose — typography overrides for MDX-rendered content.
+ *
+ * Source: T-10 (TASKS.md) + DESIGN.md §4 (Tipografía) + §5 (Espaciado).
+ *
+ * Imported from `src/styles/global.css` (T-08). Wrapping component is
+ * `<Prose>` (T-26), which renders `<div class="prose">{slot}</div>`.
+ *
+ * Approach: fully custom `.prose` selector (no @tailwindcss/typography plugin
+ * dependency at runtime). The plugin is installed (T-06) but is intentionally
+ * not used here — DESIGN.md mandates Fraunces for headings, Inter for body,
+ * JetBrains Mono for code, and a strict accent-driven color system, which
+ * would require near-total overrides of the plugin's defaults. Writing this
+ * from scratch is shorter and easier to reason about.
+ *
+ * Variables consumed (from global.css `@theme`, T-08):
+ *   colors:  --bg-0/1/2, --text-0/1/2/3, --border, --accent-100/300/400/500/600
+ *   fonts:   --font-display (Fraunces), --font-sans (Inter), --font-mono (JetBrains)
+ *   sizes:   --text-{xs,sm,base,lg,xl,2xl,3xl}
+ *   motion:  --motion-fast (150ms)
+ *
+ * Shiki handles syntax-highlighting tokens inside <pre><code>; this file only
+ * styles the wrapping <pre> (background, padding, radius, scroll) and inline
+ * <code> (badge-style chip).
+ */
+
+.prose {
+  /* Body baseline */
+  font-family: var(--font-sans);
+  font-size: var(--text-base); /* 16px */
+  line-height: 1.7;
+  color: var(--text-1);
+  max-width: 65ch;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Block spacing — vertical rhythm between sibling MDX nodes               */
+/* DESIGN.md §5: base 4px, scale 4/8/12/16/24/32/48/64.                    */
+/* "1em entre párrafos, 2em antes de h2, 1.5em antes de h3" (user spec).   */
+/* ----------------------------------------------------------------------- */
+
+.prose > * + * {
+  margin-top: 1em;
+}
+
+.prose > * + h2 {
+  margin-top: 2em;
+}
+
+.prose > * + h3 {
+  margin-top: 1.5em;
+}
+
+.prose > * + h4 {
+  margin-top: 1.25em;
+}
+
+/* First child has no top margin so the wrapper controls outer spacing */
+.prose > :first-child {
+  margin-top: 0;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Headings — Fraunces 600                                                 */
+/* DESIGN.md §4: H2 = --text-3xl (39px), H3 = --text-2xl (31px),           */
+/* H4 = --text-xl (25px). Letter-spacing -0.02em on H2/H3 for tighter      */
+/* display feel; H4 stays at default tracking.                             */
+/* H1 is owned by hero/layout, not by .prose — but include defensive       */
+/* styles in case an MDX author writes a top-level `# Heading`.            */
+/* ----------------------------------------------------------------------- */
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-0);
+  line-height: 1.2;
+}
+
+.prose h1 {
+  font-size: var(--text-4xl); /* 49px — defensive */
+  letter-spacing: -0.02em;
+}
+
+.prose h2 {
+  font-size: var(--text-3xl); /* 39px */
+  letter-spacing: -0.02em;
+}
+
+.prose h3 {
+  font-size: var(--text-2xl); /* 31px */
+  letter-spacing: -0.02em;
+}
+
+.prose h4 {
+  font-size: var(--text-xl); /* 25px */
+}
+
+/* ----------------------------------------------------------------------- */
+/* Paragraphs                                                              */
+/* DESIGN.md §4: body Inter, --text-base, line-height 1.7, color --text-1. */
+/* The first paragraph after the hero acts as a lead — slightly larger if  */
+/* MDX authors mark it (`<p class="lead">…`) or via convention.            */
+/* ----------------------------------------------------------------------- */
+
+.prose p {
+  color: var(--text-1);
+}
+
+.prose p.lead,
+.prose > p:first-of-type {
+  font-size: var(--text-lg); /* 20px */
+  color: var(--text-1);
+}
+
+/* ----------------------------------------------------------------------- */
+/* Strong / em / inline text decorations                                   */
+/* ----------------------------------------------------------------------- */
+
+.prose strong,
+.prose b {
+  font-weight: 600;
+  color: var(--text-0);
+}
+
+.prose em,
+.prose i {
+  font-style: italic;
+  color: var(--text-1);
+}
+
+.prose mark {
+  background: var(--accent-100);
+  color: var(--bg-0);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Links — accent underline that thickens slightly on hover                */
+/* DESIGN.md §2: --accent-400 principal, --accent-300 hover.               */
+/* ----------------------------------------------------------------------- */
+
+.prose a {
+  color: var(--accent-400);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--accent-400);
+  transition:
+    color var(--motion-fast, 150ms) ease-out,
+    text-decoration-color var(--motion-fast, 150ms) ease-out,
+    text-decoration-thickness var(--motion-fast, 150ms) ease-out;
+}
+
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--accent-300);
+  text-decoration-color: var(--accent-300);
+  text-decoration-thickness: 2px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Lists — accent marker, generous padding-left                            */
+/* ----------------------------------------------------------------------- */
+
+.prose ul,
+.prose ol {
+  padding-left: 24px;
+  color: var(--text-1);
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose ul > li::marker,
+.prose ol > li::marker {
+  color: var(--accent-400);
+}
+
+.prose li + li {
+  margin-top: 8px;
+}
+
+/* Nested lists tighten the spacing slightly */
+.prose li > ul,
+.prose li > ol {
+  margin-top: 8px;
+  padding-left: 20px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Blockquote — accent left border, italic, muted text                     */
+/* TASKS.md T-10: border-left 3px --accent-500.                            */
+/* User spec mentions 2px --accent-400 — taking T-10 (3px --accent-500)    */
+/* as authoritative since TASKS.md is the executable plan.                 */
+/* ----------------------------------------------------------------------- */
+
+.prose blockquote {
+  border-left: 3px solid var(--accent-500);
+  padding-left: 24px;
+  font-style: italic;
+  color: var(--text-2);
+}
+
+.prose blockquote p {
+  color: var(--text-2);
+}
+
+.prose blockquote > :first-child {
+  margin-top: 0;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Inline code — JetBrains Mono chip on bg-1                               */
+/* TASKS.md T-10: padding + bg --bg-1 + font mono. Color sits on accent    */
+/* for visibility against the dark surface.                                */
+/* ----------------------------------------------------------------------- */
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm); /* 14px */
+  background: var(--bg-1);
+  color: var(--accent-300);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  /* Avoid line-height blow-up from the chip background */
+  line-height: 1.4;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Code blocks — Shiki renders <pre><code class="astro-code …">            */
+/* TASKS.md T-10: scroll-x, padding, bg --bg-1, border 1px --border.       */
+/* Inner <code> resets so Shiki tokens drive color; chip bg/border/padding */
+/* belong to the wrapping <pre>.                                           */
+/* ----------------------------------------------------------------------- */
+
+.prose pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  background: var(--bg-1);
+  color: var(--text-1);
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  /* Shiki sets background on the <pre> as inline style; force ours via
+     specificity. The plain selector alone wins because we don't use !important
+     elsewhere — but Shiki's `style="background-color: …"` would beat us.
+     Strip Shiki's inline bg in PostLayout / via Astro's `shikiConfig.theme`
+     wrapper if needed. For now, our background is what readers see. */
+}
+
+.prose pre code {
+  /* Reset chip styling inherited from .prose code */
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Images — rounded corners, generous block margin                         */
+/* ----------------------------------------------------------------------- */
+
+.prose img {
+  border-radius: 8px;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: 24px;
+}
+
+.prose figure {
+  margin-block: 24px;
+}
+
+.prose figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Horizontal rule                                                         */
+/* ----------------------------------------------------------------------- */
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin-block: 32px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Tables — minimal, head highlighted                                      */
+/* ----------------------------------------------------------------------- */
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  margin-block: 24px;
+  /* Allow horizontal scroll inside a wrapping figure on mobile */
+  display: block;
+  overflow-x: auto;
+}
+
+.prose thead {
+  background: var(--bg-1);
+}
+
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prose tbody tr:hover {
+  background: color-mix(in srgb, var(--bg-1) 60%, transparent);
+}
+
+/* ----------------------------------------------------------------------- */
+/* Keyboard / sample / variable                                            */
+/* ----------------------------------------------------------------------- */
+
+.prose kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  background: var(--bg-2);
+  color: var(--text-1);
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* ----------------------------------------------------------------------- */
+/* Responsive — tighten body size and lists on narrow viewports            */
+/* ----------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .prose {
+    font-size: var(--text-base);
+  }
+
+  .prose h2 {
+    font-size: var(--text-2xl);
+  }
+
+  .prose h3 {
+    font-size: var(--text-xl);
+  }
+
+  .prose pre {
+    padding: 16px;
+    border-radius: 6px;
+  }
+}

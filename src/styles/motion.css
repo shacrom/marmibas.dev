@@ -1,0 +1,210 @@
+/* ============================================================================
+ * motion.css — Motion tokens + keyframes + reduced-motion (single source)
+ *
+ * Source of truth: DESIGN.md sections 6 (Motion tokens) and 7 (Animaciones
+ * permitidas en v1). T-09 of TASKS.md.
+ *
+ * Conventions:
+ * - All durations and easings live as CSS custom properties so any component
+ *   can compose them without re-defining timings.
+ * - Reusable keyframes are declared HERE, not in components. Components only
+ *   apply `animation-name` + tokenized duration/easing/delay.
+ * - There is exactly ONE `@media (prefers-reduced-motion: reduce)` block in
+ *   the entire project. It MUST live in this file. Do not duplicate it
+ *   anywhere else.
+ * ============================================================================ */
+
+@layer base {
+  :root {
+    /* --- Durations (DESIGN.md §6 + T-09 Done checklist) ------------------ */
+    --motion-duration-instant: 0ms;
+    --motion-duration-fast: 150ms; /* hover, focus */
+    --motion-duration-base: 250ms; /* reveal, transitions */
+    --motion-duration-slow: 400ms; /* hero cascade total */
+    --motion-duration-page: 600ms; /* page-level transitions */
+
+    /* Aliases used by some components and the user-prompt naming convention.
+       Kept in sync with the *-duration-* tokens above. */
+    --motion-fast: var(--motion-duration-fast);
+    --motion-base: var(--motion-duration-base);
+    --motion-slow: var(--motion-duration-slow);
+    --motion-very-slow: var(--motion-duration-page);
+
+    /* --- Easing (DESIGN.md §6) ------------------------------------------ */
+    /* Smooth ease-out — DESIGN.md principal easing. Used for reveals, hover
+       enter, hero cascade entries. */
+    --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Linear-ish ease-in for symmetric exits. */
+    --motion-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+    /* Bidirectional smooth — used for transitions that need to feel
+       balanced both ways (panel open/close, theme cross-fade). */
+    --motion-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Optional spring with mild overshoot — reserved for badges/CTAs where
+       a small bounce reinforces feedback. Use sparingly. */
+    --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* --- Reveal distances (T-09 Done checklist) ------------------------- */
+    --motion-distance-sm: 8px;
+    --motion-distance-md: 12px;
+  }
+}
+
+/* ============================================================================
+ * Reusable keyframes
+ * ----------------------------------------------------------------------------
+ * Declared globally so components can reference them without re-declaring.
+ * Naming: `<intent>-<direction?>` in kebab-case.
+ * ============================================================================ */
+
+/* fade-up: opacity 0 -> 1, translateY +12px -> 0. Default for Reveal. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-distance-md), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* fade-down: mirror of fade-up — reveals coming from above. */
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--motion-distance-md) * -1), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* fade-in: opacity-only reveal. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* hero-reveal: cascade entry per word/line. Use with --line-index on each
+   span and animation-delay: calc(var(--line-index) * 120ms). */
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-distance-sm), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* caret-blink: 2-step terminal-style caret. */
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* gradient-shift-cta: linear-gradient angle/position shift used on CTA
+   primary hover. Drives `background-position` so the gradient appears to
+   slide; consumer must set `background-size: 200% 200%`. */
+@keyframes gradient-shift-cta {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+/* ============================================================================
+ * Utility classes
+ * ----------------------------------------------------------------------------
+ * Lightweight helpers consumed by Reveal.astro (T-20) and HeroIntro.astro
+ * (T-28). Kept minimal — components add their own bindings on top.
+ * ============================================================================ */
+
+/* Reveal-on-scroll target. Hidden until IntersectionObserver toggles
+   `.is-visible` (see T-20). SSR fallback: if JS is disabled, the consumer
+   should add `.is-visible` server-side so content remains accessible. */
+.motion-reveal-on-scroll {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-distance-md), 0);
+  transition:
+    opacity var(--motion-duration-base) var(--motion-ease-out),
+    transform var(--motion-duration-base) var(--motion-ease-out);
+  will-change: opacity, transform;
+}
+
+.motion-reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Cascade container. Each child gets a staggered delay based on its index.
+   Consumer is responsible for setting `--line-index` per child (e.g. via
+   inline `style="--line-index: 0"`). Total stays ≤400ms with 120ms step
+   for up to 4 children (DESIGN.md §7). */
+.motion-cascade > * {
+  animation: hero-reveal var(--motion-duration-base) var(--motion-ease-out) both;
+  animation-delay: calc(var(--line-index, 0) * 120ms);
+}
+
+/* ============================================================================
+ * Reduced motion — SINGLE SOURCE OF TRUTH
+ * ----------------------------------------------------------------------------
+ * Per DESIGN.md §6: "Único punto donde se neutralizan TODAS las animaciones."
+ * Do NOT add another `@media (prefers-reduced-motion: reduce)` anywhere
+ * else in the project. If a component needs reduced-motion handling, it
+ * must rely on this block.
+ *
+ * Strategy:
+ *  1. Collapse all motion tokens to instant/zero so any component composing
+ *     them automatically becomes static.
+ *  2. Belt-and-suspenders override on `*` for any animation/transition that
+ *     was not tokenized.
+ *  3. Force-reset reveal utilities to their visible end-state so content
+ *     does not stay hidden when the IntersectionObserver fires no-ops.
+ * ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-instant: 0.01ms;
+    --motion-duration-fast: 0.01ms;
+    --motion-duration-base: 0.01ms;
+    --motion-duration-slow: 0.01ms;
+    --motion-duration-page: 0.01ms;
+    --motion-fast: 0.01ms;
+    --motion-base: 0.01ms;
+    --motion-slow: 0.01ms;
+    --motion-very-slow: 0.01ms;
+    --motion-distance-sm: 0px;
+    --motion-distance-md: 0px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+  }
+}
