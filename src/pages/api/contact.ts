@@ -24,23 +24,11 @@
  */
 
 import type { APIRoute } from 'astro';
-import { z } from 'zod';
 import { Resend } from 'resend';
+import { contactSchema, type ContactPayload } from '@lib/contact-schema';
 
 // SSR forzado para este endpoint en un site con `output: 'static'`.
 export const prerender = false;
-
-// --- Esquema Zod ----------------------------------------------------------
-
-const contactSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  message: z.string().min(10).max(2000),
-  website: z.string().optional(), // honeypot
-  lang: z.enum(['es', 'en']).default('es'),
-});
-
-type ContactPayload = z.infer<typeof contactSchema>;
 
 // --- Rate-limit en memoria ------------------------------------------------
 

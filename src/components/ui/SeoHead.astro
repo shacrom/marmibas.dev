@@ -1,6 +1,6 @@
 ---
 /**
- * SeoHead — head metadata for every page (T-16).
+ * SeoHead — head metadata for every page (T-16 + T-50).
  *
  * Inyects:
  *   - Document basics: charset, viewport, title, description, theme-color.
@@ -10,10 +10,9 @@
  *   - Open Graph: og:title, og:description, og:type, og:url, og:image, og:locale.
  *   - Twitter Card: summary_large_image with title/description/image.
  *   - Critical font preloads (Fraunces variable + Inter 400) from `lib/fonts.ts`.
- *
- * JSON-LD Person/Article/CreativeWork structured data is intentionally
- * deferred to T-50 (per the SDD plan). For T-16 we ship the deterministic
- * head tags only.
+ *   - JSON-LD structured data (T-50):
+ *       · `Person` schema on the home (auto-detected via pathname).
+ *       · `Article` schema when `type === 'article'` (case studies + posts).
  *
  * Title strategy:
  *   - `title` is the page-specific title.
@@ -21,6 +20,19 @@
  *     "marmibas" (case-insensitive). This keeps the home title intact
  *     ("marmibas — Ingeniero …") while wrapping pages like "Trabajos"
  *     into "marmibas — Trabajos".
+ *
+ * JSON-LD strategy (T-50):
+ *   - Home: emit `Person` with name, jobTitle, url, sameAs, knowsAbout. The
+ *     home is detected from the canonical pathname (`/` for ES, `/en` or
+ *     `/en/` for EN). This avoids leaking the schema on subpaths.
+ *   - Article: emit `Article` when the caller passes `type='article'`. Caller
+ *     supplies optional `publishedAt` / `updatedAt` / `tags` / `author`; the
+ *     component derives sensible defaults (author = "marmibas") and falls
+ *     back to omitting individual fields when no data is available.
+ *   - The script is rendered as
+ *       `<script type="application/ld+json" set:html={JSON.stringify(data)}>`
+ *     only when `structuredData` is truthy — pages without an explicit schema
+ *     do not add an empty tag.
  */
 
 import { CRITICAL_FONT_PRELOADS } from '../../lib/fonts';
@@ -45,6 +57,17 @@ interface Props {
   noindex?: boolean;
   /** OpenGraph type. `website` for index pages, `article` for posts. */
   type?: 'website' | 'article';
+  /**
+   * ISO date or Date for `Article.datePublished`. Optional — when absent we
+   * skip the field rather than emitting a fake date.
+   */
+  publishedAt?: string | Date;
+  /** ISO date or Date for `Article.dateModified`. Optional. */
+  updatedAt?: string | Date;
+  /** Author name override. Defaults to "marmibas". */
+  author?: string;
+  /** Free-form tags emitted as `Article.keywords`. Optional. */
+  tags?: string[];
 }
 
 const {
@@ -55,6 +78,10 @@ const {
   ogImage = '/og/default.png',
   noindex = false,
   type = 'website',
+  publishedAt,
+  updatedAt,
+  author = 'marmibas',
+  tags,
 } = Astro.props;
 
 // --- Title prefix ---------------------------------------------------------
@@ -93,6 +120,108 @@ const ogImageAbsolute = /^https?:\/\//i.test(ogImage)
 // matching the sitemap config in astro.config.mjs.
 const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
 const ogLocaleAlternate = lang === 'es' ? 'en_US' : 'es_ES';
+
+// --- JSON-LD structured data (T-50) --------------------------------------
+// Detect the home: ES home is exactly `/`; EN home is `/en` or `/en/`.
+// Anything else (e.g. `/trabajos`, `/en/work/voxye`, `/blog/post-x`) falls
+// through to the Article branch (when `type === 'article'`) or to no
+// structured data at all for generic landing pages.
+const pathname = currentUrl.pathname;
+const isHome =
+  pathname === '/' ||
+  pathname === '/en' ||
+  pathname === '/en/' ||
+  // Tolerate trailing-slash variants of the ES home produced by some adapters.
+  pathname === '';
+
+/** Coerce a Date | ISO-string | undefined to an ISO 8601 string (or undefined). */
+function toIso(value: string | Date | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  if (value instanceof Date) return value.toISOString();
+  // Pre-formatted ISO strings pass through; anything else returns undefined
+  // so we don't emit invalid `datePublished`/`dateModified` values.
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+}
+
+// Person schema for the home page. Mirrors the brand and the canonical
+// "What I work with" set used across the site (DESIGN.md + content). The
+// `sameAs` array is the public proof — keep it conservative; placing
+// throwaway/personal links here weakens the schema's trust signal.
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'marmibas',
+  alternateName: 'shacrom',
+  jobTitle: 'Software Engineer',
+  url: 'https://marmibas.dev',
+  sameAs: ['https://github.com/shacrom'],
+  knowsAbout: [
+    'Astro',
+    'Angular',
+    'TypeScript',
+    'Spring Boot',
+    'Java',
+    'Supabase',
+    'PostgreSQL',
+    'Tailwind CSS',
+    'Vercel',
+    'Web performance',
+    'i18n',
+    'Accessibility',
+  ],
+};
+
+// Article schema: emitted whenever the page is an article (case study or
+// post). Optional fields are only included when the caller supplies them so
+// the rendered JSON stays minimal and accurate.
+//
+// `mainEntityOfPage` lets crawlers anchor the schema to the canonical URL,
+// which is recommended for Article-typed schemas per Google's guidelines.
+const datePublishedIso = toIso(publishedAt);
+const dateModifiedIso = toIso(updatedAt) ?? datePublishedIso;
+
+interface ArticleSchema {
+  '@context': 'https://schema.org';
+  '@type': 'Article';
+  headline: string;
+  description: string;
+  inLanguage: string;
+  url: string;
+  mainEntityOfPage: { '@type': 'WebPage'; '@id': string };
+  image: string;
+  author: { '@type': 'Person'; name: string; url: string };
+  publisher: { '@type': 'Person'; name: string; url: string };
+  datePublished?: string;
+  dateModified?: string;
+  keywords?: string;
+}
+
+const articleSchema: ArticleSchema | undefined =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: title,
+        description,
+        inLanguage: lang === 'es' ? 'es-ES' : 'en-US',
+        url: canonicalUrl,
+        mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+        image: ogImageAbsolute,
+        author: { '@type': 'Person', name: author, url: 'https://marmibas.dev' },
+        publisher: { '@type': 'Person', name: 'marmibas', url: 'https://marmibas.dev' },
+        ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
+        ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+        ...(tags && tags.length > 0 ? { keywords: tags.join(', ') } : {}),
+      }
+    : undefined;
+
+// Resolve the actual schema object to inject. Article wins over Person when
+// a page is somehow both home and an article (defensive — should not happen
+// in practice). We prefer to emit at most ONE JSON-LD block per page to keep
+// the head light and the structured-data validator unambiguous.
+const structuredData: object | undefined =
+  articleSchema ?? (isHome ? personSchema : undefined);
 ---
 
 {/* --- Document basics ----------------------------------------------- */}
@@ -156,6 +285,25 @@ const ogLocaleAlternate = lang === 'es' ? 'en_US' : 'es_ES';
  * missing path, but the browser silently ignores it — no visual impact).
  */}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+{/* --- JSON-LD structured data (T-50) ------------------------------- */}
+{
+  /*
+   * Emit at most one schema per page (Person on home, Article elsewhere).
+   * Astro's `set:html` writes the JSON literally, bypassing the implicit
+   * HTML-entity escaping that would otherwise corrupt the JSON payload
+   * (e.g. encoding `"` as `&quot;` and breaking parsers).
+   */
+}
+{
+  structuredData && (
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify(structuredData)}
+    />
+  )
+}
 
 {/* --- RSS feed discovery ------------------------------------------- */}
 {/*
