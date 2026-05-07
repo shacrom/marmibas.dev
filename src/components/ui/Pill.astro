@@ -1,0 +1,194 @@
+---
+/**
+ * Pill.astro — status pill para project / case-study cards (T-25).
+ *
+ * Pequeño chip con dot + label que comunica el estado de un proyecto o
+ * entrada de experiencia. La etiqueta se resuelve automáticamente desde el
+ * diccionario i18n (`useTranslations(lang)`), de forma que el consumidor solo
+ * pasa el `status` semántico — sin acoplar el componente a idioma alguno.
+ *
+ * Mapeo `status` → token `status.*` del diccionario (`src/i18n/ui.ts`):
+ *
+ *   success         → status.success         ("En producción" / "In production")
+ *   in-production   → status.inProduction    (alias semántico de success)
+ *   in-development  → status.inDevelopment   ("En desarrollo" / "In development")
+ *   side-project    → status.sideProject     ("Side project")
+ *   paused          → status.paused          ("Pausado" / "Paused")
+ *   prev-experience → status.prevExperience  ("Experiencia previa" / "Previous experience")
+ *
+ * Color (DESIGN.md §2 — tabla de status):
+ *
+ *   success / in-production  → dot --color-status-success (= --color-accent-400),
+ *                              texto --color-accent-300
+ *   in-development           → dot --color-status-progress (#c9a892, terracotta
+ *                              muted), texto sutil con tinte cálido
+ *   side-project / paused    → dot --color-status-paused (#71717a), texto --color-text-3
+ *   prev-experience          → dot --color-status-prev (= --color-text-2), texto
+ *                              --color-text-2
+ *
+ * Nota sobre tokens: DESIGN.md §2 nombra los buckets como "success",
+ * "en desarrollo", "pausado" y "experiencia previa". `global.css` los
+ * materializa como `--color-status-{success,progress,paused,prev}`. Este
+ * componente los reutiliza tal cual: no introduce tokens nuevos.
+ *
+ * Estructura DOM:
+ *
+ *   <span class="pill pill--<status> pill--<size>">
+ *     <span class="pill__dot" aria-hidden="true" />
+ *     <span class="pill__label">{label}</span>
+ *   </span>
+ *
+ * Pure server-rendered: sin script, sin estado.
+ *
+ * Spec: TASKS.md T-25 + DESIGN.md §2 + §8 (status pill arriba a la derecha).
+ */
+
+import { useTranslations } from '../../i18n/helpers';
+import type { Language, UIKey } from '../../i18n/ui';
+
+export type PillStatus =
+  | 'success'
+  | 'in-production'
+  | 'in-development'
+  | 'side-project'
+  | 'paused'
+  | 'prev-experience';
+
+type Size = 'sm' | 'md';
+
+export interface Props {
+  /** Estado semántico del proyecto / entrada. Determina color y label. */
+  status: PillStatus;
+  /** Idioma activo. Resuelve la etiqueta desde el diccionario UI. */
+  lang: Language;
+  /** Tamaño del pill. Default `sm`. */
+  size?: Size;
+  /** Clases extra a mergear con el wrapper. */
+  class?: string;
+}
+
+const { status, lang, size = 'sm', class: className } = Astro.props;
+
+// Map status → key del diccionario (ui.ts). Centralizado acá para que el
+// consumidor no tenga que conocer las keys.
+const STATUS_KEY: Record<PillStatus, UIKey> = {
+  success: 'status.success',
+  'in-production': 'status.inProduction',
+  'in-development': 'status.inDevelopment',
+  'side-project': 'status.sideProject',
+  paused: 'status.paused',
+  'prev-experience': 'status.prevExperience',
+};
+
+const t = useTranslations(lang);
+const label = t(STATUS_KEY[status]);
+
+const classes = ['pill', `pill--${status}`, `pill--${size}`, className]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<span class={classes}>
+  <span class="pill__dot" aria-hidden="true"></span>
+  <span class="pill__label">{label}</span>
+</span>
+
+<style>
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  /* --- Sizes ------------------------------------------------------------- */
+
+  .pill--sm {
+    padding: 4px 10px;
+  }
+
+  .pill--md {
+    padding: 6px 12px;
+  }
+
+  /* --- Dot (color sólido del status) ------------------------------------ */
+
+  .pill__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  .pill__label {
+    line-height: 1;
+  }
+
+  /* --- Status variants ---------------------------------------------------
+   *
+   * Cada variante define:
+   *   - color del dot (sólido)
+   *   - color del texto
+   *   - background tintado (color-mix con bg-1 + alpha 8% del status)
+   *   - color del borde (sutil, color-mix con el status)
+   *
+   * Mantenemos el borde tintado + bg tintado para que el pill tenga peso
+   * visual sin necesitar un contraste agresivo (DESIGN.md §3: degradados
+   * sutiles, color sólido el resto).
+   * --------------------------------------------------------------------- */
+
+  /* success / in-production — firma morada (DESIGN.md §2: success usa accent) */
+  .pill--success,
+  .pill--in-production {
+    color: var(--color-accent-300);
+    background: color-mix(in oklch, var(--color-status-success) 8%, var(--color-bg-1));
+    border-color: color-mix(in oklch, var(--color-status-success) 25%, transparent);
+  }
+
+  .pill--success .pill__dot,
+  .pill--in-production .pill__dot {
+    background: var(--color-status-success);
+  }
+
+  /* in-development — terracotta muted (#c9a892 → --color-status-progress) */
+  .pill--in-development {
+    color: color-mix(in oklch, var(--color-status-progress) 70%, var(--color-text-1));
+    background: color-mix(in oklch, var(--color-status-progress) 8%, var(--color-bg-1));
+    border-color: color-mix(in oklch, var(--color-status-progress) 25%, transparent);
+  }
+
+  .pill--in-development .pill__dot {
+    background: var(--color-status-progress);
+  }
+
+  /* side-project / paused — gris neutral (#71717a → --color-status-paused) */
+  .pill--side-project,
+  .pill--paused {
+    color: var(--color-text-3);
+    background: color-mix(in oklch, var(--color-status-paused) 8%, var(--color-bg-1));
+    border-color: color-mix(in oklch, var(--color-status-paused) 25%, transparent);
+  }
+
+  .pill--side-project .pill__dot,
+  .pill--paused .pill__dot {
+    background: var(--color-status-paused);
+  }
+
+  /* prev-experience — text-2 muted (DESIGN.md §2: usa --text-2) */
+  .pill--prev-experience {
+    color: var(--color-text-2);
+    background: color-mix(in oklch, var(--color-status-prev) 8%, var(--color-bg-1));
+    border-color: color-mix(in oklch, var(--color-status-prev) 25%, transparent);
+  }
+
+  .pill--prev-experience .pill__dot {
+    background: var(--color-status-prev);
+  }
+</style>

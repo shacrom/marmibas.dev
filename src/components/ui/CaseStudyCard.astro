@@ -1,0 +1,387 @@
+---
+/**
+ * CaseStudyCard.astro — card destacado para case studies (T-22).
+ *
+ * Card de mayor jerarquía visual que `ProjectCard.astro`:
+ * - Background `--bg-1`, radius `--radius-lg`, border 1px sólido `--border` idle.
+ * - Cuando `featured`, un borde gradient conic (`--gradient-border-featured`)
+ *   se materializa SOLO al hover/focus mediante un `::before` con CSS mask
+ *   composite (`mask-composite: exclude`). Ese mask "vacía" el centro del
+ *   pseudo-elemento dejando solo un anillo de 1px que pinta el conic.
+ * - El conic además rota MUY despacio al hover (DESIGN.md §8: "border conic
+ *   gradient sutil que rota muy lento al hover (no idle)"). Idle estático
+ *   por contrato (DESIGN.md §3: prohibidos los gradients animados en idle).
+ * - Reduced-motion neutralizado por `motion.css` (single source of truth).
+ *
+ * Estructura: `<a>` envuelve toda la card → toda el área es clickable.
+ * Heading h3 (sub-jerarquía respecto al h1 del listado) con `font-display`
+ * (Fraunces 600). Tagline en Inter sobre `--text-1`. Stack inline con
+ * TechBadges (top 5). CTA inferior en JetBrains Mono `--accent-400`.
+ *
+ * Status pill: T-25 (`Pill.astro`) se desarrolla en paralelo. Para evitar un
+ * import hard antes de que aterrice, embebemos la pill aquí con el mismo
+ * shape visual que documenta DESIGN.md §2 (status success → `--accent-400`).
+ * Cuando T-25 mergee, swap directo a `<Pill status="success" lang={lang} />`.
+ *
+ * Props:
+ *   - title: título del case study.
+ *   - tagline: lead-paragraph corto del case study.
+ *   - client, year: meta línea bajo el header.
+ *   - stack: array de tecnologías (slice top 5 para no romper el ritmo).
+ *   - lang: idioma activo, para traducir el CTA.
+ *   - href: ruta destino (`/trabajos/<slug>` o `/en/work/<slug>`).
+ *   - heroImage: opcional, ImageMetadata de Astro (usa `<Image>` para AVIF/WebP).
+ *   - featured: si true, activa el borde conic gradient.
+ *
+ * Spec: TASKS.md T-22 + DESIGN.md §3 (gradients) + §8 (featured project card).
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import TechBadge from './TechBadge.astro';
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Título del case study (h3 dentro de la card). */
+  title: string;
+  /** Lead paragraph corto, debe caber en 2-3 líneas. */
+  tagline: string;
+  /** Cliente o sector ("Cliente confidencial · sector reformas"). */
+  client: string;
+  /** Año del entregable (ej. 2025). */
+  year: number;
+  /** Stack técnico — se renderizan los primeros 5. */
+  stack: string[];
+  /** Idioma activo, para traducir el CTA. */
+  lang: Language;
+  /** Ruta del detalle del case study. */
+  href: string;
+  /** Imagen hero opcional (Astro Image, AVIF/WebP automáticos). */
+  heroImage?: ImageMetadata;
+  /** Si true, activa el borde conic gradient sutil al hover. */
+  featured?: boolean;
+  /** Clases extra a mergear con el wrapper. */
+  class?: string;
+}
+
+const {
+  title,
+  tagline,
+  client,
+  year,
+  stack,
+  lang,
+  href,
+  heroImage,
+  featured = false,
+  class: className,
+} = Astro.props;
+
+const t = useTranslations(lang);
+
+const classes = ['case-study-card', featured && 'is-featured', className]
+  .filter(Boolean)
+  .join(' ');
+
+// Top 5 del stack — DESIGN.md §8 muestra badges en featured cards, evitamos
+// que la card se infle si el stack es largo.
+const visibleStack = stack.slice(0, 5);
+---
+
+<a class={classes} href={href}>
+  {
+    heroImage && (
+      <figure class="case-study-card__figure">
+        <Image
+          src={heroImage}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          widths={[480, 720, 960]}
+          sizes="(min-width: 1024px) 480px, (min-width: 640px) 50vw, 100vw"
+        />
+      </figure>
+    )
+  }
+
+  <div class="case-study-card__body">
+    <header class="case-study-card__header">
+      <span class="case-study-card__pill" aria-label={t('status.success')}>
+        {t('status.success')}
+      </span>
+      <span class="case-study-card__meta">
+        {client} · {year}
+      </span>
+    </header>
+
+    <h3 class="case-study-card__title font-display">{title}</h3>
+    <p class="case-study-card__tagline">{tagline}</p>
+
+    {
+      visibleStack.length > 0 && (
+        <ul class="case-study-card__stack" aria-label="Stack">
+          {visibleStack.map((tech) => (
+            <li>
+              <TechBadge label={tech} variant="default" />
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <span class="case-study-card__cta" aria-hidden="true">
+      {t('cta.viewCaseStudy')}
+      <span class="case-study-card__cta-arrow">→</span>
+    </span>
+  </div>
+</a>
+
+<style>
+  /* ---------------------------------------------------------------------- */
+  /* Wrapper                                                                 */
+  /* ---------------------------------------------------------------------- */
+
+  .case-study-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    color: var(--text-1);
+    text-decoration: none;
+    transition:
+      transform var(--motion-base) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  /* Hover/focus básico — aplica a featured y no-featured. El borde sólido
+     pasa a `--accent-400` solo cuando NO es featured (en featured el
+     gradient toma protagonismo y un border accent extra competiría). */
+  .case-study-card:hover,
+  .case-study-card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .case-study-card:not(.is-featured):hover,
+  .case-study-card:not(.is-featured):focus-visible {
+    border-color: var(--accent-400);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Conic gradient border (solo si .is-featured) — DESIGN.md §3 + §8        */
+  /*                                                                         */
+  /* Técnica:                                                                */
+  /*   1. `::before` posicionado absoluto con `inset: 0`, mismo radius.      */
+  /*   2. Pinta el conic gradient como background.                           */
+  /*   3. Doble mask (gradiente sólido vs gradiente con padding) + `mask-   */
+  /*      composite: exclude` recorta el centro y deja solo un anillo de    */
+  /*      1px (el `padding`).                                                */
+  /*   4. Idle: opacity 0 → invisible. Hover/focus: opacity 0.6 → emerge.    */
+  /*   5. Rotación: variable `--conic-angle` en `from <angle>` animada solo  */
+  /*      en hover/focus. `motion.css` neutraliza la duración cuando         */
+  /*      `prefers-reduced-motion: reduce`.                                  */
+  /* ---------------------------------------------------------------------- */
+
+  /* `--conic-angle` registrado vía @property para que sea interpolable.
+     Sin @property, el `from <angle>` de un conic-gradient no anima
+     suavemente porque la spec lo trata como un valor discreto. */
+  @property --case-study-conic-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 180deg;
+  }
+
+  .case-study-card.is-featured::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    --case-study-conic-angle: 180deg;
+    /* Conic gradient inline para poder animar `--case-study-conic-angle`.
+       Replica `--gradient-border-featured` de DESIGN.md §3 con el ángulo
+       parametrizable. */
+    background: conic-gradient(
+      from var(--case-study-conic-angle) at 50% 50%,
+      var(--accent-600),
+      var(--accent-400),
+      var(--accent-600)
+    );
+    /* Doble mask: la capa "content-box" recorta el centro; el `exclude`
+       deja visible solo el padding (1px de borde gradient). */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition:
+      opacity var(--motion-base) var(--motion-ease-out),
+      --case-study-conic-angle var(--motion-base) var(--motion-ease-out);
+    z-index: 1;
+  }
+
+  .case-study-card.is-featured:hover::before,
+  .case-study-card.is-featured:focus-visible::before {
+    opacity: 0.6;
+    /* Rotación lenta del `from` del conic — no del ::before completo, así
+       el rectángulo permanece anclado a `inset: 0` y el mask no falla en
+       las esquinas. DESIGN.md §3 prohíbe animar gradients en idle: la
+       animación arranca solo en hover/focus. */
+    animation: case-study-card-conic-rotate 6s linear infinite;
+  }
+
+  /* En featured no aplicamos border-color: --accent-400 para que el conic
+     sea el único indicador visual del estado focus/hover. El borde sólido
+     permanece en `--border` (visible bajo el gradient cuando opacity < 1). */
+
+  /* ---------------------------------------------------------------------- */
+  /* Hero image                                                              */
+  /* ---------------------------------------------------------------------- */
+
+  .case-study-card__figure {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--bg-2);
+  }
+
+  .case-study-card__figure :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--motion-base) var(--motion-ease-out);
+  }
+
+  .case-study-card:hover .case-study-card__figure :global(img),
+  .case-study-card:focus-visible .case-study-card__figure :global(img) {
+    transform: scale(1.02);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Body                                                                    */
+  /* ---------------------------------------------------------------------- */
+
+  .case-study-card__body {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    /* z-index: 2 para quedar encima del ::before sin perderse el borde. */
+    position: relative;
+    z-index: 2;
+  }
+
+  .case-study-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  /* Pill embebida — replica el shape de Pill.astro (T-25). Status success
+     siempre porque el schema de case-studies fija `status: 'success'`
+     (content.config.ts). Cuando T-25 aterrice, swap a `<Pill ... />`. */
+  .case-study-card__pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--color-status-success) 12%, transparent);
+    color: var(--color-status-success);
+    border: 1px solid color-mix(in oklch, var(--color-status-success) 30%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+
+  .case-study-card__meta {
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+  }
+
+  /* Heading h3 — DESIGN.md §8 indica Fraunces ~25-32px peso 600. */
+  .case-study-card__title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: clamp(1.5625rem, 2.5vw + 0.5rem, 2rem); /* 25 → 32px */
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .case-study-card__tagline {
+    color: var(--text-1);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Stack list                                                              */
+  /* ---------------------------------------------------------------------- */
+
+  .case-study-card__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* CTA                                                                     */
+  /* ---------------------------------------------------------------------- */
+
+  .case-study-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    margin-top: auto;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .case-study-card__cta-arrow {
+    display: inline-block;
+    transition: transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .case-study-card:hover .case-study-card__cta-arrow,
+  .case-study-card:focus-visible .case-study-card__cta-arrow {
+    transform: translateX(4px);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Animations                                                              */
+  /* ---------------------------------------------------------------------- */
+
+  @keyframes case-study-card-conic-rotate {
+    /* Anima el `from` del conic vía @property registrada arriba.
+       Velocidad lenta (6s) + opacity baja (0.6) → "sutil" (DESIGN.md §8).
+       motion.css colapsa la duración a ~0 cuando reduced-motion. */
+    from {
+      --case-study-conic-angle: 180deg;
+    }
+    to {
+      --case-study-conic-angle: 540deg;
+    }
+  }
+</style>
