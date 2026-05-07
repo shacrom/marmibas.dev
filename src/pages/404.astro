@@ -1,0 +1,295 @@
+---
+/**
+ * 404.astro — Bilingual not-found page (T-40).
+ *
+ * In a static Astro build, the 404 is served generically: the host (Vercel)
+ * serves a single `404.html` for any unknown path, regardless of locale. We
+ * therefore render BOTH languages in a single file — Spanish first (default
+ * locale of the project), English directly below — so the visitor lands on
+ * a screen they can parse in either language without us having to detect
+ * locale at runtime.
+ *
+ * Structure (top → bottom):
+ *   1. Eyebrow "404" (JetBrains Mono uppercase, --accent-400).
+ *   2. Bilingual heading: ES "Página no encontrada" / EN "Page not found"
+ *      stacked, Fraunces display weight 600.
+ *   3. Bilingual subtagline: ES + EN, --text-2.
+ *   4. CTA row: "Volver al inicio" / "Back to home" → /
+ *                "Trabajos" / "Work" → /trabajos
+ *
+ * SEO:
+ *   - title: "404 — marmibas"
+ *   - description: simple, bilingual cue.
+ *   - noindex: true (404 must not be indexed).
+ *
+ * Tokens (DESIGN.md):
+ *   §2 palette       → --text-0..2, --border, --accent-400
+ *   §3 gradients     → --gradient-hero-ambient (subtle background), --gradient-cta
+ *   §4 typography    → --font-display, --font-mono, --text-display, --text-lg
+ *   §5 spacing       → 96/64 vertical rhythm, 12/16/24/40
+ *   §8 hero          → eyebrow, ambient gradient, primary CTA pattern
+ */
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="404 — marmibas"
+  description="Página no encontrada · Page not found"
+  noindex={true}
+>
+  <section class="not-found" aria-labelledby="not-found-title-es">
+    <div class="not-found__ambient" aria-hidden="true"></div>
+
+    <div class="not-found__content">
+      <p class="not-found__eyebrow" aria-hidden="true">404</p>
+
+      <h1 id="not-found-title-es" class="not-found__title">
+        <span lang="es">Página no encontrada</span>
+        <span class="not-found__title-divider" aria-hidden="true">·</span>
+        <span lang="en">Page not found</span>
+      </h1>
+
+      <p class="not-found__sub">
+        <span lang="es">El contenido que buscás se mudó o nunca existió.</span>
+        <span class="not-found__sub-divider" aria-hidden="true">·</span>
+        <span lang="en">The content you're looking for moved or never existed.</span>
+      </p>
+
+      <div class="not-found__ctas">
+        <a class="cta cta--primary" href="/">
+          <span lang="es">← Volver al inicio</span>
+          <span class="cta__divider" aria-hidden="true">·</span>
+          <span lang="en">← Back to home</span>
+        </a>
+        <a class="cta cta--secondary" href="/trabajos">
+          <span lang="es">Trabajos</span>
+          <span class="cta__divider" aria-hidden="true">·</span>
+          <span lang="en">Work</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Section wrapper. min-height 70vh + place-items: center as requested by
+   * T-40 brief. `position: relative` is required so the absolutely-positioned
+   * ambient gradient is contained.
+   * `isolation: isolate` keeps the negative z-index of the ambient layer
+   * scoped to this section.
+   * ------------------------------------------------------------------------ */
+  .not-found {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 70vh;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-block: clamp(64px, 10vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    isolation: isolate;
+    text-align: center;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Subtle ambient gradient. Mirrors the home hero pattern but dampened more
+   * (opacity 0.5 vs 0.7) — a 404 should not feel celebratory. Painted at the
+   * top, fades down. `pointer-events: none` so it never blocks the CTAs.
+   * ------------------------------------------------------------------------ */
+  .not-found__ambient {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 480px;
+    background: var(--gradient-hero-ambient);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Content stack — flex column, centered. Max-width keeps the bilingual
+   * text from spanning too wide on desktop.
+   * ------------------------------------------------------------------------ */
+  .not-found__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 720px;
+  }
+
+  /* --- Eyebrow --------------------------------------------------------- */
+  .not-found__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-400);
+    margin: 0;
+  }
+
+  /* --- Title ----------------------------------------------------------- */
+  /*
+   * Display heading (Fraunces). Uses --text-display (clamp 48-72px) for the
+   * giant feel requested by the brief. ES + EN stack on mobile, sit inline
+   * on desktop separated by a · divider.
+   */
+  .not-found__title {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    letter-spacing: var(--text-display--letter-spacing);
+    font-weight: 600;
+    color: var(--text-0);
+    margin: 0;
+    text-wrap: balance;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .not-found__title-divider {
+    display: none;
+  }
+
+  /* --- Subtagline ------------------------------------------------------ */
+  .not-found__sub {
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--text-2);
+    margin: 0;
+    text-wrap: pretty;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .not-found__sub-divider {
+    display: none;
+  }
+
+  /* --- CTAs ------------------------------------------------------------ */
+  .not-found__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 24px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.005em;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease-out),
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      color var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+    will-change: transform;
+  }
+
+  .cta__divider {
+    color: var(--text-3);
+    font-weight: 400;
+  }
+
+  /* --- Primary --------------------------------------------------------- */
+  .cta--primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    border: 1px solid transparent;
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+  }
+
+  .cta--primary:hover {
+    background: var(--gradient-cta-hover);
+    background-size: 200% 200%;
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+  }
+
+  .cta--primary:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* --- Secondary ------------------------------------------------------- */
+  .cta--secondary {
+    color: var(--text-1);
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+
+  .cta--secondary:hover {
+    color: var(--text-0);
+    border-color: var(--accent-400);
+    transform: translateY(-1px);
+  }
+
+  .cta--secondary:focus-visible {
+    outline: none;
+    border-color: var(--accent-400);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Desktop: collapse the ES/EN stack into an inline row separated by ·
+   * so the bilingual heading reads as one unit. Below 720px we keep them
+   * stacked for legibility.
+   * ------------------------------------------------------------------------ */
+  @media (min-width: 720px) {
+    .not-found__title {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+    .not-found__title-divider {
+      display: inline;
+      color: var(--text-3);
+      font-weight: 400;
+    }
+    .not-found__sub {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .not-found__sub-divider {
+      display: inline;
+      color: var(--text-3);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Mobile tightens the rhythm and softens the display size so the bilingual
+   * stack does not blow past the viewport.
+   * ------------------------------------------------------------------------ */
+  @media (max-width: 640px) {
+    .not-found__title {
+      font-size: clamp(2.25rem, 9vw, 3rem);
+    }
+    .not-found__sub {
+      font-size: var(--text-base);
+    }
+    .cta {
+      flex: 1 1 auto;
+    }
+  }
+</style>

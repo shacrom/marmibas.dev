@@ -1,0 +1,136 @@
+---
+/**
+ * MetricsGrid.astro — grid de KPIs / métricas para case studies (T-26).
+ *
+ * Componente que renderiza un grid responsive de tarjetas con tres niveles
+ * de información: `value` (la cifra grande), `label` (qué mide la cifra) y
+ * `sublabel` (contexto adicional opcional).
+ *
+ * Uso:
+ *
+ *   <MetricsGrid metrics={[
+ *     { label: "Latencia P95", value: "120ms", sublabel: "antes 480ms" },
+ *     { label: "Errores", value: "0.02%", sublabel: "vs 1.4%" },
+ *     { label: "Deploy size", value: "412KB" },
+ *   ]} />
+ *
+ * Layout responsive (mobile-first):
+ *   - Mobile (<640px):   1 columna
+ *   - Tablet (≥640px):   2 columnas
+ *   - Desktop (≥1024px): hasta 4 columnas según `metrics.length` (1-4),
+ *                        para ≥5 sigue en 4 columnas con wrap natural.
+ *
+ * Tipografía (DESIGN.md §4):
+ *   - value:    Fraunces, clamp(32px, 4vw, 48px), peso 600,
+ *               background `--gradient-text-display` con clip-path en text.
+ *   - label:    JetBrains Mono, `--text-xs`, uppercase, color `--text-3`.
+ *   - sublabel: Inter, `--text-xs`, color `--text-2`.
+ *
+ * Cards:
+ *   - background `--bg-1`, borde `--border`, padding 24px, radius `--radius-md`.
+ *
+ * Pure server-rendered: sin script, sin estado.
+ *
+ * Spec: TASKS.md T-26 + DESIGN.md §3 (gradient-text-display) + §4 + §5.
+ */
+
+export interface Metric {
+  /** Etiqueta corta (qué mide la cifra). Mono uppercase. */
+  label: string;
+  /** Cifra grande renderizada con gradient. Texto libre (ej. "120ms", "0.02%"). */
+  value: string;
+  /** Contexto adicional opcional (ej. "vs baseline", "antes 480ms"). */
+  sublabel?: string;
+}
+
+export interface Props {
+  /** Lista de métricas a renderizar. Cada item es una card. */
+  metrics: Metric[];
+  /** Clases extra a mergear con el wrapper. */
+  class?: string;
+}
+
+const { metrics, class: className } = Astro.props;
+
+// Cap en 4 para el grid de desktop. Si hay menos métricas, el grid se ajusta
+// al count exacto (1-4). Si hay más de 4, ocupan 4 cols y wrappean.
+const desktopCols = Math.min(metrics.length, 4);
+
+const classes = ['metrics-grid', className].filter(Boolean).join(' ');
+---
+
+<div class={classes} style={`--metrics-desktop-cols: ${desktopCols};`}>
+  {
+    metrics.map((m: Metric) => (
+      <div class="metric">
+        <p class="metric__value">{m.value}</p>
+        <p class="metric__label">{m.label}</p>
+        {m.sublabel && <p class="metric__sublabel">{m.sublabel}</p>}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-block: 32px;
+  }
+
+  @media (min-width: 640px) {
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .metrics-grid {
+      grid-template-columns: repeat(var(--metrics-desktop-cols, 4), 1fr);
+    }
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .metric__value {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem); /* 32px → 48px */
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+    background: var(--gradient-text-display);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .metric__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0;
+  }
+
+  .metric__sublabel {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--text-2);
+    margin: 0;
+  }
+</style>

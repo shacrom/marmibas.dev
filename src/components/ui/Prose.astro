@@ -1,0 +1,35 @@
+---
+/**
+ * Prose.astro — wrapper que aplica la clase `.prose` (T-26).
+ *
+ * Trivial: un `<div class="prose">` con slot. Los estilos viven en
+ * `src/styles/prose.css` (T-10), importado desde `src/styles/global.css`,
+ * por lo que cualquier hijo del `<div>` recibe la tipografía y el ritmo
+ * vertical definidos para contenido MDX.
+ *
+ * Uso:
+ *
+ *   import Prose from '@/components/ui/Prose.astro';
+ *
+ *   <Prose>
+ *     <h2>Sección</h2>
+ *     <p>Texto largo…</p>
+ *   </Prose>
+ *
+ *   <!-- O con clase extra: -->
+ *   <Prose class="max-w-prose mx-auto">…</Prose>
+ *
+ * Spec: TASKS.md T-26 + T-10 (`prose.css`).
+ */
+
+export interface Props {
+  /** Clases extra a mergear con el wrapper. */
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const classes = ['prose', className].filter(Boolean).join(' ');
+---
+
+<div class={classes}><slot /></div>

@@ -1,0 +1,648 @@
+---
+/**
+ * /en/contact — contact page (EN) — T-39.
+ *
+ * EN equivalent of `/contacto` (lang='en'). Same structure, same form, same
+ * client-side state machine. Copy is professional but warm, matching the
+ * rest of the EN dictionary in `ui.ts`.
+ *
+ * Tokens DESIGN.md (same as ES counterpart):
+ *   §2 → --bg-1, --border, --text-0/1/2/3, --accent-400, --accent-glow
+ *   §3 → --gradient-cta, --gradient-cta-hover, --gradient-hero-ambient
+ *   §4 → --font-display (h1), --font-sans (body), --font-mono (eyebrow)
+ *   §5 → padding rhythm 64-128px, gap 16/24/32
+ *   §6 → --motion-duration-fast, --motion-ease-out
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/helpers';
+
+const lang = 'en' as const;
+const t = useTranslations(lang);
+
+const tagline =
+  "Need software for your business? Tell me what you're looking for and I'll get back within 24-48h.";
+---
+
+<BaseLayout
+  title="Contact — marmibas"
+  description="Let's talk about your project. I reply within 24-48h."
+  noindex
+>
+  <section class="contact" aria-labelledby="contact-title">
+    <div class="contact__ambient" aria-hidden="true"></div>
+
+    <header class="contact__header">
+      <p class="contact__eyebrow font-mono">{t('nav.contact')}</p>
+      <h1 id="contact-title" class="contact__title font-display">Let's talk</h1>
+      <p class="contact__tagline">{tagline}</p>
+    </header>
+
+    <div class="contact__form-wrapper">
+      <p
+        id="contact-error"
+        class="contact__alert contact__alert--error"
+        role="alert"
+        aria-live="polite"
+        hidden
+      >
+        {t('form.error')}
+      </p>
+
+      <form
+        id="contact-form"
+        class="contact__form"
+        novalidate
+        aria-describedby="contact-form-help"
+      >
+        <p id="contact-form-help" class="sr-only">
+          All required fields must be completed.
+        </p>
+
+        <div class="field">
+          <label class="field__label" for="contact-name">
+            {t('form.name.label')}
+            <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="contact-name"
+            class="field__input"
+            type="text"
+            name="name"
+            required
+            minlength="2"
+            maxlength="120"
+            autocomplete="name"
+            placeholder={t('form.name.placeholder')}
+            aria-describedby="contact-name-error"
+          />
+          <p
+            id="contact-name-error"
+            class="field__error"
+            role="alert"
+            aria-live="polite"
+          >
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="contact-email">
+            {t('form.email.label')}
+            <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="contact-email"
+            class="field__input"
+            type="email"
+            name="email"
+            required
+            maxlength="254"
+            autocomplete="email"
+            placeholder={t('form.email.placeholder')}
+            aria-describedby="contact-email-error"
+          />
+          <p
+            id="contact-email-error"
+            class="field__error"
+            role="alert"
+            aria-live="polite"
+          >
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="contact-message">
+            {t('form.message.label')}
+            <span aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="contact-message"
+            class="field__input field__textarea"
+            name="message"
+            required
+            minlength="10"
+            maxlength="2000"
+            rows="6"
+            placeholder={t('form.message.placeholder')}
+            aria-describedby="contact-message-error"></textarea>
+          <p
+            id="contact-message-error"
+            class="field__error"
+            role="alert"
+            aria-live="polite"
+          >
+          </p>
+        </div>
+
+        {/* Honeypot: hidden from humans, visible to naive bots. */}
+        <div class="honeypot" aria-hidden="true">
+          <label for="contact-website">Do not fill</label>
+          <input
+            id="contact-website"
+            type="text"
+            name="website"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+
+        {/* Hidden lang so the endpoint knows which locale to use for the subject. */}
+        <input type="hidden" name="lang" value={lang} />
+
+        <button id="contact-submit" type="submit" class="contact__submit">
+          <span class="contact__submit-label">{t('form.submit')}</span>
+          <span class="contact__spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <div
+        id="contact-success"
+        class="contact__success"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
+        <span aria-hidden="true">✓</span>
+        <p>{t('form.success')}</p>
+      </div>
+    </div>
+
+    <aside class="contact__alt">
+      <p class="contact__alt-heading">Prefer another channel?</p>
+      <ul class="contact__alt-list">
+        <li>
+          <a href="mailto:marmibas.dev@gmail.com" class="contact__alt-link">
+            <span>marmibas.dev@gmail.com</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://github.com/shacrom"
+            class="contact__alt-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>GitHub · shacrom</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --- Layout / hero ----------------------------------------------------- */
+  .contact {
+    position: relative;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-block: clamp(64px, 10vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    isolation: isolate;
+  }
+
+  .contact__ambient {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 480px;
+    background: var(--gradient-hero-ambient);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .contact__header {
+    max-width: 640px;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .contact__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 12px;
+  }
+
+  .contact__title {
+    font-size: clamp(2.5rem, 6vw + 1rem, 3.8125rem);
+    line-height: 1;
+    color: var(--text-0);
+    letter-spacing: -0.02em;
+  }
+
+  .contact__tagline {
+    margin-top: 16px;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  /* --- Form -------------------------------------------------------------- */
+  .contact__form-wrapper {
+    max-width: 540px;
+    margin-inline: auto;
+  }
+
+  .contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field__label {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-1);
+  }
+
+  .field__label span {
+    color: var(--accent-400);
+    margin-left: 2px;
+  }
+
+  .field__input {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.4;
+    color: var(--text-1);
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .field__input::placeholder {
+    color: var(--text-3);
+  }
+
+  .field__input:focus {
+    outline: none;
+    border-color: var(--accent-400);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+
+  .field__input[aria-invalid='true'] {
+    border-color: #f87171;
+  }
+
+  .field__textarea {
+    resize: vertical;
+    min-height: 140px;
+    font-family: var(--font-sans);
+  }
+
+  .field__error {
+    min-height: 1em;
+    font-size: var(--text-sm);
+    color: #fca5a5;
+  }
+
+  .field__error:empty {
+    display: none;
+  }
+
+  /* --- Honeypot ---------------------------------------------------------- */
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* --- Submit ------------------------------------------------------------ */
+  .contact__submit {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    margin-top: 8px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .contact__submit:hover:not([disabled]) {
+    background: var(--gradient-cta-hover);
+    background-size: 200% 200%;
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+  }
+
+  .contact__submit:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .contact__submit[disabled] {
+    cursor: progress;
+    opacity: 0.7;
+  }
+
+  .contact__submit[data-state='sending'] .contact__submit-label {
+    visibility: hidden;
+  }
+
+  .contact__spinner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(250, 250, 250, 0.3);
+    border-top-color: var(--text-0);
+    border-radius: 50%;
+    opacity: 0;
+    animation: contact-spin 0.7s linear infinite;
+  }
+
+  .contact__submit[data-state='sending'] .contact__spinner {
+    opacity: 1;
+  }
+
+  @keyframes contact-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* --- Alerts / success -------------------------------------------------- */
+  .contact__alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    margin-bottom: 20px;
+  }
+
+  .contact__alert--error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
+  .contact__success {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    background: var(--bg-1);
+    border: 1px solid var(--accent-400);
+    border-radius: var(--radius-md);
+    color: var(--accent-300);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .contact__success span[aria-hidden] {
+    font-size: 1.5rem;
+    color: var(--accent-300);
+  }
+
+  .contact__success p {
+    color: var(--text-1);
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  /* --- Alternativas ------------------------------------------------------ */
+  .contact__alt {
+    max-width: 540px;
+    margin: 64px auto 0;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .contact__alt-heading {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-3);
+    margin-bottom: 16px;
+  }
+
+  .contact__alt-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 24px;
+  }
+
+  .contact__alt-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-1);
+    text-decoration: none;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    transition: color var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .contact__alt-link:hover {
+    color: var(--accent-300);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-400);
+  }
+
+  /* --- Utility ----------------------------------------------------------- */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script>
+  /**
+   * Client-side handler for the contact form. No frameworks: vanilla DOM +
+   * fetch. Re-binds on `astro:page-load` for View Transitions.
+   */
+  type FieldName = 'name' | 'email' | 'message';
+
+  function init(): void {
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+
+    const submit = document.getElementById('contact-submit') as HTMLButtonElement;
+    const errorBanner = document.getElementById('contact-error') as HTMLElement;
+    const successBanner = document.getElementById('contact-success') as HTMLElement;
+
+    const messages = {
+      es: {
+        nameRequired: 'Decime cómo te llamás.',
+        nameTooShort: 'El nombre debe tener al menos 2 caracteres.',
+        emailRequired: 'Necesito un email para responderte.',
+        emailInvalid: 'El email no parece válido.',
+        messageRequired: 'Contame en qué puedo ayudarte.',
+        messageMinLength: 'El mensaje necesita al menos 10 caracteres.',
+        messageMaxLength: 'El mensaje no puede pasar de 2000 caracteres.',
+        rateLimit: 'Has enviado varios mensajes seguidos. Esperá unos minutos y volvé a intentarlo.',
+        generic: 'Algo salió mal. Probá de nuevo o escribime a marmibas.dev@gmail.com.',
+      },
+      en: {
+        nameRequired: 'Please share your name.',
+        nameTooShort: 'Name must be at least 2 characters.',
+        emailRequired: 'I need an email to reply.',
+        emailInvalid: 'That email does not look valid.',
+        messageRequired: 'Let me know how I can help.',
+        messageMinLength: 'Message must be at least 10 characters.',
+        messageMaxLength: 'Message must be under 2000 characters.',
+        rateLimit: 'Too many messages in a short time. Please wait a few minutes and try again.',
+        generic: 'Something went wrong. Please try again or email marmibas.dev@gmail.com.',
+      },
+    } as const;
+
+    const lang =
+      (form.querySelector('input[name="lang"]') as HTMLInputElement | null)?.value === 'en'
+        ? 'en'
+        : 'es';
+    const m = messages[lang];
+
+    function setError(name: FieldName, text: string): void {
+      const input = form!.querySelector(`[name="${name}"]`) as HTMLInputElement | null;
+      const errEl = document.getElementById(`contact-${name}-error`);
+      if (input) input.setAttribute('aria-invalid', text ? 'true' : 'false');
+      if (errEl) errEl.textContent = text;
+    }
+
+    function clearErrors(): void {
+      (['name', 'email', 'message'] as FieldName[]).forEach((n) => setError(n, ''));
+      errorBanner.hidden = true;
+    }
+
+    function validate(payload: Record<string, string>): boolean {
+      let ok = true;
+      const name = payload.name?.trim() ?? '';
+      const email = payload.email?.trim() ?? '';
+      const message = payload.message?.trim() ?? '';
+
+      if (!name) {
+        setError('name', m.nameRequired);
+        ok = false;
+      } else if (name.length < 2) {
+        setError('name', m.nameTooShort);
+        ok = false;
+      }
+
+      if (!email) {
+        setError('email', m.emailRequired);
+        ok = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('email', m.emailInvalid);
+        ok = false;
+      }
+
+      if (!message) {
+        setError('message', m.messageRequired);
+        ok = false;
+      } else if (message.length < 10) {
+        setError('message', m.messageMinLength);
+        ok = false;
+      } else if (message.length > 2000) {
+        setError('message', m.messageMaxLength);
+        ok = false;
+      }
+
+      return ok;
+    }
+
+    function setSending(sending: boolean): void {
+      submit.disabled = sending;
+      submit.dataset.state = sending ? 'sending' : 'idle';
+      submit.setAttribute('aria-busy', sending ? 'true' : 'false');
+    }
+
+    function showError(text: string): void {
+      errorBanner.textContent = text;
+      errorBanner.hidden = false;
+      errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearErrors();
+
+      const data = new FormData(form);
+      const payload = Object.fromEntries(data.entries()) as Record<string, string>;
+
+      if (payload.website && payload.website.length > 0) {
+        form.hidden = true;
+        successBanner.hidden = false;
+        return;
+      }
+
+      if (!validate(payload)) return;
+
+      setSending(true);
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: payload.name?.trim(),
+            email: payload.email?.trim(),
+            message: payload.message?.trim(),
+            website: payload.website ?? '',
+            lang: payload.lang ?? lang,
+          }),
+        });
+
+        if (res.ok) {
+          form.hidden = true;
+          successBanner.hidden = false;
+          successBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          form.reset();
+          return;
+        }
+
+        if (res.status === 429) {
+          showError(m.rateLimit);
+        } else {
+          showError(m.generic);
+        }
+      } catch {
+        showError(m.generic);
+      } finally {
+        setSending(false);
+      }
+    });
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

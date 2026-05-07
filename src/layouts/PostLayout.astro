@@ -1,0 +1,307 @@
+---
+/**
+ * PostLayout.astro — page-level layout for `posts/**` MDX (T-27).
+ *
+ * Slimmer than CaseStudyLayout: a blog post is a single column of long-form
+ * prose with a sticky TOC on the side. Hero is text-only — title (Fraunces,
+ * clamp 40-64px) + meta (publishedAt + readingTime).
+ *
+ * Composition tree:
+ *
+ *   <BaseLayout title description ogImage type="article">
+ *     <article class="post">
+ *       <header class="post__hero">
+ *         <h1 class="post__title">{title}</h1>
+ *         <p class="post__meta">{publishedAt} · {readingTime} min</p>
+ *       </header>
+ *       <div class="post__body">
+ *         <aside class="post__toc">
+ *           <TableOfContents headings lang />← T-24 (parallel)
+ *         </aside>
+ *         <Prose>                            ← T-26 (parallel)
+ *           <slot />                         ← MDX body
+ *         </Prose>
+ *       </div>
+ *       <footer class="post__footer">
+ *         <ul class="post__tags">…TechBadge…</ul>
+ *         <a href="/blog">{ ← Back to blog }</a>
+ *       </footer>
+ *     </article>
+ *   </BaseLayout>
+ *
+ * Reading time:
+ *   - If `frontmatter.readingTime` is provided, use it as-is (canonical).
+ *   - If not, derive a rough estimate from the rendered MDX text length.
+ *     We don't have direct access to the slot's textContent at build time,
+ *     so we expose `rawContent` via Astro.props if the page injects it (the
+ *     `[slug].astro` route can pass `entry.body` for an estimate). Fallback:
+ *     `undefined` (the meta line just omits the reading time block).
+ *
+ * Source of truth:
+ *   - TASKS.md T-27 (the layout spec).
+ *   - DESIGN.md §4 (Fraunces hero), §9 (prose 720px).
+ *   - content.config.ts → `posts` schema.
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/ui/TableOfContents.astro';
+import Prose from '../components/ui/Prose.astro';
+import TechBadge from '../components/ui/TechBadge.astro';
+import { getLangFromUrl, getRoutePath, useTranslations } from '../i18n/helpers';
+import type { Language } from '../i18n/ui';
+
+interface MarkdownHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface PostFrontmatter {
+  title: string;
+  description: string;
+  publishedAt: Date;
+  updatedAt?: Date;
+  tags?: string[];
+  readingTime?: number;
+  heroImage?: ImageMetadata;
+  ogImage?: ImageMetadata;
+}
+
+interface Props {
+  frontmatter: PostFrontmatter;
+  headings: MarkdownHeading[];
+  /** Active language. Optional — falls back to URL detection. */
+  lang?: Language;
+  /** Raw markdown body for rough reading-time estimation. Optional. */
+  rawContent?: string;
+}
+
+const {
+  frontmatter,
+  headings,
+  lang: langProp,
+  rawContent,
+} = Astro.props;
+
+const lang: Language = langProp ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Reading time: use frontmatter value if provided. Otherwise compute a rough
+// estimate from rawContent (~200 words/min). Words ≈ char count / 5.
+function estimateReadingTime(text: string): number {
+  const words = text.trim().length / 5;
+  return Math.max(1, Math.round(words / 200));
+}
+
+const readingTime: number | undefined =
+  frontmatter.readingTime ??
+  (rawContent ? estimateReadingTime(rawContent) : undefined);
+
+// Format publishedAt per locale.
+//   ES → "7 de mayo de 2026"
+//   EN → "May 7, 2026"
+const dateFormatter = new Intl.DateTimeFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const publishedLabel = dateFormatter.format(frontmatter.publishedAt);
+
+const ogImageUrl: string | undefined =
+  frontmatter.ogImage?.src ?? frontmatter.heroImage?.src;
+
+// TableOfContents (T-24) accepts the full headings list and filters to
+// depth 2-3 internally. Pass through unchanged.
+
+const blogIndexHref = getRoutePath('blog', lang);
+const backToBlogLabel = t('common.backTo') + ' ' + t('nav.blog');
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  ogImage={ogImageUrl}
+  type="article"
+>
+  <article class="post">
+    <header class="post__hero">
+      <h1 class="post__title">{frontmatter.title}</h1>
+      <p class="post__meta">
+        <time datetime={frontmatter.publishedAt.toISOString()}>{publishedLabel}</time>
+        {
+          readingTime !== undefined && (
+            <>
+              <span class="post__meta-sep" aria-hidden="true">
+                ·
+              </span>
+              <span>{readingTime} {t('common.readingTime')}</span>
+            </>
+          )
+        }
+      </p>
+    </header>
+
+    <div class="post__body">
+      {
+        headings.length > 0 && (
+          <div class="post__toc">
+            <TableOfContents headings={headings} lang={lang} />
+          </div>
+        )
+      }
+
+      <div class="post__content">
+        <Prose>
+          <slot />
+        </Prose>
+      </div>
+    </div>
+
+    <footer class="post__footer">
+      {
+        frontmatter.tags && frontmatter.tags.length > 0 && (
+          <ul class="post__tags" aria-label="Tags">
+            {frontmatter.tags.map((tag) => (
+              <li>
+                <TechBadge label={tag} variant="subtle" />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <a class="post__back" href={blogIndexHref}>
+        <span aria-hidden="true">←</span>
+        <span>{backToBlogLabel}</span>
+      </a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    padding-block: clamp(3rem, 6vw, 6rem) clamp(4rem, 8vw, 8rem);
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Hero — text-only header with title + meta                               */
+  /* DESIGN.md §4: Fraunces hero, line-height 1, color --text-0.             */
+  /* Clamp 40-64px per T-27 spec.                                            */
+  /* ----------------------------------------------------------------------- */
+
+  .post__hero {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+    margin-block-end: clamp(2rem, 4vw, 3rem);
+  }
+
+  .post__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    /* clamp(40px, 5vw + 1rem, 64px) — T-27 spec */
+    font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+    line-height: 1;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+    text-wrap: balance;
+  }
+
+  .post__meta {
+    margin-block-start: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .post__meta-sep {
+    color: var(--text-3);
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Body — same TOC sticky + content layout as CaseStudyLayout              */
+  /* ----------------------------------------------------------------------- */
+
+  .post__body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: min(1080px, 100% - 2rem);
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+
+  .post__content {
+    max-width: 720px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .post__body {
+      grid-template-columns: 240px minmax(0, 720px);
+      gap: 4rem;
+      justify-content: center;
+      /* TableOfContents (T-24) drives `position: sticky` itself. Grid item
+         needs `align-items: start` so the sticky child can escape the
+         track height. */
+      align-items: start;
+    }
+
+    .post__content {
+      margin-inline: 0;
+    }
+  }
+
+  @media (max-width: 1023.98px) {
+    .post__toc {
+      width: 100%;
+      max-width: 720px;
+      margin-inline: auto;
+    }
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Footer — tags + back-to-blog                                            */
+  /* ----------------------------------------------------------------------- */
+
+  .post__footer {
+    max-width: 720px;
+    margin-inline: auto;
+    margin-block-start: clamp(3rem, 6vw, 5rem);
+    padding-inline: clamp(1rem, 4vw, 2rem);
+    display: grid;
+    gap: 2rem;
+  }
+
+  .post__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .post__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    padding-block: 0.5rem;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .post__back:hover,
+  .post__back:focus-visible {
+    color: var(--accent-300);
+  }
+</style>

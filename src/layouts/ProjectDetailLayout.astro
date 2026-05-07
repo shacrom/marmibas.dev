@@ -1,0 +1,296 @@
+---
+/**
+ * ProjectDetailLayout.astro — page-level layout for `projects/**` MDX (T-27).
+ *
+ * Lighter than CaseStudyLayout: projects in development or side-projects don't
+ * warrant the case-study pomp. Single-column layout, no TOC, links section at
+ * the foot.
+ *
+ * Composition tree:
+ *
+ *   <BaseLayout title description ogImage type="article">
+ *     <article class="project-detail">
+ *       <header class="project-detail__hero">
+ *         <Pill status lang />
+ *         <h1 class="project-detail__title">{title}</h1>
+ *         <p class="project-detail__pitch">{pitch}</p>
+ *         <ul class="project-detail__stack">…TechBadge…</ul>
+ *       </header>
+ *       <div class="project-detail__content">
+ *         <Prose>                            ← T-26 (parallel)
+ *           <slot />                         ← MDX body
+ *         </Prose>
+ *       </div>
+ *       <footer class="project-detail__footer">
+ *         <ul class="project-detail__links">…repo, liveUrl, custom…</ul>
+ *       </footer>
+ *     </article>
+ *   </BaseLayout>
+ *
+ * Source of truth:
+ *   - TASKS.md T-27 (the layout spec).
+ *   - DESIGN.md §9 (prose 720px, single column).
+ *   - content.config.ts → `projects` schema (status enum, pitch, links[]).
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import Prose from '../components/ui/Prose.astro';
+import Pill from '../components/ui/Pill.astro';
+import TechBadge from '../components/ui/TechBadge.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/helpers';
+import type { Language } from '../i18n/ui';
+import type { PillStatus } from '../components/ui/Pill.astro';
+
+interface ProjectLink {
+  label: string;
+  url: string;
+}
+
+interface ProjectFrontmatter {
+  title: string;
+  description: string;
+  pitch: string;
+  stack: string[];
+  status: 'in-development' | 'side-project' | 'paused';
+  year?: number;
+  repo?: string;
+  liveUrl?: string;
+  links?: ProjectLink[];
+  heroImage?: ImageMetadata;
+  ogImage?: ImageMetadata;
+}
+
+interface Props {
+  frontmatter: ProjectFrontmatter;
+  /** Active language. Optional — falls back to URL detection. */
+  lang?: Language;
+}
+
+const { frontmatter, lang: langProp } = Astro.props;
+const lang: Language = langProp ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const ogImageUrl: string | undefined =
+  frontmatter.ogImage?.src ?? frontmatter.heroImage?.src;
+
+// The `projects` schema status set is a subset of PillStatus — a clean
+// passthrough so Pill picks up the right colour + i18n label.
+const pillStatus: PillStatus = frontmatter.status;
+
+// Build the canonical links list from `repo`, `liveUrl`, plus the optional
+// `links[]` array. Order: live > repo > custom (live is the "want to see it"
+// hook for visitors).
+const canonicalLinks: ProjectLink[] = [];
+if (frontmatter.liveUrl) {
+  canonicalLinks.push({
+    label: lang === 'es' ? 'Ver en vivo' : 'View live',
+    url: frontmatter.liveUrl,
+  });
+}
+if (frontmatter.repo) {
+  canonicalLinks.push({
+    label: lang === 'es' ? 'Repositorio' : 'Repository',
+    url: frontmatter.repo,
+  });
+}
+if (frontmatter.links) {
+  canonicalLinks.push(...frontmatter.links);
+}
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  ogImage={ogImageUrl}
+  type="article"
+>
+  <article class="project-detail">
+    <header class="project-detail__hero">
+      <Pill status={pillStatus} lang={lang} size="md" />
+      <h1 class="project-detail__title">{frontmatter.title}</h1>
+      <p class="project-detail__pitch">{frontmatter.pitch}</p>
+
+      {
+        frontmatter.stack.length > 0 && (
+          <ul class="project-detail__stack" aria-label="Stack">
+            {frontmatter.stack.map((tech) => (
+              <li>
+                <TechBadge label={tech} variant="default" />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    <div class="project-detail__content">
+      <Prose>
+        <slot />
+      </Prose>
+    </div>
+
+    {
+      canonicalLinks.length > 0 && (
+        <footer class="project-detail__footer">
+          <h2 class="project-detail__links-title">
+            {lang === 'es' ? 'Enlaces' : 'Links'}
+          </h2>
+          <ul class="project-detail__links">
+            {canonicalLinks.map((link) => (
+              <li>
+                <a
+                  class="project-detail__link"
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span>{link.label}</span>
+                  <span class="project-detail__link-arrow" aria-hidden="true">
+                    ↗
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p class="project-detail__back-row">
+            <a class="project-detail__back" href={lang === 'es' ? '/trabajos' : '/en/work'}>
+              <span aria-hidden="true">←</span>
+              <span>{t('common.backTo')} {t('nav.work')}</span>
+            </a>
+          </p>
+        </footer>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  /* Project pages stay narrow (post-like): 720px max-width. No 2-column TOC. */
+  .project-detail {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+    padding-block: clamp(3rem, 6vw, 6rem) clamp(4rem, 8vw, 8rem);
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Hero — status pill + title + pitch + stack                              */
+  /* ----------------------------------------------------------------------- */
+
+  .project-detail__hero {
+    display: grid;
+    gap: 1rem;
+    margin-block-end: clamp(2rem, 4vw, 3rem);
+  }
+
+  .project-detail__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw + 1rem, 3rem);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+    text-wrap: balance;
+  }
+
+  .project-detail__pitch {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-1);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .project-detail__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Content slot                                                            */
+  /* ----------------------------------------------------------------------- */
+
+  .project-detail__content {
+    /* Prose handles its own typography + max-width; we just give it room. */
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Footer — links + back-to-work                                           */
+  /* ----------------------------------------------------------------------- */
+
+  .project-detail__footer {
+    margin-block-start: clamp(3rem, 6vw, 5rem);
+    padding-block-start: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .project-detail__links-title {
+    margin: 0 0 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-2);
+  }
+
+  .project-detail__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .project-detail__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    padding-block: 0.5rem;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .project-detail__link:hover,
+  .project-detail__link:focus-visible {
+    color: var(--accent-300);
+  }
+
+  .project-detail__link-arrow {
+    transition: transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .project-detail__link:hover .project-detail__link-arrow,
+  .project-detail__link:focus-visible .project-detail__link-arrow {
+    transform: translate(2px, -2px);
+  }
+
+  .project-detail__back-row {
+    margin-block-start: 2rem;
+    margin-bottom: 0;
+  }
+
+  .project-detail__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .project-detail__back:hover,
+  .project-detail__back:focus-visible {
+    color: var(--accent-400);
+  }
+</style>
