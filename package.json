@@ -1,0 +1,59 @@
+{
+  "name": "marmibas-dev",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Personal portfolio of marmibas — software engineer & full stack developer. Astro 6 + TypeScript + Tailwind v4 + i18n.",
+  "homepage": "https://marmibas.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shacrom/marmibas.dev.git"
+  },
+  "author": {
+    "name": "marmibas",
+    "email": "marmibas.dev@gmail.com",
+    "url": "https://marmibas.dev"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check && tsc --noEmit",
+    "format": "prettier --write .",
+    "lint": "eslint . --max-warnings=0",
+    "size": "du -sh dist 2>/dev/null || echo 'no dist yet — run npm run build first'",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^5.0.4",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/vercel": "^10.0.6",
+    "astro": "^6.3.0",
+    "resend": "^6.12.3",
+    "shiki": "^4.0.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/ts-plugin": "^1.10.7",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.4",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
+    "eslint": "^10.3.0",
+    "eslint-plugin-astro": "^1.7.0",
+    "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.2",
+    "vitest": "^4.1.5"
+  }
+}
