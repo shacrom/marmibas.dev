@@ -1,0 +1,209 @@
+---
+/**
+ * SkillsSection.astro — Stack section for the home page (T-32).
+ *
+ * Renders the public-facing snapshot of the technologies the author works
+ * with day-to-day. Grouped into three balanced categories (Frontend /
+ * Backend / Data + Infra) so each column reads as a coherent stack instead
+ * of an indiscriminate badge wall.
+ *
+ * Visual anchors (DESIGN.md):
+ * - §5 spacing rhythm: 96-128px vertical between sections (desktop / mobile).
+ * - §4 typography: Fraunces 600 (~39px / `--text-3xl`) for the heading,
+ *   `--text-base` body for the subheading, JetBrains Mono uppercase tracked
+ *   `--accent-400` for category labels (matching the hero eyebrow recipe).
+ * - §8 chip treatment: TechBadge `subtle` keeps the column neutral so the
+ *   morado is reserved for true accents (heading link, CTAs, featured cards).
+ *
+ * Behaviour notes:
+ * - Pure server-rendered. No client JS — the cascade animation is handled
+ *   by the `<Reveal>` wrapper (T-20) which already honours reduced-motion.
+ * - The category stacks are static literals on purpose: the source of truth
+ *   for the curated stack lives in this component (mirrored to memory via
+ *   `marmibas-dev/cv-experiencia`). Adding a new tech = a one-line edit
+ *   here. No collection lookup, no MDX, no over-engineering for v1.
+ *
+ * Sources of truth: DESIGN.md §2/§4/§5/§8, src/i18n/ui.ts (T-12 keys),
+ * memory `marmibas-dev/cv-experiencia` (consolidated stack).
+ */
+
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+import Reveal from '../ui/Reveal.astro';
+import TechBadge from '../ui/TechBadge.astro';
+
+export interface Props {
+  /** Active language. Drives heading + subheading + category labels. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+/**
+ * Curated stack snapshot. Order inside each category is intentional:
+ * - Most-used / most-recent at the top.
+ * - Tools that frame the framework (Tailwind, PrimeNG, Sass) follow it.
+ *
+ * Keeping the data inline (vs. a collection) is a deliberate choice for v1:
+ * the stack changes rarely and the section never paginates or filters.
+ */
+const categories = [
+  {
+    key: 'frontend',
+    label: t('skills.category.frontend'),
+    techs: ['Angular', 'Astro', 'React', 'Tailwind v4', 'PrimeNG', 'Sass', 'Vite'],
+  },
+  {
+    key: 'backend',
+    label: t('skills.category.backend'),
+    techs: ['NestJS', 'Spring Boot', 'Python', 'Edge Functions', 'REST APIs'],
+  },
+  {
+    key: 'data',
+    label: t('skills.category.data'),
+    techs: ['PostgreSQL', 'Supabase RLS', 'Vercel', 'JWT', 'Resend', 'Playwright'],
+  },
+] as const;
+---
+
+<Reveal as="section" class="skills" aria-labelledby="skills-heading">
+  <div class="skills__inner">
+    <header class="skills__header">
+      <h2 id="skills-heading" class="skills__heading font-display">
+        {t('skills.heading')}
+      </h2>
+      <p class="skills__sub">{t('skills.sub')}</p>
+    </header>
+
+    <ul class="skills__grid" role="list">
+      {
+        categories.map((category) => (
+          <li class="skills__category">
+            <p class="skills__category-label">{category.label}</p>
+            <ul class="skills__techs" role="list">
+              {category.techs.map((tech) => (
+                <li>
+                  <TechBadge label={tech} variant="subtle" />
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Reveal>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Section shell. Vertical rhythm matches DESIGN.md §5: 128px desktop / 96px
+   * mobile (clamped via `--spacing` multiples). The `--container` width is the
+   * same 1080px used by the home grid so this section aligns with hero + work.
+   * ------------------------------------------------------------------------ */
+  .skills {
+    padding-block: 96px;
+  }
+
+  @media (min-width: 768px) {
+    .skills {
+      padding-block: 128px;
+    }
+  }
+
+  .skills__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 5vw, 32px);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Header: heading uses Fraunces 600 at `--text-3xl` (~39px, DESIGN.md §4
+   * "Headings de sección usan Fraunces 600"). Subheading is plain body
+   * (Inter `--text-base`, `--text-2`) — secondary on the visual hierarchy.
+   * `text-wrap: balance` (already set globally) keeps short headings even.
+   * ------------------------------------------------------------------------ */
+  .skills__header {
+    margin-bottom: 48px;
+    max-width: 640px;
+  }
+
+  .skills__heading {
+    margin: 0 0 16px;
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
+  }
+
+  .skills__sub {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-2);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Category grid. 1 column mobile / 3 columns desktop with the larger
+   * 48px gap reserved for ≥md breakpoints. Mobile keeps 32px to avoid the
+   * stack feeling cramped while still rhythming with the section padding.
+   *
+   * Each `<li>` is a category card with a subtle background. The
+   * `color-mix(in oklch, var(--bg-1) 50%, transparent)` keeps the surface
+   * lighter than `--bg-1` so it sits on top of the page background without
+   * fighting the hero ambient gradient when the page composes both.
+   * ------------------------------------------------------------------------ */
+  .skills__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 768px) {
+    .skills__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+  }
+
+  .skills__category {
+    padding: 24px;
+    background: color-mix(in oklch, var(--bg-1) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Category label. Same recipe as the hero eyebrow (DESIGN.md §8): mono,
+   * uppercase, wide tracking, `--accent-400`. Establishes a visual link
+   * between the hero, the section heads, and any future eyebrow on the page.
+   * ------------------------------------------------------------------------ */
+  .skills__category-label {
+    margin: 0 0 16px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-400);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Tech list. Flex wrap with 8px gap so badges flow into multiple rows on
+   * narrow categories (e.g. mobile) without forcing horizontal scroll. The
+   * <li> wrappers are stripped (no marker) — the badge IS the visual unit.
+   * ------------------------------------------------------------------------ */
+  .skills__techs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

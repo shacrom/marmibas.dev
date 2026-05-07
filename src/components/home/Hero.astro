@@ -1,0 +1,268 @@
+---
+/**
+ * Hero.astro — Home hero section (T-29).
+ *
+ * Compose the home hero anchor: ambient gradient + HeroIntro cascade +
+ * supporting tagline + dual CTAs. This is the visual anchor described in
+ * DESIGN.md §8 ("Hero") and §3 (radial gradient ambient).
+ *
+ * Layout (top → bottom):
+ *   1. <div class="hero__ambient">         ← radial gradient ambient (§3)
+ *   2. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
+ *   3. <p class="hero__tagline">           ← Inter, --text-2, max-width 540
+ *   4. <div class="hero__ctas">            ← primary + secondary buttons (§8)
+ *
+ * Motion strategy (DESIGN.md §6/§7):
+ *   - HeroIntro already animates the cascade (3-4 lines × 120ms + 100ms).
+ *   - Tagline + CTAs fade up after the cascade lands. We use the
+ *     `.motion-reveal-on-scroll` utility from `motion.css` (T-09) but apply
+ *     `.is-visible` SERVER-SIDE, since the hero is above the fold and we
+ *     want the transition to start immediately on load. We add a custom
+ *     `transition-delay` per element so the staggered reveal is preserved
+ *     even with the IntersectionObserver bypass.
+ *   - Reduced-motion is neutralised by `motion.css` (single source).
+ *
+ * CTAs:
+ *   - Primary: localized "Hablemos" / "Let's talk" → /contacto | /en/contact.
+ *     Uses `--gradient-cta` background, `--shadow-glow` on focus, gradient
+ *     shift on hover (DESIGN.md §3 + §8).
+ *   - Secondary: localized "Ver trabajos" / "View work" → /trabajos | /en/work.
+ *     Outline 1px `--border`, transparent bg. Hover lifts to `--accent-400`.
+ *
+ * i18n:
+ *   - Lines, eyebrow, tagline and CTA labels all live as constants below for
+ *     scoping reasons (the lines are an array — heavier than a single string,
+ *     not a great fit for the flat `ui.ts` dictionary).
+ *   - CTA labels reuse the existing `cta.contact` and `cta.viewWork` keys
+ *     from `src/i18n/ui.ts` (no duplication).
+ *
+ * Tokens (DESIGN.md):
+ *   §2 palette       → --text-0..3, --border, --accent-300..600
+ *   §3 gradients     → --gradient-hero-ambient, --gradient-cta, --gradient-cta-hover
+ *   §4 typography    → --font-display, --font-sans, --font-mono, --text-lg
+ *   §5 spacing       → 96px / 128px vertical rhythm, 12/16/24/32/40
+ *   §6 motion        → --motion-duration-base/fast, --motion-ease-out
+ *   §8 hero          → eyebrow, gradient ambient, primary CTA shadow glow
+ */
+
+import HeroIntro from './HeroIntro.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives copy + CTA hrefs. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+// --- Hero copy (per-locale) ------------------------------------------------
+// Tone: ES tutea (PYMEs LATAM/ES, cercano, claro). EN equivalent.
+// 4 lines for an extra beat of cascade — lands ~580ms total, still tight.
+const heroLines: Record<Language, string[]> = {
+  es: ['Construyo', 'software', 'que tu negocio', 'necesita.'],
+  en: ['I build', 'software', 'your business', 'needs.'],
+};
+
+const tagline: Record<Language, string> = {
+  es: 'Ingeniero Informático full stack. Diseño y construyo SaaS, e-commerce y herramientas internas para emprendedores y PYMEs en España y LATAM.',
+  en: 'Full stack software engineer. I design and build SaaS, e-commerce and internal tools for entrepreneurs and SMBs in Spain and LATAM.',
+};
+
+const eyebrow = 'Marmibas · marmibas.dev';
+
+const lines = heroLines[lang];
+const subhead = tagline[lang];
+
+// CTA hrefs via canonical i18n route helper (T-13).
+const contactHref = getRoutePath('contact', lang);
+const workHref = getRoutePath('work', lang);
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__ambient" aria-hidden="true"></div>
+
+  <div class="hero__content">
+    <HeroIntro eyebrow={eyebrow} lines={lines} />
+
+    <p class="hero__tagline motion-reveal-on-scroll is-visible">
+      {subhead}
+    </p>
+
+    <div class="hero__ctas motion-reveal-on-scroll is-visible">
+      <a class="cta cta--primary" href={contactHref}>
+        {t('cta.contact')}
+      </a>
+      <a class="cta cta--secondary" href={workHref}>
+        {t('cta.viewWork')}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Section wrapper. Generous vertical rhythm per DESIGN.md §5 (96-128px
+   * desktop, 48-64px mobile). `position: relative` is required so the
+   * absolutely-positioned ambient gradient is contained.
+   * ------------------------------------------------------------------------ */
+  .hero {
+    position: relative;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-block: clamp(64px, 12vw, 128px) clamp(64px, 10vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    z-index: 1;
+    isolation: isolate;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Ambient gradient. Radial, painted at the top, fades to transparent. The
+   * `--gradient-hero-ambient` token (DESIGN.md §3) is `radial-gradient(
+   * ellipse at top, --accent-700 0%, transparent 60%)`. We dampen with
+   * opacity to keep it sutil (the design principle is "discipline, not neón").
+   * `pointer-events: none` so it never blocks underlying interactive nodes.
+   * ------------------------------------------------------------------------ */
+  .hero__ambient {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 600px;
+    background: var(--gradient-hero-ambient);
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Content stack. Holds HeroIntro (which renders its own h1) + tagline +
+   * CTAs. We keep it as a flex column so the cascade flows naturally and
+   * the CTAs sit on a horizontal row at the bottom.
+   * ------------------------------------------------------------------------ */
+  .hero__content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Tagline / subhead. DESIGN.md §8 dictates Inter 18-20px, --text-2. We use
+   * --text-lg (20px) and the relaxed leading from global.css.
+   *
+   * Reveal: pre-applied `.is-visible` (above-the-fold), but with a
+   * `transition-delay` so it lands AFTER the HeroIntro cascade finishes
+   * (~580ms for 4 lines + 100ms baseline). 700ms keeps a gentle gap.
+   * ------------------------------------------------------------------------ */
+  .hero__tagline {
+    max-width: 560px;
+    margin-top: 32px;
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--text-2);
+    text-wrap: pretty;
+    transition-delay: 700ms;
+  }
+
+  /* --------------------------------------------------------------------------
+   * CTA row. DESIGN.md §8: primary uses gradient + glow on focus; secondary
+   * is outline-only. Gap follows the 12px spacing token (`--spacing` × 3).
+   *
+   * Reveal: same pattern as tagline, with a slightly larger delay so the
+   * CTAs land last in the choreography.
+   * ------------------------------------------------------------------------ */
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+    transition-delay: 900ms;
+  }
+
+  /* --------------------------------------------------------------------------
+   * CTA — shared base. Two variants follow:
+   *   .cta--primary   → gradient + glow (DESIGN.md §3 + §8 "CTA primario")
+   *   .cta--secondary → outline + accent on hover
+   *
+   * Inline-flex for vertical alignment of any future icon. JetBrains Mono is
+   * reserved for tech metadata (DESIGN.md §4); CTAs use Inter 500 for the
+   * cleaner, action-y feel.
+   * ------------------------------------------------------------------------ */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.005em;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease-out),
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      color var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+    will-change: transform;
+  }
+
+  /* --- Primary --------------------------------------------------------- */
+  .cta--primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    border: 1px solid transparent;
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+  }
+
+  .cta--primary:hover {
+    background: var(--gradient-cta-hover);
+    background-size: 200% 200%;
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+  }
+
+  .cta--primary:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* --- Secondary ------------------------------------------------------- */
+  .cta--secondary {
+    color: var(--text-1);
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+
+  .cta--secondary:hover {
+    color: var(--text-0);
+    border-color: var(--accent-400);
+    transform: translateY(-1px);
+  }
+
+  .cta--secondary:focus-visible {
+    outline: none;
+    border-color: var(--accent-400);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Mobile tightens the rhythm: tagline gets less margin, CTAs stack a bit
+   * more aggressively while staying inline if there is room.
+   * ------------------------------------------------------------------------ */
+  @media (max-width: 640px) {
+    .hero__tagline {
+      margin-top: 24px;
+      font-size: var(--text-base);
+    }
+    .hero__ctas {
+      margin-top: 32px;
+    }
+    .cta {
+      flex: 1 1 auto;
+    }
+  }
+</style>

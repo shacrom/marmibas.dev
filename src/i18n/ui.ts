@@ -116,6 +116,35 @@ export const ui = {
     'common.filters.clear': 'Limpiar filtros',
     'common.filters.all': 'Todos',
 
+    // -- Home: Featured projects (T-30) --------------------------------------
+    'featured.heading': 'Casos de éxito',
+    'featured.sub': 'Productos en producción real con clientes activos.',
+    'featured.viewAll': 'Ver todos los proyectos →',
+
+    // -- Home: About section (T-31) -------------------------------------------
+    'about.heading': 'Quién soy',
+    'about.bio.p1':
+      'Soy marmibas — Ingeniero Informático por la Universidad de Valencia (ETSE). Llevo 5 años construyendo software para empresas, desde microservicios en Spring Boot en Capgemini hasta sistemas MES industriales en Devoltec.',
+    'about.bio.p2':
+      'Hoy trabajo de forma independiente, ayudando a emprendedores y PYMEs a llevar sus ideas a producción. Mi foco está en SaaS multi-tenant, e-commerce, herramientas internas y todo lo que conecta personas con datos a través de software.',
+    'about.bio.p3':
+      'Si tu negocio necesita digitalizarse, automatizarse o lanzar un producto desde cero, hablemos. Trabajo remoto desde España, principalmente con clientes LATAM y europeos.',
+    'about.stats.years': 'Años de experiencia',
+    'about.stats.yearsValue': '5+',
+    'about.stats.projects': 'Casos en producción',
+    'about.stats.projectsValue': '2+',
+    'about.stats.languages': 'Idiomas',
+    'about.stats.languagesValue': 'ES · EN',
+    'about.cta.experience': 'Ver historia completa',
+    'about.cta.contact': 'Hablemos',
+
+    // -- Home: Skills / Stack section (T-32) ---------------------------------
+    'skills.heading': 'Stack',
+    'skills.sub': 'Tecnologías con las que trabajo de forma cotidiana.',
+    'skills.category.frontend': 'Frontend',
+    'skills.category.backend': 'Backend',
+    'skills.category.data': 'Data + Infra',
+
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Esta página no existe',
     'notFound.description':
@@ -214,6 +243,35 @@ export const ui = {
     'common.filters.tag': 'Tech',
     'common.filters.clear': 'Clear filters',
     'common.filters.all': 'All',
+
+    // -- Home: Featured projects (T-30) --------------------------------------
+    'featured.heading': 'Success stories',
+    'featured.sub': 'Live products in production with active clients.',
+    'featured.viewAll': 'View all projects →',
+
+    // -- Home: About section (T-31) -------------------------------------------
+    'about.heading': 'About me',
+    'about.bio.p1':
+      "I'm marmibas — Computer Engineer from Universidad de Valencia (ETSE, Spain). 5 years of experience building software for companies, from Spring Boot microservices at Capgemini to industrial MES systems at Devoltec.",
+    'about.bio.p2':
+      'Today I work independently, helping entrepreneurs and SMBs ship their ideas. My focus is multi-tenant SaaS, e-commerce, internal tools, and anything that connects people with data through software.',
+    'about.bio.p3':
+      "If your business needs to digitalize, automate or launch a product from zero, let's talk. I work remotely from Spain, mostly with LATAM and European clients.",
+    'about.stats.years': 'Years of experience',
+    'about.stats.yearsValue': '5+',
+    'about.stats.projects': 'Live case studies',
+    'about.stats.projectsValue': '2+',
+    'about.stats.languages': 'Languages',
+    'about.stats.languagesValue': 'ES · EN',
+    'about.cta.experience': 'Read the full story',
+    'about.cta.contact': "Let's talk",
+
+    // -- Home: Skills / Stack section (T-32) ---------------------------------
+    'skills.heading': 'Stack',
+    'skills.sub': 'Technologies I work with day-to-day.',
+    'skills.category.frontend': 'Frontend',
+    'skills.category.backend': 'Backend',
+    'skills.category.data': 'Data + Infra',
 
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Page not found',
