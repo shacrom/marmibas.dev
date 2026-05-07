@@ -122,6 +122,17 @@ export const ui = {
     'featured.sub': 'Productos en producción real con clientes activos.',
     'featured.viewAll': 'Ver todos los proyectos →',
 
+    // -- Work index — grid + filtros (T-34) ----------------------------------
+    'work.heading': 'Trabajos',
+    'work.tagline':
+      'Una selección de proyectos en producción, en desarrollo y exploraciones.',
+    'work.filter.label': 'Filtrar por',
+    'work.filter.all': 'Todos',
+    'work.filter.success': 'Casos de éxito',
+    'work.filter.development': 'En desarrollo',
+    'work.filter.sideProjects': 'Side projects',
+    'work.empty': 'Aún no hay proyectos en esta categoría.',
+
     // -- Home: About section (T-31) -------------------------------------------
     'about.heading': 'Quién soy',
     'about.bio.p1':
@@ -145,6 +156,24 @@ export const ui = {
     'skills.category.frontend': 'Frontend',
     'skills.category.backend': 'Backend',
     'skills.category.data': 'Data + Infra',
+
+    // -- Experience page (T-35) ----------------------------------------------
+    'experience.heading': 'Experiencia profesional',
+    'experience.tagline':
+      '5 años construyendo software en empresas de Valencia y remoto.',
+    'experience.disclaimer':
+      'Las empresas listadas son empleadores anteriores. Hoy trabajo de forma independiente.',
+    'experience.education.heading': 'Educación',
+    'experience.education.degree': 'Grado en Ingeniería Informática',
+    'experience.education.school': 'ETSE Universidad de Valencia',
+    'experience.education.years': '2018 — 2023',
+    'experience.fallback': 'Experience details only available in Spanish for now.',
+
+    // -- Blog (T-36 / T-37) ---------------------------------------------------
+    'blog.heading': 'Blog',
+    'blog.tagline': 'Notas técnicas, decisiones y aprendizajes desde el camino.',
+    'blog.empty': 'Pronto subo el primer post.',
+    'blog.readingTime': '{n} min de lectura',
 
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Esta página no existe',
@@ -251,6 +280,17 @@ export const ui = {
     'featured.sub': 'Live products in production with active clients.',
     'featured.viewAll': 'View all projects →',
 
+    // -- Work index — grid + filtros (T-34) ----------------------------------
+    'work.heading': 'Work',
+    'work.tagline':
+      'A selection of projects in production, in development and explorations.',
+    'work.filter.label': 'Filter by',
+    'work.filter.all': 'All',
+    'work.filter.success': 'Success stories',
+    'work.filter.development': 'In development',
+    'work.filter.sideProjects': 'Side projects',
+    'work.empty': 'No projects in this category yet.',
+
     // -- Home: About section (T-31) -------------------------------------------
     'about.heading': 'About me',
     'about.bio.p1':
@@ -274,6 +314,24 @@ export const ui = {
     'skills.category.frontend': 'Frontend',
     'skills.category.backend': 'Backend',
     'skills.category.data': 'Data + Infra',
+
+    // -- Experience page (T-35) ----------------------------------------------
+    'experience.heading': 'Professional experience',
+    'experience.tagline':
+      '5 years building software in Valencia-based companies and remote.',
+    'experience.disclaimer':
+      'Companies listed are previous employers. Today I work independently.',
+    'experience.education.heading': 'Education',
+    'experience.education.degree': "Bachelor's in Computer Engineering",
+    'experience.education.school': 'ETSE Universidad de Valencia',
+    'experience.education.years': '2018 — 2023',
+    'experience.fallback': 'Experience details only available in Spanish for now.',
+
+    // -- Blog (T-36 / T-37) ---------------------------------------------------
+    'blog.heading': 'Blog',
+    'blog.tagline': 'Technical notes, decisions and lessons from the road.',
+    'blog.empty': 'First post coming soon.',
+    'blog.readingTime': '{n} min read',
 
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Page not found',

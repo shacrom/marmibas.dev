@@ -1,0 +1,343 @@
+---
+/**
+ * /experiencia — timeline cronológico de experiencia profesional (ES) — T-35.
+ *
+ * Carga `getCollection('experience', e => e.data.lang === 'es')`, ordena por
+ * `order` ascendente (1 = más reciente) y renderiza cada entrada como una card
+ * con su Pill, título (company · role), period, stack como TechBadges y body
+ * MD renderizado dentro de Prose.
+ *
+ * Disclaimer (Callout info) arriba: aclara que las empresas listadas son
+ * empleadores anteriores; hoy trabajo de forma independiente. Esto es la única
+ * concesión a la doble identidad ("hoy soy independiente" + "antes estuve en
+ * estas empresas") sin contaminar cada card con un disclaimer per-entry.
+ *
+ * Sección de educación al final, hardcoded en `ui.ts` (no es content
+ * collection): Grado en Ingeniería Informática · ETSE Universidad de Valencia
+ * · 2018 — 2023.
+ *
+ * Visual:
+ *   - Desktop ≥768px: línea vertical (border-left 1px sólido) que conecta los
+ *     entries del timeline. Cada card tiene un dot absolute en el border-left.
+ *   - Mobile <768px: sin línea ni dot — cards apiladas con gap normal.
+ *
+ * Source of truth:
+ *   - TASKS.md T-35 (la spec del timeline + paridad parcial EN).
+ *   - DESIGN.md §5 (rhythm) + §9 (container widths).
+ *   - content.config.ts → `experience` schema.
+ */
+
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Callout from '../../components/ui/Callout.astro';
+import Pill from '../../components/ui/Pill.astro';
+import TechBadge from '../../components/ui/TechBadge.astro';
+import Prose from '../../components/ui/Prose.astro';
+import { useTranslations } from '../../i18n/helpers';
+
+type ExperienceEntry = CollectionEntry<'experience'>;
+
+const lang = 'es' as const;
+const t = useTranslations(lang);
+
+// Carga + orden por `order` ascendente (1 = más reciente). Las entries sin
+// `order` definido caen al final (Number.POSITIVE_INFINITY como fallback).
+const entries = await getCollection(
+  'experience',
+  (entry: ExperienceEntry) => entry.data.lang === lang,
+);
+
+const sorted = [...entries].sort(
+  (a, b) =>
+    (a.data.order ?? Number.POSITIVE_INFINITY) -
+    (b.data.order ?? Number.POSITIVE_INFINITY),
+);
+
+// Pre-renderiza los bodies MD para iterarlos en el template.
+const items = await Promise.all(
+  sorted.map(async (entry) => {
+    const { Content } = await render(entry);
+    return { entry, Content };
+  }),
+);
+---
+
+<BaseLayout
+  title="Experiencia profesional — marmibas"
+  description="Timeline cronológico de empleos: Devoltec, Capgemini, Cleverpy Machine Learning. 5 años construyendo software."
+  noindex
+>
+  <section class="experience" aria-labelledby="experience-title">
+    <header class="experience__header">
+      <p class="experience__eyebrow font-mono">{t('nav.experience')}</p>
+      <h1 id="experience-title" class="experience__title font-display">
+        {t('experience.heading')}
+      </h1>
+      <p class="experience__tagline">{t('experience.tagline')}</p>
+    </header>
+
+    <div class="experience__disclaimer">
+      <Callout type="info">{t('experience.disclaimer')}</Callout>
+    </div>
+
+    <ol class="timeline" role="list">
+      {
+        items.map(({ entry, Content }) => (
+          <li class="timeline__item">
+            <span class="timeline__dot" aria-hidden="true" />
+            <article class="timeline__card">
+              <header class="timeline__card-header">
+                <Pill status="prev-experience" lang={lang} />
+                <p class="timeline__period font-mono">{entry.data.period}</p>
+              </header>
+
+              <h2 class="timeline__heading font-display">
+                <span class="timeline__company">{entry.data.company}</span>
+                <span class="timeline__separator" aria-hidden="true">·</span>
+                <span class="timeline__role">{entry.data.role}</span>
+              </h2>
+
+              {entry.data.stack && entry.data.stack.length > 0 && (
+                <ul class="timeline__stack" role="list">
+                  {entry.data.stack.map((tech: string) => (
+                    <li>
+                      <TechBadge label={tech} variant="subtle" />
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <Prose class="timeline__body">
+                <Content />
+              </Prose>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+
+    <section class="education" aria-labelledby="education-title">
+      <h2 id="education-title" class="education__title font-display">
+        {t('experience.education.heading')}
+      </h2>
+      <div class="education__card">
+        <p class="education__degree">{t('experience.education.degree')}</p>
+        <p class="education__school">{t('experience.education.school')}</p>
+        <p class="education__years font-mono">{t('experience.education.years')}</p>
+      </div>
+    </section>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --- Hero / header ----------------------------------------------------- */
+  .experience {
+    position: relative;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-block: clamp(48px, 8vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    isolation: isolate;
+  }
+
+  .experience__header {
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .experience__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 12px;
+  }
+
+  .experience__title {
+    font-size: clamp(2rem, 5vw + 1rem, 3.25rem);
+    line-height: 1.05;
+    color: var(--text-0);
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+  }
+
+  .experience__tagline {
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--text-2);
+    text-wrap: pretty;
+    margin: 0;
+  }
+
+  .experience__disclaimer {
+    max-width: 720px;
+    margin-inline: auto;
+    margin-bottom: 48px;
+  }
+
+  /* --- Timeline ---------------------------------------------------------- */
+  .timeline {
+    list-style: none;
+    margin: 0 0 64px;
+    padding: 0;
+    max-width: 760px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .timeline__item {
+    position: relative;
+  }
+
+  /* Dot + línea vertical: solo en ≥768px (desktop / tablet ancho). En mobile
+     omitimos para no robar espacio horizontal a la prosa. */
+  @media (min-width: 768px) {
+    .timeline {
+      padding-left: 32px;
+      border-left: 1px solid var(--color-border);
+      gap: 40px;
+    }
+
+    .timeline__item {
+      padding-left: 8px;
+    }
+
+    .timeline__dot {
+      position: absolute;
+      left: -38px;
+      top: 28px;
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: var(--bg-0);
+      border: 2px solid var(--color-accent-400);
+      box-shadow: 0 0 0 4px var(--bg-0);
+    }
+  }
+
+  /* En mobile el dot vive en el DOM pero no es visible. */
+  @media (max-width: 767.98px) {
+    .timeline__dot {
+      display: none;
+    }
+  }
+
+  /* --- Card -------------------------------------------------------------- */
+  .timeline__card {
+    background: var(--bg-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: clamp(20px, 3vw, 28px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .timeline__card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .timeline__period {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin: 0;
+  }
+
+  .timeline__heading {
+    font-size: clamp(1.25rem, 2vw + 0.75rem, 1.5rem);
+    line-height: 1.2;
+    color: var(--text-0);
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .timeline__company {
+    color: var(--text-0);
+  }
+
+  .timeline__separator {
+    color: var(--text-3);
+    font-weight: 400;
+  }
+
+  .timeline__role {
+    color: var(--text-2);
+    font-weight: 500;
+  }
+
+  .timeline__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* La prosa interna del MDX/MD: el wrapper Prose ya aplica `.prose`.
+     Aquí solo ajustamos el ritmo vertical contra los bloques superiores. */
+  .timeline__body {
+    margin-top: 4px;
+  }
+
+  /* --- Education --------------------------------------------------------- */
+  .education {
+    max-width: 760px;
+    margin-inline: auto;
+    padding-top: 48px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .education__title {
+    font-size: clamp(1.25rem, 2vw + 0.75rem, 1.625rem);
+    color: var(--text-0);
+    margin: 0 0 20px;
+    font-weight: 600;
+  }
+
+  .education__card {
+    background: var(--bg-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .education__degree {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-0);
+    margin: 0;
+  }
+
+  .education__school {
+    font-size: var(--text-base);
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  .education__years {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-top: 4px;
+  }
+</style>

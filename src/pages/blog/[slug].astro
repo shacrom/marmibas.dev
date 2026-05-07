@@ -1,0 +1,61 @@
+---
+/**
+ * /blog/[slug] — post detail page (ES) — T-37.
+ *
+ * Renders each `CollectionEntry<'posts'>` with `lang === 'es'` using
+ * `PostLayout` (T-27). Headings come from `render(entry)` (Astro 6 Content
+ * Layer API) so the layout's TableOfContents has live data.
+ *
+ * Slug convention:
+ *   The glob loader prefixes IDs with the lang folder (e.g. `es/post-slug`
+ *   for `src/content/posts/es/post-slug.mdx`). We filter by `lang === 'es'`
+ *   already, so we use the basename of the id as URL slug — gives clean
+ *   `/blog/post-slug` instead of `/blog/es/post-slug`.
+ *
+ * Drafts:
+ *   `entry.data.draft === true` are excluded from `getStaticPaths` so they
+ *   never appear as routes (in dev or prod). Removing the line would expose
+ *   them in dev only.
+ *
+ * MDX components:
+ *   `<Callout>` is injected via `components={{ Callout }}` so MDX files
+ *   don't need to import it manually — Astro 6 standard pattern.
+ *
+ * Source of truth:
+ *   - TASKS.md T-37
+ *   - PostLayout (T-27) → frontmatter + headings prop shape
+ *   - content.config.ts → `posts` schema
+ */
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+import Callout from '../../components/ui/Callout.astro';
+import { slugFromId } from '../../lib/content';
+
+type PostEntry = CollectionEntry<'posts'>;
+
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries: PostEntry[] = await getCollection(
+    'posts',
+    (entry: PostEntry) => entry.data.lang === 'es' && entry.data.draft !== true,
+  );
+
+  return entries.map((entry: PostEntry) => ({
+    params: { slug: slugFromId(entry.id) },
+    props: { entry },
+  }));
+};
+
+interface Props {
+  entry: PostEntry;
+}
+
+const { entry } = Astro.props as Props;
+const { Content, headings } = await render(entry);
+---
+
+<PostLayout frontmatter={entry.data} headings={headings} lang="es">
+  <Content components={{ Callout }} />
+</PostLayout>

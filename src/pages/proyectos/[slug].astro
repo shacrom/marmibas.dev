@@ -1,0 +1,53 @@
+---
+/**
+ * /proyectos/[slug] — dynamic detail page para projects (ES) — T-37.
+ *
+ * Renderiza cada `CollectionEntry<'projects'>` con `lang === 'es'` usando el
+ * `ProjectDetailLayout` (T-27). El layout recibe el frontmatter como prop y
+ * el body MDX como slot via `<Content components={{ Callout }} />`.
+ *
+ * Convención de slug:
+ *   El glob loader genera IDs con el prefijo de la subcarpeta (ej.
+ *   `es/jinba` para `src/content/projects/es/jinba.mdx`). Como la página
+ *   vive bajo `/proyectos/` y ya filtramos por `lang === 'es'`, usamos el
+ *   basename del id (`jinba`) como slug — eso da URLs limpias
+ *   `/proyectos/jinba` en vez de `/proyectos/es/jinba`.
+ *
+ * MDX components:
+ *   `<Callout>` se inyecta vía `components={{ Callout }}` para que los
+ *   archivos `.mdx` no necesiten importarlo manualmente — patrón estándar
+ *   recomendado en la doc de Astro 6 para MDX.
+ *
+ * Source of truth:
+ *   - TASKS.md T-37
+ *   - ProjectDetailLayout (T-27) → frontmatter prop shape
+ *   - content.config.ts → `projects` schema (lang, status enum, …)
+ */
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import ProjectDetailLayout from '../../layouts/ProjectDetailLayout.astro';
+import Callout from '../../components/ui/Callout.astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection(
+    'projects',
+    (entry) => entry.data.lang === 'es'
+  );
+
+  return entries.map((entry) => {
+    const slug = entry.id.split('/').pop() ?? entry.id;
+    return {
+      params: { slug },
+      props: { entry },
+    };
+  });
+};
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<ProjectDetailLayout frontmatter={entry.data} lang="es">
+  <Content components={{ Callout }} />
+</ProjectDetailLayout>

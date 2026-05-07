@@ -1,0 +1,216 @@
+---
+/**
+ * /blog — listado de posts (ES) — T-36.
+ *
+ * Lista cronológica descendente de posts con `lang === 'es'` y `draft !== true`.
+ * Cada item: título (link a `/blog/[slug]`), fecha (Intl es-ES), description
+ * corta y reading time si el frontmatter lo declara.
+ *
+ * Estados:
+ *   - Si la collection está vacía (no hay posts publicados) → mensaje
+ *     localizado `blog.empty`.
+ *   - Si hay posts → `<ol>` con `<article>` por entrada.
+ *
+ * Diseño:
+ *   Hero compacto (eyebrow + h1 Fraunces + tagline) sobre el listado.
+ *   Tipografía y tokens alineados con DESIGN.md (§4 fuentes, §2 paleta,
+ *   §5 spacing rhythm).
+ *
+ * Source of truth:
+ *   - TASKS.md T-36 (listado de posts).
+ *   - src/content.config.ts → `posts` schema.
+ *   - src/i18n/ui.ts → keys `blog.*`.
+ */
+
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/helpers';
+import { slugFromId } from '../../lib/content';
+
+type PostEntry = CollectionEntry<'posts'>;
+
+const lang = 'es' as const;
+const t = useTranslations(lang);
+
+// Filtrar por idioma + excluir drafts. La collection es plana (Astro 6 Content
+// Layer): el split de carpetas /es y /en es solo organizativo; `lang` es la
+// fuente de verdad.
+const posts: PostEntry[] = await getCollection('posts', (entry: PostEntry) => {
+  return entry.data.lang === lang && entry.data.draft !== true;
+});
+
+// Ordenado cronológico DESC: el último publicado arriba.
+posts.sort(
+  (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+);
+
+const dateFormatter = new Intl.DateTimeFormat('es-ES', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+
+function readingTimeLabel(minutes: number): string {
+  return t('blog.readingTime').replace('{n}', String(minutes));
+}
+---
+
+<BaseLayout
+  title="Blog — marmibas"
+  description="Notas técnicas, decisiones y aprendizajes de un ingeniero full stack."
+>
+  <section class="blog" aria-labelledby="blog-title">
+    <header class="blog__header">
+      <p class="blog__eyebrow font-mono">{t('nav.blog')}</p>
+      <h1 id="blog-title" class="blog__title font-display">{t('blog.heading')}</h1>
+      <p class="blog__tagline">{t('blog.tagline')}</p>
+    </header>
+
+    {
+      posts.length === 0 ? (
+        <p class="blog__empty">{t('blog.empty')}</p>
+      ) : (
+        <ol class="blog__list" aria-label={t('blog.heading')}>
+          {posts.map((post) => {
+            const slug = slugFromId(post.id);
+            const href = `/blog/${slug}`;
+            const dateLabel = dateFormatter.format(post.data.publishedAt);
+            const isoDate = post.data.publishedAt.toISOString();
+
+            return (
+              <li class="blog__item">
+                <article class="post-card">
+                  <p class="post-card__meta">
+                    <time datetime={isoDate}>{dateLabel}</time>
+                    {
+                      post.data.readingTime !== undefined && (
+                        <>
+                          <span class="post-card__sep" aria-hidden="true">·</span>
+                          <span>{readingTimeLabel(post.data.readingTime)}</span>
+                        </>
+                      )
+                    }
+                  </p>
+                  <h2 class="post-card__title font-display">
+                    <a class="post-card__link" href={href}>
+                      {post.data.title}
+                    </a>
+                  </h2>
+                  <p class="post-card__description">{post.data.description}</p>
+                </article>
+              </li>
+            );
+          })}
+        </ol>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .blog {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-block: clamp(64px, 10vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+
+  .blog__header {
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .blog__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 12px;
+  }
+
+  .blog__title {
+    margin: 0;
+    font-size: clamp(2.5rem, 5vw + 1rem, 3.8125rem);
+    line-height: 1;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+  }
+
+  .blog__tagline {
+    margin-top: 16px;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .blog__empty {
+    padding: 32px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-align: center;
+  }
+
+  .blog__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  .blog__item {
+    border-block-end: 1px solid var(--border);
+    padding-block-end: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .blog__item:last-child {
+    border-block-end: 0;
+  }
+
+  .post-card__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0 0 8px 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-3);
+  }
+
+  .post-card__sep {
+    color: var(--text-3);
+  }
+
+  .post-card__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.5vw + 0.75rem, 2rem);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
+  }
+
+  .post-card__link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .post-card__link:hover,
+  .post-card__link:focus-visible {
+    color: var(--accent-300);
+  }
+
+  .post-card__description {
+    margin: 12px 0 0 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+</style>

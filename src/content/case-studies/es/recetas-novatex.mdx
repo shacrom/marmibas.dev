@@ -1,0 +1,72 @@
+---
+title: "Recetas Novatex"
+description: "Libreta digital para parámetros de máquinas RAMs en industria textil — preserva el conocimiento de planta antes de que se jubile con sus operarios."
+lang: "es"
+draft: false
+featured: true
+order: 2
+tagline: "Libreta digital para parámetros de máquinas RAMs — knowledge transfer en industria textil."
+client: "Industria textil — empresa cliente"
+year: 2025
+role: "Software Engineer"
+stack:
+  - "Angular"
+  - "TypeScript"
+  - "Tailwind"
+  - "Supabase"
+  - "PostgreSQL"
+status: "success"
+---
+
+## Contexto
+
+En una planta textil de las que llevan décadas funcionando, las máquinas RAMs son el corazón del acabado: estiran, secan y fijan el tejido a temperaturas y velocidades muy específicas. Cada cliente tiene sus exigencias, cada artículo tiene su receta, y cada receta es un equilibrio fino entre temperatura por zonas, velocidad de paso, tensión y tiempo de permanencia. Ese saber rara vez está escrito de forma sistemática: vive en libretas, en papelitos pegados al cuadro de mandos y, sobre todo, en la cabeza de los operarios que llevan veinte o treinta años en la planta.
+
+## El problema
+
+La libreta es un sistema que funciona hasta que deja de funcionar. Mientras el operario que la escribió esté ahí para interpretarla, todo bien: él sabe que ese "85" en una columna sin etiqueta es la temperatura de la zona 3, y que la receta de cierto cliente cambió hace dos meses pero el cambio se anotó en otra libreta. El conocimiento existe, pero está cifrado en convenciones tribales que nadie documentó nunca.
+
+El problema real no es la libreta — es lo que pasa cuando esa persona se jubila, se enferma o simplemente libra. La planta queda con un libro de recetas que nadie más sabe leer, los relevos jóvenes reaprenden por ensayo y error, y cada artículo nuevo arranca con tela quemada o lotes fuera de especificación hasta que alguien encuentra el punto. La transmisión generacional, que durante décadas fue el mecanismo natural de la industria, se rompe cuando los más jóvenes ya no entran a quedarse veinte años.
+
+## La solución
+
+Recetas Novatex es la libreta de toda la vida, pero desbloqueada del cuaderno y de la memoria del operario que la escribió. La aplicación permite buscar por cliente, encontrar el artículo y consultar los parámetros exactos que hay que cargar en la máquina antes de arrancar la producción. Lo importante no es que sea digital — es que el conocimiento deja de depender de una sola persona para vivir en un lugar que cualquier turno puede consultar.
+
+El flujo de uso es deliberadamente simple, porque la herramienta entra en una planta donde la pantalla compite con el ruido, la prisa y manos no siempre limpias. El operario abre la app desde un dispositivo cerca de la máquina, busca el cliente, elige el artículo y ve la receta lista para cargar. Las recetas que se actualizan quedan registradas con quién las cambió y cuándo, así que la trazabilidad deja de depender de descifrar caligrafías ajenas.
+
+El cambio de fondo es de dependencia: antes el conocimiento dependía de quién estaba en planta ese día; ahora la planta depende de un sistema que cualquiera puede consultar. Eso no reemplaza la experiencia del operario veterano — la pone disponible, replicable y enseñable.
+
+## Decisiones técnicas
+
+### Supabase como backend, RLS por empresa cliente
+
+El proyecto se montó sobre Supabase porque el dominio se modelaba bien con Postgres y porque el equipo necesitaba avanzar rápido sin armar infraestructura de auth, storage y API desde cero. Las recetas son datos sensibles — son parte del know-how productivo del cliente — así que el aislamiento entre tenants se resolvió con Row Level Security a nivel de tabla: cada empresa solo ve sus propias recetas, sus propios artículos y sus propios clientes, y el modelo permite escalar a más plantas sin tocar la lógica de negocio.
+
+### Angular para una UI funcional sobre robusta
+
+La elección de Angular en frontend respondió a dos cosas: el equipo lo dominaba y la app necesitaba estructura clara, no animaciones llamativas. El usuario final no quiere descubrir la interfaz — quiere encontrar el dato y volver a la máquina. Formularios consistentes, navegación predecible y vistas que cargan rápido le ganaron a cualquier ambición visual.
+
+### Búsqueda fuzzy de cliente y artículo
+
+Los nombres de cliente y artículo en planta no siempre coinciden con cómo están registrados: hay siglas, abreviaturas, variantes con guión y sin guión. Implementar búsqueda fuzzy con tolerancia a tipos y orden de palabras fue una de las decisiones que más fricción quitó del uso diario. El operario tipea lo primero que se le viene a la cabeza y el resultado aparece igual.
+
+### Histórico y trazabilidad de cambios
+
+Cada receta guarda versiones: quién la editó, cuándo, qué parámetro cambió. No es una feature vistosa, pero es la que convierte la app en una herramienta que un encargado puede defender frente a una auditoría o frente a un reclamo de cliente. La libreta no podía hacer eso.
+
+## Impacto
+
+El sistema entró en producción y reemplazó las libretas físicas como fuente de verdad para los parámetros de máquina. El cambio en la operación diaria es más sutil de lo que parece: los operarios jóvenes tienen ahora un punto de partida sólido para cada artículo que arranca, los veteranos pueden dejar el conocimiento en un lugar que sobrevive a su turno, y los encargados ganan visibilidad sobre qué se está produciendo y con qué configuración.
+
+Más allá de la velocidad — que sí, es más rápido buscar en la app que en una libreta —, el impacto real es de continuidad. Una jubilación dejó de ser un evento que pone en riesgo la calidad del producto. Eso es lo que el cliente compró cuando arrancó el proyecto, y eso es lo que el sistema entrega todos los días.
+
+<MetricsGrid metrics={[
+  { label: "Aislamiento", value: "Multi-tenant", sublabel: "RLS por empresa cliente" },
+  { label: "Búsqueda", value: "<500ms", sublabel: "Fuzzy sobre cliente y artículo" },
+  { label: "Acceso", value: "Mobile-first", sublabel: "Pensado para uso en planta" },
+  { label: "Trazabilidad", value: "Histórico", sublabel: "Versiones por receta" }
+]} />
+
+## Próximos pasos
+
+La hoja de ruta que se discute con el cliente apunta a cerrar el bucle entre la receta cargada y lo que efectivamente pasó en la máquina: alertas cuando un parámetro real se aleja de la receta, históricos de producción cruzados con receta usada para detectar derivas y, eventualmente, una capa de sugerencias basada en lo que funcionó bien con artículos similares. La idea no es automatizar la decisión del operario — es darle más contexto antes de tomarla.
