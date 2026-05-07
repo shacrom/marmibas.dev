@@ -1,0 +1,187 @@
+---
+/**
+ * Reveal.astro — IntersectionObserver-based reveal wrapper (T-20).
+ *
+ * Wraps arbitrary content in an element that fades + slides into view when it
+ * enters the viewport. Implements DESIGN.md §7 animation #3 ("Reveal on scroll").
+ *
+ * Usage:
+ *   <Reveal>...</Reveal>                              // fade-up 12px, default
+ *   <Reveal as="section" delay={120}>...</Reveal>     // staggered, semantic tag
+ *   <Reveal direction="in" distance="sm">...</Reveal> // fade-in only
+ *   <Reveal once={false}>...</Reveal>                 // re-trigger on each entry
+ *
+ * Behaviour notes:
+ * - Hidden state is opt-in via `[data-reveal]`; the wrapper toggles
+ *   `.is-visible` once the element intersects the viewport.
+ * - `prefers-reduced-motion: reduce` is honoured both in CSS (immediate
+ *   visibility) and JS (mark visible on init, skip the observer).
+ * - Progressive enhancement: a `<noscript>` style override neutralises the
+ *   hidden state for users without JS so content remains accessible.
+ * - View Transitions safe: re-observes new wrappers on `astro:page-load`.
+ *
+ * Sources of truth: DESIGN.md §6/§7, src/styles/motion.css (T-09).
+ */
+
+type Direction = 'up' | 'down' | 'in';
+type Distance = 'sm' | 'md';
+
+export interface Props {
+  /** HTML tag for the wrapper. Defaults to `div`. */
+  as?: string;
+  /** Delay in milliseconds before the reveal transition starts. */
+  delay?: number;
+  /** Translation distance: `sm` = 8px, `md` = 12px. Ignored when `direction === 'in'`. */
+  distance?: Distance;
+  /** Reveal direction. `up` (default) and `down` translate; `in` fades only. */
+  direction?: Direction;
+  /** When true, disconnect the observer after the first reveal. Defaults to true. */
+  once?: boolean;
+  /** IntersectionObserver threshold. Defaults to 0.15. */
+  threshold?: number;
+  /** IntersectionObserver rootMargin. Defaults to `0px 0px -50px 0px`. */
+  rootMargin?: string;
+  /** Optional extra classes to merge onto the wrapper. */
+  class?: string;
+}
+
+const {
+  as: Tag = 'div',
+  delay = 0,
+  distance = 'md',
+  direction = 'up',
+  once = true,
+  threshold = 0.15,
+  rootMargin = '0px 0px -50px 0px',
+  class: className,
+} = Astro.props;
+
+// Inline style carries the per-instance transition-delay so the global
+// `.motion-reveal-on-scroll` utility (motion.css) can stay class-only.
+const inlineStyle = delay > 0 ? `transition-delay: ${delay}ms;` : undefined;
+
+// Compose classes: keep global utility for the default `up` case so this
+// component plays well with anything else relying on it.
+const classes = ['motion-reveal-on-scroll', className].filter(Boolean).join(' ');
+---
+
+<Tag
+  class={classes}
+  data-reveal
+  data-direction={direction}
+  data-distance={distance}
+  data-once={once ? 'true' : 'false'}
+  data-threshold={String(threshold)}
+  data-root-margin={rootMargin}
+  style={inlineStyle}
+>
+  <slot />
+</Tag>
+
+<noscript>
+  <style>
+    /* Progressive enhancement: without JS the IntersectionObserver never
+     * fires, so we make every reveal target visible up front. */
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
+</noscript>
+
+<style>
+  /*
+   * Direction + distance variants. The default `up` case is already handled
+   * by `.motion-reveal-on-scroll` in motion.css; we override transform here
+   * for non-default combinations so we do not duplicate the base utility.
+   */
+
+  [data-reveal][data-direction='down'] {
+    transform: translate3d(0, calc(var(--motion-distance-md) * -1), 0);
+  }
+
+  [data-reveal][data-direction='down'][data-distance='sm'] {
+    transform: translate3d(0, calc(var(--motion-distance-sm) * -1), 0);
+  }
+
+  [data-reveal][data-direction='up'][data-distance='sm'] {
+    transform: translate3d(0, var(--motion-distance-sm), 0);
+  }
+
+  [data-reveal][data-direction='in'] {
+    transform: none;
+  }
+
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+</style>
+
+<script>
+  /**
+   * Client-side reveal driver.
+   *
+   * - Reads per-element config from `data-*` attributes so each Reveal can
+   *   tune threshold/rootMargin/once without sharing globals.
+   * - Honours `prefers-reduced-motion` by short-circuiting straight to
+   *   `.is-visible` (no observer wired up at all).
+   * - Re-runs on `astro:page-load` so View Transitions navigations still
+   *   reveal newly mounted elements.
+   */
+  const REVEAL_SELECTOR = '[data-reveal]';
+
+  type RevealEl = HTMLElement & { __revealObserver?: IntersectionObserver };
+
+  function reveal(el: RevealEl) {
+    el.classList.add('is-visible');
+  }
+
+  function setupReveal() {
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const targets = document.querySelectorAll<RevealEl>(
+      `${REVEAL_SELECTOR}:not(.is-visible)`,
+    );
+
+    if (reduceMotion || typeof IntersectionObserver === 'undefined') {
+      targets.forEach(reveal);
+      return;
+    }
+
+    targets.forEach((el) => {
+      // Avoid double-binding on re-runs (astro:page-load).
+      if (el.__revealObserver) return;
+
+      const threshold = Number(el.dataset.threshold) || 0.15;
+      const rootMargin = el.dataset.rootMargin || '0px 0px -50px 0px';
+      const once = el.dataset.once !== 'false';
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              reveal(entry.target as RevealEl);
+              if (once) {
+                observer.unobserve(entry.target);
+                observer.disconnect();
+                delete (entry.target as RevealEl).__revealObserver;
+              }
+            } else if (!once) {
+              (entry.target as RevealEl).classList.remove('is-visible');
+            }
+          }
+        },
+        { threshold, rootMargin },
+      );
+
+      el.__revealObserver = observer;
+      observer.observe(el);
+    });
+  }
+
+  setupReveal();
+  document.addEventListener('astro:page-load', setupReveal);
+</script>

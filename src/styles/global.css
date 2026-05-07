@@ -16,6 +16,8 @@
 /* CSS imports MUST be the very first rules (per CSS spec). */
 @import './fonts.css';
 @import 'tailwindcss';
+@import './motion.css';
+@import './prose.css';
 
 /* ----------------------------------------------------------------------- */
 /* 1. Theme tokens (Tailwind v4 CSS-first config).                         */

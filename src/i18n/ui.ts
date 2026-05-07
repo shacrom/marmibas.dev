@@ -90,6 +90,7 @@ export const ui = {
     // -- Meta / layout / a11y -------------------------------------------------
     'meta.skipToContent': 'Saltar al contenido',
     'meta.languageSwitcher': 'Cambiar idioma',
+    'meta.langSwitcherLabel': 'Idioma',
     'meta.currentLanguage': 'Idioma actual',
     'meta.toggleMenu': 'Abrir menú',
     'meta.closeMenu': 'Cerrar menú',
@@ -188,6 +189,7 @@ export const ui = {
     // -- Meta / layout / a11y -------------------------------------------------
     'meta.skipToContent': 'Skip to content',
     'meta.languageSwitcher': 'Switch language',
+    'meta.langSwitcherLabel': 'Language',
     'meta.currentLanguage': 'Current language',
     'meta.toggleMenu': 'Open menu',
     'meta.closeMenu': 'Close menu',

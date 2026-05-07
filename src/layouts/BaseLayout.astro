@@ -1,0 +1,123 @@
+---
+/**
+ * BaseLayout — root document layout (T-16).
+ *
+ * Wraps every page with:
+ *   - `<html lang dir="ltr">` derived from `Astro.url`.
+ *   - `<head>`: full meta via `<SeoHead>`, Astro View Transitions
+ *     (`<ClientRouter />`), critical fonts preloaded, global stylesheet
+ *     chain (global → motion → prose, all via `@import` from global.css).
+ *   - `<body>`: `<SkipLink>` (a11y), `<Header>`, `<main id="main">`,
+ *     `<Footer>`. Layout uses min-height: 100vh + footer pinned via
+ *     `margin-top: auto` so short pages still pin the footer at the bottom.
+ *
+ * Props are a thin pass-through to `<SeoHead>`. Pages compose this layout
+ * with their own `<slot>` content.
+ *
+ * Source of truth:
+ *   - TASKS.md T-16 (layout + SEO + View Transitions).
+ *   - DESIGN.md §1, §6, §9 (tech minimal oscuro, motion, layout).
+ *
+ * View Transitions:
+ *   `<ClientRouter />` from `astro:transitions` enables Astro 6 client-side
+ *   routing with native View Transitions where supported, falling back to
+ *   plain navigation everywhere else. Replaces the legacy `<ViewTransitions />`.
+ */
+
+import { ClientRouter } from 'astro:transitions';
+
+import SeoHead from '../components/ui/SeoHead.astro';
+import SkipLink from '../components/ui/SkipLink.astro';
+import Header from '../components/ui/Header.astro';
+import Footer from '../components/ui/Footer.astro';
+
+import { getLangFromUrl } from '../i18n/helpers';
+
+// Import the global stylesheet so Astro emits a hashed `<link>` for it.
+// motion.css and prose.css are reached via @import inside global.css, so
+// only one import is needed at the layout level.
+import '../styles/global.css';
+
+interface Props {
+  /** Page-specific title (no brand prefix needed). */
+  title: string;
+  /** Meta description (~155 chars). */
+  description: string;
+  /** Optional override of the OG image (must be 1200x630). */
+  ogImage?: string;
+  /** Mark page as `noindex, nofollow`. Default false. */
+  noindex?: boolean;
+  /** OpenGraph type. Default `website`. */
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  noindex = false,
+  type = 'website',
+} = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<!doctype html>
+<html lang={lang} dir="ltr">
+  <head>
+    <SeoHead
+      title={title}
+      description={description}
+      lang={lang}
+      currentUrl={Astro.url}
+      ogImage={ogImage}
+      noindex={noindex}
+      type={type}
+    />
+
+    {/* Astro 6 View Transitions. Lives in <head> so the script registers
+        before the first paint and intercepts in-page navigation. */}
+    <ClientRouter />
+  </head>
+  <body class="layout-body">
+    <SkipLink lang={lang} />
+    <Header currentLang={lang} currentUrl={Astro.url} />
+
+    <main id="main" tabindex="-1" class="layout-main">
+      <slot />
+    </main>
+
+    <Footer lang={lang} />
+  </body>
+</html>
+
+<style is:global>
+  /*
+   * Layout-level styles (global so they apply uniformly across pages).
+   * Component-level styles live colocated in each .astro file.
+   */
+
+  .layout-body {
+    /* Sticky footer pattern: ensure body fills the viewport so the footer
+       can pin to the bottom on short pages. global.css already sets
+       min-height: 100vh on body — we add the flex column here so
+       Footer's `margin-top: auto` actually has somewhere to push to. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .layout-main {
+    /* Take all the remaining vertical space; flush the footer down. */
+    flex: 1 0 auto;
+    /* Tabindex="-1" keeps `<main>` keyboard-focusable for the skip link
+       without trapping focus permanently. Clear the default focus ring on
+       programmatic focus only — :focus-visible from global.css still wins
+       for keyboard navigation inside <main>. */
+    outline: none;
+  }
+
+  .layout-main:focus {
+    outline: none;
+  }
+</style>

@@ -1,0 +1,171 @@
+---
+/**
+ * SeoHead — head metadata for every page (T-16).
+ *
+ * Inyects:
+ *   - Document basics: charset, viewport, title, description, theme-color.
+ *   - Robots directive (index/noindex).
+ *   - Canonical URL (built from `currentUrl` against `PUBLIC_SITE_URL`).
+ *   - hreflang alternates: `es`, `en`, `x-default` → ES.
+ *   - Open Graph: og:title, og:description, og:type, og:url, og:image, og:locale.
+ *   - Twitter Card: summary_large_image with title/description/image.
+ *   - Critical font preloads (Fraunces variable + Inter 400) from `lib/fonts.ts`.
+ *
+ * JSON-LD Person/Article/CreativeWork structured data is intentionally
+ * deferred to T-50 (per the SDD plan). For T-16 we ship the deterministic
+ * head tags only.
+ *
+ * Title strategy:
+ *   - `title` is the page-specific title.
+ *   - We prefix with `marmibas — ` if the title does not already contain
+ *     "marmibas" (case-insensitive). This keeps the home title intact
+ *     ("marmibas — Ingeniero …") while wrapping pages like "Trabajos"
+ *     into "marmibas — Trabajos".
+ */
+
+import { CRITICAL_FONT_PRELOADS } from '../../lib/fonts';
+import { getAlternateUrl, getCanonicalUrl } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+interface Props {
+  /** Page-specific title; will be prefixed with "marmibas — " when missing. */
+  title: string;
+  /** Meta description (~155 chars). Used for SEO snippet + og:description. */
+  description: string;
+  /** Active language of the page. Drives og:locale + hreflang current. */
+  lang: Language;
+  /** Astro.url of the current request (for canonical + alternates). */
+  currentUrl: URL;
+  /**
+   * Absolute URL to the OG image (1200x630). Defaults to the site-wide
+   * fallback `/og/default.png` (created in T-51).
+   */
+  ogImage?: string;
+  /** When true, emit `noindex, nofollow`. Used on 404, design-check, etc. */
+  noindex?: boolean;
+  /** OpenGraph type. `website` for index pages, `article` for posts. */
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description,
+  lang,
+  currentUrl,
+  ogImage = '/og/default.png',
+  noindex = false,
+  type = 'website',
+} = Astro.props;
+
+// --- Title prefix ---------------------------------------------------------
+// Avoid duplicating the brand if a page already includes it.
+const fullTitle = /marmibas/i.test(title) ? title : `marmibas — ${title}`;
+
+// --- Canonical + alternates ----------------------------------------------
+const canonicalUrl = getCanonicalUrl(currentUrl);
+
+// Build absolute hreflang alternates for ES + EN + x-default (→ ES per spec).
+// `getAlternateUrl` handles "current → other" path mapping; for the current
+// language we keep the canonical pathname.
+const siteOrigin = canonicalUrl.replace(currentUrl.pathname, '') || canonicalUrl;
+const baseOrigin = siteOrigin.endsWith('/')
+  ? siteOrigin.slice(0, -1)
+  : siteOrigin;
+
+const esPath =
+  lang === 'es' ? currentUrl.pathname : getAlternateUrl(currentUrl, 'es');
+const enPath =
+  lang === 'en' ? currentUrl.pathname : getAlternateUrl(currentUrl, 'en');
+
+const esHref = `${baseOrigin}${esPath}`;
+const enHref = `${baseOrigin}${enPath}`;
+
+// --- og:image absolutisation ---------------------------------------------
+// OG/Twitter image MUST be an absolute URL (Facebook + most crawlers reject
+// relative paths). If the prop already starts with http(s), keep it; else
+// prefix with the canonical origin.
+const ogImageAbsolute = /^https?:\/\//i.test(ogImage)
+  ? ogImage
+  : `${baseOrigin}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`;
+
+// --- og:locale -----------------------------------------------------------
+// OpenGraph expects `xx_XX` (BCP-47 with underscore). We pin to es_ES / en_US
+// matching the sitemap config in astro.config.mjs.
+const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
+const ogLocaleAlternate = lang === 'es' ? 'en_US' : 'es_ES';
+---
+
+{/* --- Document basics ----------------------------------------------- */}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="theme-color" content="#0a0a0f" />
+<meta name="color-scheme" content="dark" />
+<meta name="generator" content={Astro.generator} />
+
+{/* --- Indexing ------------------------------------------------------ */}
+<meta
+  name="robots"
+  content={noindex ? 'noindex, nofollow' : 'index, follow'}
+/>
+
+{/* --- Canonical ----------------------------------------------------- */}
+<link rel="canonical" href={canonicalUrl} />
+
+{/* --- hreflang alternates (ES, EN, x-default → ES) ----------------- */}
+<link rel="alternate" hreflang="es" href={esHref} />
+<link rel="alternate" hreflang="en" href={enHref} />
+<link rel="alternate" hreflang="x-default" href={esHref} />
+
+{/* --- Open Graph ---------------------------------------------------- */}
+<meta property="og:type" content={type} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={ogImageAbsolute} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="marmibas.dev" />
+<meta property="og:locale" content={ogLocale} />
+<meta property="og:locale:alternate" content={ogLocaleAlternate} />
+
+{/* --- Twitter Card -------------------------------------------------- */}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageAbsolute} />
+
+{/* --- Critical font preloads (Fraunces variable + Inter 400) ------- */}
+{
+  CRITICAL_FONT_PRELOADS.map((font) => (
+    <link
+      rel="preload"
+      href={font.href}
+      as="font"
+      type={font.type}
+      crossorigin="anonymous"
+    />
+  ))
+}
+
+{/* --- Favicon ------------------------------------------------------- */}
+{/*
+ * favicon.svg is delivered by T-51. We declare the link now so it lights up
+ * automatically once that asset lands (Astro will return 404 in dev for the
+ * missing path, but the browser silently ignores it — no visual impact).
+ */}
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+{/* --- RSS feed discovery ------------------------------------------- */}
+{/*
+ * Per language. Falls back to ES feed when EN is unavailable. The endpoint
+ * lives at /rss.xml (T-52); browsers + feed readers auto-discover via this
+ * link relation.
+ */}
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`marmibas.dev — ${lang === 'es' ? 'Blog' : 'Blog'}`}
+  href={lang === 'es' ? '/rss.xml' : '/en/rss.xml'}
+/>
