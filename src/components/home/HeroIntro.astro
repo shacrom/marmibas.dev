@@ -98,11 +98,6 @@ const { eyebrow, lines, as: As = 'h1' } = Astro.props;
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.03em;
-    color: #ffffff;
-    background: var(--gradient-text-display);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
   }
 
   /* --------------------------------------------------------------------------
@@ -111,11 +106,25 @@ const { eyebrow, lines, as: As = 'h1' } = Astro.props;
    * `.motion-cascade > *` utility in motion.css; we add a 100ms baseline
    * delay here so the first line lands just after the eyebrow settles.
    *
+   * Gradient text effect lives HERE (not on .hero__title) because the cascade
+   * animation applies `transform: translate3d()` to each .hero__line, which
+   * creates a new stacking context and breaks `background-clip: text`
+   * inherited from the parent. Applying the clip per-line keeps the effect
+   * consistent before/during/after the cascade animation.
+   *
+   * The colour fallback (white) keeps the title readable wherever
+   * `background-clip: text` is not supported (Safari < 15 etc.).
+   *
    * `both` fill mode is provided by the utility; we only override the delay
    * formula to include the baseline offset.
    * ------------------------------------------------------------------------ */
   .hero__line {
     display: block;
+    color: #ffffff;
+    background: var(--gradient-text-display);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     animation-delay: calc(var(--line-index, 0) * 120ms + 100ms);
   }
 </style>
