@@ -100,9 +100,12 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
       {t('cta.contact')}
     </a>
 
+    {/* LangSwitcher hidden by user request — EN content stays in repo
+        but is not exposed in the UI. Restore by uncommenting below.
     <div class="site-header__lang">
       <LangSwitcher currentLang={currentLang} currentUrl={currentUrl} />
     </div>
+    */}
   </div>
 </header>
 
