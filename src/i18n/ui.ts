@@ -2,9 +2,9 @@
  * Diccionarios UI compartidos (ES/EN).
  *
  * - ES es el idioma por defecto (sin prefijo de URL).
- * - EN vive bajo `/en` (audiencia técnica internacional, tono profesional).
- * - ES está pensado para PYMEs LATAM/ES: tono cercano, claro, sin jerga ni
- *   formalismos vacíos. Tutea, no usa "usted".
+ * - EN vive bajo `/en` (audiencia internacional, tono profesional).
+ * - ES está pensado para PYMEs y emprendedores en España: español neutro,
+ *   tuteo (tú/tu/te), tono cercano y claro, sin tecnicismos ni jerga.
  *
  * Las claves usan dot-notation (`namespace.key`) para que el helper
  * `useTranslations` (T-13) pueda resolverlas con un único string.
@@ -46,7 +46,7 @@ export const ui = {
 
     // -- Botones / CTAs -------------------------------------------------------
     'cta.contact': 'Hablemos',
-    'cta.viewWork': 'Ver trabajos',
+    'cta.viewWork': 'Ver mi trabajo',
     'cta.viewCaseStudy': 'Ver caso de estudio',
     'cta.viewProject': 'Ver proyecto',
     'cta.viewAllWork': 'Ver todos los trabajos',
@@ -119,7 +119,7 @@ export const ui = {
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Casos de éxito',
-    'featured.sub': 'Productos en producción real con clientes activos.',
+    'featured.sub': 'Soluciones reales que están funcionando hoy en empresas de carne y hueso.',
     'featured.viewAll': 'Ver todos los proyectos →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
@@ -136,26 +136,42 @@ export const ui = {
     // -- Home: About section (T-31) -------------------------------------------
     'about.heading': 'Quién soy',
     'about.bio.p1':
-      'Soy marmibas — Ingeniero Informático por la Universidad de Valencia (ETSE). Llevo 5 años construyendo software para empresas, desde microservicios en Spring Boot en Capgemini hasta sistemas MES industriales en Devoltec.',
+      'Soy marmibas. Soy ingeniero informático y llevo 5 años desarrollando software para empresas de todos los tamaños — desde startups hasta grandes compañías.',
     'about.bio.p2':
-      'Hoy trabajo de forma independiente, ayudando a emprendedores y PYMEs a llevar sus ideas a producción. Mi foco está en SaaS multi-tenant, e-commerce, herramientas internas y todo lo que conecta personas con datos a través de software.',
+      'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
     'about.bio.p3':
-      'Si tu negocio necesita digitalizarse, automatizarse o lanzar un producto desde cero, hablemos. Trabajo remoto desde España, principalmente con clientes LATAM y europeos.',
+      'Trabajo desde España, en remoto, con clientes en cualquier ubicación. Si tienes una idea o un problema que quieres resolver, escríbeme — la primera conversación es gratis y sin compromiso.',
     'about.stats.years': 'Años de experiencia',
     'about.stats.yearsValue': '5+',
-    'about.stats.projects': 'Casos en producción',
+    'about.stats.projects': 'Proyectos en producción',
     'about.stats.projectsValue': '2+',
     'about.stats.languages': 'Idiomas',
     'about.stats.languagesValue': 'ES · EN',
     'about.cta.experience': 'Ver historia completa',
     'about.cta.contact': 'Hablemos',
 
-    // -- Home: Skills / Stack section (T-32) ---------------------------------
-    'skills.heading': 'Stack',
-    'skills.sub': 'Tecnologías con las que trabajo de forma cotidiana.',
-    'skills.category.frontend': 'Frontend',
-    'skills.category.backend': 'Backend',
-    'skills.category.data': 'Data + Infra',
+    // -- Home: Services section (Lo que hago) --------------------------------
+    'services.heading': 'Lo que hago',
+    'services.tagline':
+      'Soluciones de software a medida para hacer crecer tu negocio.',
+    'services.shop.title': 'Tiendas online',
+    'services.shop.description':
+      'Vende tus productos por internet con un sistema fácil de gestionar. Pedidos, stock, pagos seguros y envíos integrados.',
+    'services.management.title': 'Sistemas de gestión interna',
+    'services.management.description':
+      'Software a medida para llevar el control de tu negocio: clientes, presupuestos, facturas, calendario, todo en un solo lugar.',
+    'services.mobile.title': 'Aplicaciones móviles',
+    'services.mobile.description':
+      'Apps para iOS y Android para que tus empleados o clientes puedan trabajar desde el móvil donde estén.',
+    'services.automation.title': 'Automatizaciones',
+    'services.automation.description':
+      'Tareas repetitivas que hoy te quitan horas: presupuestos, emails, informes, facturación. Las hacemos automáticas.',
+    'services.web.title': 'Webs corporativas',
+    'services.web.description':
+      'Tu presencia digital lista para captar clientes: rápida, accesible, y bien posicionada en buscadores.',
+    'services.integration.title': 'Integraciones',
+    'services.integration.description':
+      'Conectamos las herramientas que ya usas (WhatsApp, email, hoja de cálculo, ERP) para que dejen de ser islas separadas.',
 
     // -- Experience page (T-35) ----------------------------------------------
     'experience.heading': 'Experiencia profesional',
@@ -204,7 +220,7 @@ export const ui = {
 
     // -- Buttons / CTAs -------------------------------------------------------
     'cta.contact': "Let's talk",
-    'cta.viewWork': 'View work',
+    'cta.viewWork': 'See my work',
     'cta.viewCaseStudy': 'View case study',
     'cta.viewProject': 'View project',
     'cta.viewAllWork': 'View all work',
@@ -277,7 +293,7 @@ export const ui = {
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Success stories',
-    'featured.sub': 'Live products in production with active clients.',
+    'featured.sub': 'Real solutions that are working today in real businesses.',
     'featured.viewAll': 'View all projects →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
@@ -294,26 +310,41 @@ export const ui = {
     // -- Home: About section (T-31) -------------------------------------------
     'about.heading': 'About me',
     'about.bio.p1':
-      "I'm marmibas — Computer Engineer from Universidad de Valencia (ETSE, Spain). 5 years of experience building software for companies, from Spring Boot microservices at Capgemini to industrial MES systems at Devoltec.",
+      "I'm marmibas. I'm a software engineer with 5 years of experience building software for companies of all sizes — from startups to large enterprises.",
     'about.bio.p2':
-      'Today I work independently, helping entrepreneurs and SMBs ship their ideas. My focus is multi-tenant SaaS, e-commerce, internal tools, and anything that connects people with data through software.',
+      'Today I work independently, helping entrepreneurs, freelancers and small businesses digitize their day-to-day. If your business has repetitive tasks that consume your time, error-prone quotes, or information scattered between Excel and WhatsApp, I can help.',
     'about.bio.p3':
-      "If your business needs to digitalize, automate or launch a product from zero, let's talk. I work remotely from Spain, mostly with LATAM and European clients.",
+      'I work remotely from Spain, with clients anywhere. If you have an idea or a problem you want to solve, get in touch — the first conversation is free and no-strings-attached.',
     'about.stats.years': 'Years of experience',
     'about.stats.yearsValue': '5+',
-    'about.stats.projects': 'Live case studies',
+    'about.stats.projects': 'Live products',
     'about.stats.projectsValue': '2+',
     'about.stats.languages': 'Languages',
     'about.stats.languagesValue': 'ES · EN',
     'about.cta.experience': 'Read the full story',
     'about.cta.contact': "Let's talk",
 
-    // -- Home: Skills / Stack section (T-32) ---------------------------------
-    'skills.heading': 'Stack',
-    'skills.sub': 'Technologies I work with day-to-day.',
-    'skills.category.frontend': 'Frontend',
-    'skills.category.backend': 'Backend',
-    'skills.category.data': 'Data + Infra',
+    // -- Home: Services section (What I do) ----------------------------------
+    'services.heading': 'What I do',
+    'services.tagline': 'Custom software solutions to grow your business.',
+    'services.shop.title': 'Online stores',
+    'services.shop.description':
+      'Sell your products online with a system that is easy to manage. Orders, stock, secure payments and integrated shipping.',
+    'services.management.title': 'Internal management systems',
+    'services.management.description':
+      'Custom software to run your business: clients, quotes, invoices, calendar — all in one place.',
+    'services.mobile.title': 'Mobile applications',
+    'services.mobile.description':
+      'iOS and Android apps so your team or your customers can work from their phone, wherever they are.',
+    'services.automation.title': 'Automations',
+    'services.automation.description':
+      'Repetitive tasks that drain your hours today — quotes, emails, reports, invoicing. We make them automatic.',
+    'services.web.title': 'Corporate websites',
+    'services.web.description':
+      'Your digital presence ready to win clients: fast, accessible, and well positioned in search engines.',
+    'services.integration.title': 'Integrations',
+    'services.integration.description':
+      'We connect the tools you already use (WhatsApp, email, spreadsheets, ERP) so they stop being separate islands.',
 
     // -- Experience page (T-35) ----------------------------------------------
     'experience.heading': 'Professional experience',

@@ -1,44 +1,40 @@
 ---
 title: "Voxye"
-description: "SaaS multi-tenant para reformistas: del presupuesto al cobro, sin Word ni Excel."
+description: "La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas."
 lang: "es"
 draft: false
 featured: true
 order: 1
-tagline: "SaaS multi-tenant para reformistas — del presupuesto al cobro, sin Word ni Excel."
-client: "Cliente confidencial · sector reformas"
+tagline: "La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas."
+client: "Empresas de reformas"
 year: 2026
-role: "Software Engineer · Founder"
+role: "Diseño y desarrollo del producto"
 stack:
-  - "Angular 21"
-  - "TypeScript"
-  - "Tailwind v4"
-  - "PrimeNG"
-  - "PDFMake"
-  - "Supabase (PostgreSQL + RLS)"
-  - "Edge Functions (Deno)"
-  - "Resend"
-  - "Vercel"
-  - "Playwright"
+  - "Presupuestos"
+  - "Facturas"
+  - "Gestión de clientes"
+  - "Emails automáticos"
+  - "Multi-empresa"
+  - "PDF con tu marca"
 status: "success"
 results:
-  - "Reemplaza Word, Excel y PDFs sueltos por un único flujo: presupuesto → contrato → factura → cobro."
-  - "Documentos con identidad de marca (logo, colores, tipografía) generados desde una única plantilla configurable por empresa."
-  - "Aislamiento multi-tenant verificado por suite SQL en cada PR, no por convención."
-  - "Webhooks de email idempotentes con verificación de firma — el estado de cada envío refleja la realidad del proveedor, no una suposición optimista."
+  - "Adiós a Word, Excel y carpetas con PDFs sueltos: presupuestos, contratos y facturas en un solo sitio."
+  - "Documentos profesionales con la marca de tu empresa generados en minutos, sin pelearte con plantillas."
+  - "Cálculos automáticos sin errores: nada de fórmulas rotas ni totales mal sumados."
+  - "Cualquier empleado genera el mismo PDF impecable, con la misma identidad visual."
 metrics:
-  - label: "Tablas multi-tenant"
-    value: "24"
-    sublabel: "todas con storeId + RLS"
-  - label: "Tipos de documento"
-    value: "8"
-    sublabel: "numeración configurable"
-  - label: "Asserts SQL por PR"
-    value: "9"
-    sublabel: "aislamiento testeado"
-  - label: "Versión productiva"
-    value: "1.35"
-    sublabel: "Angular 21 + Supabase"
+  - label: "Tiempo ahorrado"
+    value: "Horas"
+    sublabel: "por presupuesto"
+  - label: "Errores de cálculo"
+    value: "Cero"
+    sublabel: "fórmulas verificadas"
+  - label: "Documentos"
+    value: "8 tipos"
+    sublabel: "presupuestos, facturas, contratos…"
+  - label: "Diseño"
+    value: "Tu marca"
+    sublabel: "siempre coherente"
 ---
 
 import Callout from '@/components/ui/Callout.astro';
@@ -46,73 +42,47 @@ import MetricsGrid from '@/components/ui/MetricsGrid.astro';
 
 ## Contexto
 
-El sector de las reformas en España es un mercado fragmentado donde la pyme manda. Una empresa con 5 a 30 empleados gestiona obra tras obra con la misma toolkit que se usaba hace veinte años: Word para los presupuestos, Excel para sumar partidas, PDFs sueltos guardados en carpetas con nombres tipo "presupuesto_garcia_v3_FINAL_FINAL". El cliente recibe documentos que no se parecen entre sí, los cálculos se hacen a mano (con los errores que eso implica), y al final del trimestre nadie puede contestar con certeza cuántos presupuestos se firmaron, cuánto está pendiente de facturar, ni qué proveedor está esperando un pedido. Voxye nace para tapar exactamente ese hueco.
+Las empresas de reformas en España son, en su gran mayoría, pequeñas: autónomos con un equipo de obreros, pymes familiares, pequeñas constructoras de barrio. El día a día se reparte entre la obra y la oficina: visitar al cliente para tomar medidas, pasar el presupuesto en Word, calcular partidas en Excel, imprimir el contrato, archivar la factura en una carpeta, llamar al proveedor para pedir material y, entre medio, atender los WhatsApps de los clientes que preguntan cómo va su reforma. Todo el papeleo gira alrededor de unas pocas herramientas que, al final, no fueron pensadas para esto.
 
 ## El problema
 
-El primer dolor es matemático. Un presupuesto de reforma tiene capítulos, partidas, mano de obra, materiales, márgenes, descuentos y un IVA que cambia según el tipo de obra. Calcular eso en Excel funciona hasta que alguien arrastra mal una celda y el total se va 800 euros sin que nadie se entere. El segundo dolor es visual: cada documento que sale al cliente cuenta una historia distinta de la empresa porque la plantilla no existe, existe una colección de plantillas que cada uno toca por su cuenta. Logos descentrados, fuentes que cambian a mitad de página, datos fiscales del ejercicio anterior. Frente a una empresa que envía un PDF impecable, la propuesta artesanal pierde antes de que alguien lea el precio.
+El primer dolor de cabeza son los presupuestos. Una reforma se compone de partidas: mano de obra, materiales, capítulos por estancia, descuentos, IVA. Calcularlo todo en Excel funciona hasta que alguien arrastra mal una celda y el total se desvía 800 euros sin que nadie se dé cuenta. Cuando el cliente recibe ese PDF con un número equivocado o un formato descuidado, no piensa "se han equivocado", piensa "esta empresa no es seria". La imagen de marca se daña antes de que se haya hablado de precio.
 
-El tercer dolor es organizativo. La documentación de una obra vive desperdigada: el presupuesto en una carpeta, el contrato firmado escaneado en otra, las facturas en una tercera, los pedidos al proveedor en un email que nadie sabe buscar. Cuando el cliente llama a los seis meses preguntando por una garantía, recuperar el histórico se convierte en un trabajo arqueológico. Y cuando aparece un cobro disputado, no hay forma rápida de demostrar que se firmó lo que se firmó.
+El segundo dolor es la dispersión. Cada documento vive en un sitio distinto: el presupuesto en Word, las facturas en Excel, los contratos firmados escaneados en otra carpeta, los pedidos al proveedor en un correo de Outlook que nadie sabe buscar y la comunicación con el cliente en WhatsApp. Cuando un cliente llama seis meses después preguntando por una garantía o por una factura, encontrar la información se convierte en una caza del tesoro. Y muchas veces, simplemente, no aparece.
 
-El cuarto dolor — y el que termina decidiendo a la mayoría — es que los productos genéricos no encajan. Los ERP grandes son caros y están pensados para industria. Los gestores de PYME generalistas no entienden la lógica de capítulos y partidas. Las herramientas verticales que existen están atadas a un único formato de documento o a una única forma de numerar las facturas. Cada empresa de reformas tiene su propia tradición — una numera los presupuestos por tienda y por año, otra por usuario, otra mezcla letras y secuencia — y forzarles un sistema rígido es renunciar a entrar en el mercado.
+El tercero es la falta de coherencia. Cada empleado hace los presupuestos a su manera: uno usa una plantilla antigua, otro la copia de un trabajo anterior y le cambia los datos, otro empieza desde cero. Resultado: logos descentrados, fuentes que cambian a mitad de página, datos fiscales del año pasado, condiciones legales que ya no aplican. La empresa pierde profesionalidad ante el cliente sin saberlo.
 
 ## La solución
 
-Voxye es un SaaS multi-tenant que ofrece a cada empresa de reformas todo el ciclo documental dentro de una única aplicación: presupuestos con capítulos y partidas, contratos a partir de presupuestos firmados, facturas pro forma, ordinaria y rectificativa, pedidos a proveedor, gestión de clientes, productos, proveedores, subcontratistas e incidencias en obra. La papelera, la auditoría y el módulo de admin completan la base. Cada documento que sale al cliente lo hace con la identidad de marca de la empresa: logo, paleta, tipografía, datos fiscales, condiciones legales — todo configurado una sola vez en `/admin/empresa` y aplicado de manera consistente por toda la app.
+Voxye es una aplicación que reúne en un solo sitio todo el papeleo de una empresa de reformas: presupuestos, contratos, facturas, pedidos a proveedor, fichas de cliente, productos, subcontratas e incidencias en obra. Cualquier empleado puede generar un PDF profesional con la imagen de la empresa en un par de minutos, sin abrir Word ni tocar una sola fórmula de Excel.
 
-El email es first class: cada documento puede enviarse al cliente con plantillas personalizadas, y el sistema sabe en todo momento si el correo se entregó, se abrió, rebotó o se marcó como spam, porque escucha los webhooks del proveedor. La numeración de cada tipo de documento (presupuesto, factura ordinaria, rectificativa, pedido, etc.) es configurable mediante un constructor visual con tokens — `{seq}`, `{store}`, `{user}`, `{YYYY}` — para respetar la tradición de cada cliente sin tocar código.
+El uso es sencillo a propósito: introduces los datos del cliente y los conceptos de la reforma, y la aplicación se encarga del resto. Calcula totales, IVA y descuentos sin errores, genera el PDF con tu logo y tus colores, y lo envía al cliente por email automáticamente. Lo que antes requería abrir tres programas, copiar datos a mano y rezar para no equivocarse, ahora se hace en una sola pantalla.
 
-Por debajo, todo se sostiene en una arquitectura pensada desde el día uno para multi-tenant: cada empresa es un `storeId`, y ese campo aparece en cada una de las 24 tablas del modelo. RLS de PostgreSQL hace cumplir el aislamiento, y una suite de tests SQL valida en cada pull request que ningún tenant puede leer datos de otro. No es disciplina, es contrato.
+## Cómo funciona en el día a día
 
-## Decisiones técnicas destacables
+**Presupuestos sin errores.** El primer dolor de cabeza desaparece. Introduces los conceptos, la cantidad y el precio unitario, y la aplicación calcula totales, IVA y descuentos por ti. Sin Excel rota, sin números mal sumados, sin presupuestos enviados con erratas que después hay que rectificar por teléfono.
 
-### PDF multi-tenant con identidad de marca
+**Tu marca en cada PDF.** Subes una vez tu logo, tus datos fiscales y eliges tus colores. Todos los PDFs (presupuestos, contratos, facturas, pedidos a proveedor) salen con la misma identidad visual. Profesional, coherente, reconocible. El cliente ve siempre la misma empresa, no ocho versiones distintas según quién haya preparado el documento.
 
-Generar un PDF "bonito" es fácil. Generar 8 tipos distintos de PDF, todos con la marca de la empresa que los emite, todos con la misma calidad tipográfica, sin pasar por una plantilla de Word, no lo es. Voxye usa PDFMake con fuentes embebidas (Montserrat para títulos, Roboto para cuerpo) y un servicio que toma el `CompanySettings` del tenant — logo, colores primarios y secundarios, datos fiscales, pie legal — y lo inyecta en cada documento. El layout se compone programáticamente, no se renderiza HTML a PDF, lo que asegura que el resultado sea idéntico a través de navegadores y sistemas operativos.
+**Todo conectado.** Un cliente acepta un presupuesto y, con un clic, se convierte en contrato. El contrato se firma y se genera la factura. La factura se cobra y todo queda registrado en el historial del cliente. Sin saltar entre Word, Excel y carpetas. Sin perder el rastro de qué se ha cobrado y qué no.
 
-La decisión de usar PDFMake en vez de Puppeteer (que era lo que sugería el README inicial) se tomó al medir tiempos de respuesta y costes de Edge Functions: lanzar un Chrome headless por documento es elegante pero caro y frágil; PDFMake corre en milisegundos y sin dependencias de red.
-
-### Orquestación de email con webhooks idempotentes
-
-Mandar un email desde el frontend es una invitación al desastre. Voxye delega cada envío a Resend a través de Edge Functions de Deno, y para cada documento mantiene su propia tabla de log de emails — son cuatro tablas paralelas, una por cada tipo de documento que se envía: presupuestos, contratos, facturas, pedidos. Cuando Resend dispara un webhook (delivered, opened, bounced, complained), una Edge Function valida la firma HMAC-SHA256, comprueba el `svix-id` contra una tabla de eventos procesados para evitar replays, y actualiza el log correspondiente.
-
-<Callout type="tip" title="Idempotencia primero">
-La mayoría de bugs de webhooks vienen de asumir que cada evento llega una vez. Resend reintenta. Las redes pierden paquetes. La regla de Voxye es simple: registrar el `svix-id` en una tabla de eventos procesados y rechazar duplicados. El estado del email es siempre el último válido, nunca el más reciente.
+<Callout type="tip" title="Para emprendedores">
+Si estás empezando con tu empresa de reformas, no necesitas inventarte plantillas en Word ni montar Excels desde cero. Voxye te da la estructura desde el primer presupuesto y crece contigo a medida que entran más clientes y más empleados.
 </Callout>
-
-### Numeración unificada con templates configurables
-
-Cada empresa de reformas tiene su propio sistema de numeración heredado. Forzarles uno nuevo es un no rotundo en la primera demo. Voxye expone en `/admin/empresa` un constructor visual de plantillas: la admin elige tokens (`{seq}`, `{store}`, `{user}`, `{YYYY}`, separadores literales) y los compone en un chip builder que muestra en vivo cómo va a quedar el siguiente número. Los 8 tipos de documento (presupuesto, contrato, factura ordinaria, factura pro forma, factura rectificativa, pedido a proveedor, etc.) tienen su propia plantilla independiente, su propio contador y su propio reset anual. La generación se hace en una sola función parametrizada, no en ocho copias.
-
-### Multi-tenant RLS nativo testeado en cada PR
-
-Hablar de multi-tenant es barato. Asegurarlo, no. Voxye declara `storeId` como columna obligatoria en sus 24 tablas, define políticas RLS de Postgres que filtran cada `select`, `insert`, `update` y `delete` por el `storeId` del usuario autenticado, y mantiene un script SQL — `multi-tenant-isolation.sql` — con 9 asserts que se ejecutan en CI por cada PR contra una base de pruebas con dos tenants. Los asserts intentan, desde el rol de un tenant, leer y modificar datos del otro. Si alguno pasa, el PR no entra.
-
-<Callout type="warning" title="RLS no se documenta, se prueba">
-Es trivial añadir una nueva tabla y olvidarse de la política RLS. La suite SQL es la red de seguridad: si alguien sube una tabla nueva sin política, el assert correspondiente falla en el primer push. La disciplina humana se rompe, los tests no.
-</Callout>
-
-### Document state machines explícitas
-
-Los documentos no son CRUDs: tienen ciclos de vida con reglas. Un presupuesto pasa de `unsigned` a `completed` a `shown` a `accepted`. Una factura ordinaria, una vez emitida, no se modifica — se rectifica con una nueva factura rectificativa. Un pedido a proveedor, una vez enviado, queda inmutable. Voxye codifica estas máquinas de estado en el modelo, no en condicionales sueltos por la UI. Cada transición tiene su validación, su trail de auditoría y su impacto sobre los documentos hijos. Un cliente que revoca la firma de un presupuesto no rompe nada: el sistema sabe que ese estado retrocede y propaga el cambio donde corresponde.
 
 <MetricsGrid metrics={[
-  { label: "Stack core", value: "Angular 21", sublabel: "Signals + standalone" },
-  { label: "Tablas multi-tenant", value: "24", sublabel: "RLS por tenant" },
-  { label: "Tipos de documento", value: "8", sublabel: "numeración configurable" },
-  { label: "Asserts SQL por PR", value: "9", sublabel: "aislamiento verificado" },
+  { label: "Tiempo ahorrado", value: "Horas", sublabel: "por presupuesto" },
+  { label: "Errores de cálculo", value: "Cero", sublabel: "fórmulas verificadas" },
+  { label: "Documentos", value: "8 tipos", sublabel: "presupuestos, facturas, contratos…" },
+  { label: "Diseño", value: "Tu marca", sublabel: "siempre coherente" },
 ]} />
 
-## Resultados e impacto
+## Resultados
 
-Voxye está en producción en versión 1.35.0 y cubre el ciclo completo de documentación que antes vivía repartido entre Word, Excel, PDFs sueltos y bandejas de correo. El impacto cualitativo es claro: la empresa deja de generar documentos artesanales y empieza a presentarse al cliente con una identidad visual consistente; los presupuestos no salen con errores de cálculo porque ya no hay celdas que arrastrar; las facturas se emiten con numeración que el cliente reconoce porque sigue su propia tradición; y la trazabilidad de los emails enviados deja de depender de "creo que lo mandé" para pasar a un log con `delivered`, `opened` y `bounced` sellados por el proveedor.
+Las empresas que usan Voxye dejan de perder tiempo en lo administrativo. Los presupuestos llegan al cliente más rápido, con mejor imagen y sin errores que después haya que corregir. Las facturas se emiten siempre con el mismo formato y la información se guarda de forma segura, así que nada se pierde por el camino.
 
-El valor real, sin inflar números, está en lo que deja de pasar: deja de aparecer la pregunta "¿cuál era la última versión del presupuesto?", deja de discutirse si un email llegó o no, deja de existir el riesgo de que un nuevo empleado abra un Excel viejo y pise una factura. Y para mí como builder, el valor es haber demostrado que se puede entregar un SaaS multi-tenant con disciplina de tests reales — RLS verificado, webhooks idempotentes, máquinas de estado explícitas — sin que el coste de mantenimiento se dispare.
-
-## Stack completo
-
-Frontend en Angular 21.1.1 con Signals, standalone components y el control flow moderno (`@if`, `@for`); UI con PrimeNG 21 sobre Tailwind v4; tests unitarios con Vitest. Backend en Supabase: PostgreSQL con RLS multi-tenant, Auth con roles (`superadmin`, `admin`, `user`), Edge Functions en Deno para email, webhooks y tareas con secretos. Email transaccional con Resend 4 y webhooks firmados (HMAC-SHA256 + `svix` anti-replay). PDFs con PDFMake 0.2.20 y fuentes embebidas. Despliegue dual en Vercel (entornos `develop` y `main`), con `db push` automático vía GitHub Actions cuando se mergea a `main`. Landing en repo separado en Astro 6. E2E externo con Playwright 1.58.
+Y como todo queda guardado en un solo sitio, encontrar un presupuesto de hace seis meses lleva dos segundos en lugar de media hora revolviendo carpetas. La empresa se presenta mejor ante el cliente y, por dentro, el equipo trabaja más tranquilo.
 
 ## Próximos pasos
 
-El siguiente bloque grande del roadmap es una vista para los clientes finales — los propietarios de la obra — para que puedan seguir el avance de la reforma sin depender de llamadas, fotos por WhatsApp o PDFs adjuntos. La idea es que el cliente entre con un enlace firmado, vea el presupuesto vigente, el contrato, las facturas emitidas, los pedidos al proveedor que afectan a su obra, y un timeline de hitos con fotos. Para la empresa de reformas eso significa menos llamadas para "actualizar" y un canal único donde la información ya vive. Para el cliente significa dejar de sentir que su reforma es una caja negra hasta el día que llega la factura.
+Próximamente, Voxye tendrá vista para clientes: tus clientes podrán entrar y seguir el avance de su reforma sin tener que llamarte para preguntar. Menos llamadas, más confianza, y un canal único donde la información ya vive.

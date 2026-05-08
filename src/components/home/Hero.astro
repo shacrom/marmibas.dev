@@ -23,10 +23,10 @@
  *   - Reduced-motion is neutralised by `motion.css` (single source).
  *
  * CTAs:
- *   - Primary: localized "Hablemos" / "Let's talk" → /contacto | /en/contact.
+ *   - Primary: localized "Ver mi trabajo" / "See my work" → /trabajos | /en/work.
  *     Uses `--gradient-cta` background, `--shadow-glow` on focus, gradient
  *     shift on hover (DESIGN.md §3 + §8).
- *   - Secondary: localized "Ver trabajos" / "View work" → /trabajos | /en/work.
+ *   - Secondary: localized "Hablemos" / "Let's talk" → /contacto | /en/contact.
  *     Outline 1px `--border`, transparent bg. Hover lifts to `--accent-400`.
  *
  * i18n:
@@ -58,19 +58,20 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 // --- Hero copy (per-locale) ------------------------------------------------
-// Tone: ES tutea (PYMEs LATAM/ES, cercano, claro). EN equivalent.
-// 4 lines for an extra beat of cascade — lands ~580ms total, still tight.
+// Tone: ES neutro de España, tuteo (audiencia PYMEs y emprendedores sin
+// conocimientos técnicos). EN equivalente profesional internacional.
+// 3 lines for a tighter cascade — lands ~460ms total, snappier than 4.
 const heroLines: Record<Language, string[]> = {
-  es: ['Construyo', 'software', 'que tu negocio', 'necesita.'],
-  en: ['I build', 'software', 'your business', 'needs.'],
+  es: ['Software', 'que hace crecer', 'tu negocio.'],
+  en: ['Software', 'that grows', 'your business.'],
 };
 
 const tagline: Record<Language, string> = {
-  es: 'Ingeniero Informático full stack. Diseño y construyo SaaS, e-commerce y herramientas internas para emprendedores y PYMEs en España y LATAM.',
-  en: 'Full stack software engineer. I design and build SaaS, e-commerce and internal tools for entrepreneurs and SMBs in Spain and LATAM.',
+  es: 'Ayudo a empresas y emprendedores a digitalizar su trabajo: desde tiendas online hasta sistemas de gestión a medida. Menos Word y Excel, más tiempo para lo importante.',
+  en: 'I help companies and entrepreneurs digitize their work: from online stores to custom management systems. Less Word and Excel, more time for what matters.',
 };
 
-const eyebrow = 'Marmibas · marmibas.dev';
+const eyebrow = 'marmibas · marmibas.dev';
 
 const lines = heroLines[lang];
 const subhead = tagline[lang];
@@ -91,11 +92,11 @@ const workHref = getRoutePath('work', lang);
     </p>
 
     <div class="hero__ctas motion-reveal-on-scroll is-visible">
-      <a class="cta cta--primary" href={contactHref}>
-        {t('cta.contact')}
-      </a>
-      <a class="cta cta--secondary" href={workHref}>
+      <a class="cta cta--primary" href={workHref}>
         {t('cta.viewWork')}
+      </a>
+      <a class="cta cta--secondary" href={contactHref}>
+        {t('cta.contact')}
       </a>
     </div>
   </div>

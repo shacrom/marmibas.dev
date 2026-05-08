@@ -1,6 +1,6 @@
 ---
 title: "Devoltec · Software Engineer · MES"
-description: "Desarrollo de un MES (Manufacturing Execution System) genérico para distintas industrias: gestión de procesos, órdenes, máquinas y sensores en tiempo real."
+description: "Software para fábricas industriales que conecta máquinas, operarios y materiales en tiempo real."
 lang: es
 draft: false
 featured: false
@@ -11,7 +11,7 @@ period: "Jul 2024 — Mar 2026"
 startDate: "2024-07-01"
 endDate: "2026-03-01"
 current: false
-summary: "Diseño y desarrollo de un MES genérico parametrizable por industria, con seguimiento de procesos, órdenes, máquinas y sensores en tiempo real."
+summary: "Desarrollo de un MES (sistema de gestión de procesos en fábricas) parametrizable para distintas industrias, con seguimiento de procesos, máquinas y sensores en tiempo real."
 stack:
   - "Angular"
   - "TypeScript"
@@ -20,8 +20,8 @@ stack:
 location: "España"
 ---
 
-En Devoltec trabajé en el desarrollo de un MES (Manufacturing Execution System) concebido como un producto genérico, capaz de adaptarse a industrias muy distintas — desde la fabricación de bolsas hasta la producción de señalización. La idea de fondo era construir un núcleo común lo bastante flexible como para modelar el día a día de cualquier planta sin tener que reescribir el sistema cada vez.
+En Devoltec trabajé en el desarrollo de un MES (Manufacturing Execution System), un software para fábricas industriales que conecta máquinas, operarios y materiales en tiempo real. La idea era construir un producto suficientemente flexible como para adaptarse a industrias muy distintas, desde la fabricación de bolsas hasta la producción de señalización, sin tener que reescribirlo cada vez.
 
-El sistema gira alrededor del trabajo en planta: definición de procesos, creación de órdenes con sus procesos asignados, asignación de máquinas y materias primas, e ingesta de datos de sensores en tiempo real. A eso se suma el control de operarios — quién está en cada puesto, qué tarea está ejecutando y con qué consumos —, lo que permite cerrar el bucle entre lo planificado y lo que realmente ocurre en la línea.
+El sistema gira en torno al trabajo en planta: se definen los procesos productivos, se crean órdenes de fabricación, se asignan las máquinas y materias primas, y se reciben datos directamente de los sensores para saber qué está pasando en cada línea. A todo eso se suma el control de operarios: quién está en cada puesto, qué tarea está ejecutando y con qué consumos. Esto permite cerrar el círculo entre lo que se planificó y lo que ocurre realmente sobre la línea de producción.
 
-Trabajé tanto en el frontend Angular como en los servicios NestJS y el modelo de datos en PostgreSQL, con foco en mantener el dominio limpio y la trazabilidad de cada orden, máquina y operario a lo largo del proceso productivo.
+Trabajé en el desarrollo del sistema completo: desde la interfaz Angular que usan los operarios hasta los servicios NestJS que reciben los datos de los sensores y la base de datos PostgreSQL donde se guarda toda la trazabilidad de cada orden, máquina y operario.

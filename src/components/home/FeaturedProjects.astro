@@ -77,11 +77,14 @@ const featuredCases = [
     title: 'Voxye',
     tagline:
       lang === 'es'
-        ? 'SaaS multi-tenant para reformistas — del presupuesto al cobro, sin Word ni Excel.'
-        : 'Multi-tenant SaaS for renovators — from quote to invoice, no Word or Excel.',
-    client: lang === 'es' ? 'Reformistas' : 'Renovation pros',
+        ? 'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.'
+        : 'The application that replaces Word and Excel for quotes and invoices in renovation companies. Fewer errors, more time, all branded with your identity.',
+    client: lang === 'es' ? 'Empresas de reformas' : 'Renovation companies',
     year: 2026,
-    stack: ['Angular 21', 'Tailwind v4', 'Supabase', 'Resend', 'Edge Functions'],
+    stack:
+      lang === 'es'
+        ? ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos']
+        : ['Quotes', 'Invoices', 'Client management', 'Automated emails'],
     href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
   },
   {
@@ -89,11 +92,14 @@ const featuredCases = [
     title: 'Recetas Novatex',
     tagline:
       lang === 'es'
-        ? 'Libreta digital para parámetros de máquinas RAMs — knowledge transfer en industria textil.'
-        : 'Digital notebook for textile RAM machine parameters — preserving expert knowledge.',
+        ? 'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.'
+        : 'A digital notebook that replaces paper logs where machine settings are written down. The know-how of your best employees, preserved forever.',
     client: lang === 'es' ? 'Industria textil' : 'Textile industry',
     year: 2025,
-    stack: ['Angular', 'Supabase', 'Tailwind'],
+    stack:
+      lang === 'es'
+        ? ['Industria textil', 'Móvil', 'Búsqueda rápida', 'Multi-empresa']
+        : ['Textile industry', 'Mobile', 'Fast search', 'Multi-company'],
     href: lang === 'es' ? '/case-studies/recetas-novatex' : '/en/case-studies/recetas-novatex',
   },
 ];

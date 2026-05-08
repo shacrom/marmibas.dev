@@ -1,0 +1,346 @@
+---
+/**
+ * ServicesSection.astro — "Lo que hago" / "What I do" section for the home page.
+ *
+ * Replaces the previous SkillsSection (technical stack) with a customer-facing
+ * snapshot of the concrete services offered to non-technical clients (PYMEs,
+ * emprendedores). The shape mirrors the original section visually (heading +
+ * subheading + grid of cards) but trades tech badges for service descriptions
+ * paired with minimal Lucide-style inline SVG icons.
+ *
+ * Visual anchors (DESIGN.md):
+ * - §5 spacing rhythm: 96-128px vertical between sections (mobile / desktop).
+ * - §4 typography: Fraunces 600 (~39px / `--text-3xl`) for the section heading,
+ *   Fraunces 600 at `--text-xl` for each card title, `--text-base` Inter body
+ *   in `--text-2` for descriptions.
+ * - §8 card treatment: subtle background using
+ *   `color-mix(in oklch, var(--color-bg-1) 50%, transparent)` so the surface
+ *   sits on top of the page background without fighting the hero gradient.
+ *
+ * Behaviour notes:
+ * - Pure server-rendered. No client JS — the cascade animation is handled by
+ *   the `<Reveal>` wrapper which already honours reduced-motion.
+ * - The services list is intentionally inline (vs. a collection): the catalogue
+ *   changes rarely and the section never paginates or filters. Adding a new
+ *   service = a one-line edit here plus matching keys in `src/i18n/ui.ts`.
+ * - Icons are inlined SVGs (Lucide-style, stroke-width 1.5, currentColor) so
+ *   they tint with `--color-accent-400` via the parent rule and don't add an
+ *   extra HTTP request or runtime dependency.
+ */
+
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+import Reveal from '../ui/Reveal.astro';
+
+export interface Props {
+  /** Active language. Drives heading + subheading + service copy. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+/**
+ * Service catalogue. Order is intentional — most common requests first.
+ * Each entry's `iconName` keys into the inline SVG switch below.
+ */
+const services = [
+  {
+    key: 'shop',
+    iconName: 'shopping-bag',
+    title: t('services.shop.title'),
+    description: t('services.shop.description'),
+  },
+  {
+    key: 'management',
+    iconName: 'layout-dashboard',
+    title: t('services.management.title'),
+    description: t('services.management.description'),
+  },
+  {
+    key: 'mobile',
+    iconName: 'smartphone',
+    title: t('services.mobile.title'),
+    description: t('services.mobile.description'),
+  },
+  {
+    key: 'automation',
+    iconName: 'zap',
+    title: t('services.automation.title'),
+    description: t('services.automation.description'),
+  },
+  {
+    key: 'web',
+    iconName: 'globe',
+    title: t('services.web.title'),
+    description: t('services.web.description'),
+  },
+  {
+    key: 'integration',
+    iconName: 'plug-zap',
+    title: t('services.integration.title'),
+    description: t('services.integration.description'),
+  },
+] as const;
+---
+
+<Reveal as="section" class="services" aria-labelledby="services-heading">
+  <div class="services__inner">
+    <header class="services__header">
+      <h2 id="services-heading" class="services__heading font-display">
+        {t('services.heading')}
+      </h2>
+      <p class="services__sub">{t('services.tagline')}</p>
+    </header>
+
+    <ul class="services__grid" role="list">
+      {
+        services.map((service) => (
+          <li class="services__card">
+            <span class="services__icon" aria-hidden="true">
+              {service.iconName === 'shopping-bag' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+              )}
+              {service.iconName === 'layout-dashboard' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="7" height="9" x="3" y="3" rx="1" />
+                  <rect width="7" height="5" x="14" y="3" rx="1" />
+                  <rect width="7" height="9" x="14" y="12" rx="1" />
+                  <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>
+              )}
+              {service.iconName === 'smartphone' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                  <path d="M12 18h.01" />
+                </svg>
+              )}
+              {service.iconName === 'zap' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+                </svg>
+              )}
+              {service.iconName === 'globe' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                  <path d="M2 12h20" />
+                </svg>
+              )}
+              {service.iconName === 'plug-zap' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z" />
+                  <path d="m2 22 3-3" />
+                  <path d="M7.5 13.5 10 11" />
+                  <path d="M10.5 16.5 13 14" />
+                  <path d="m18 3-4 4h6l-4 4" />
+                </svg>
+              )}
+            </span>
+            <h3 class="services__card-title font-display">{service.title}</h3>
+            <p class="services__card-description">{service.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Reveal>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Section shell. Vertical rhythm matches DESIGN.md §5: 128px desktop /
+   * 96px mobile. The `--container` width matches the home grid (1080px) so
+   * this section aligns with hero + featured projects + about.
+   * ------------------------------------------------------------------------ */
+  .services {
+    padding-block: 96px;
+  }
+
+  @media (min-width: 768px) {
+    .services {
+      padding-block: 128px;
+    }
+  }
+
+  .services__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 5vw, 32px);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Header: heading uses Fraunces 600 at `--text-3xl` (~39px). Subheading is
+   * plain body (Inter `--text-base`, `--text-2`), secondary in the hierarchy.
+   * `text-wrap: balance` (already global) keeps short headings even.
+   * ------------------------------------------------------------------------ */
+  .services__header {
+    margin-bottom: 48px;
+    max-width: 640px;
+  }
+
+  .services__heading {
+    margin: 0 0 16px;
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
+  }
+
+  .services__sub {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-2);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Card grid. 1 column mobile / 2 columns at md / 3 columns at lg with the
+   * larger 32px gap reserved for ≥md breakpoints. Mobile keeps 24px to avoid
+   * the stack feeling cramped while still rhythming with the section padding.
+   * ------------------------------------------------------------------------ */
+  .services__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 768px) {
+    .services__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .services__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Service card. Subtle background mirrors the previous skills card recipe
+   * to keep visual continuity. 28px padding on mobile, 32px on md+ matches
+   * the brief's 28-32px range and the spacing rhythm of neighbouring cards.
+   * ------------------------------------------------------------------------ */
+  .services__card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 28px;
+    background: color-mix(in oklch, var(--color-bg-1) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  @media (min-width: 768px) {
+    .services__card {
+      padding: 32px;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Icon. Lucide-style stroke 1.5 SVG inheriting `--color-accent-400` via
+   * `currentColor`. The wrapper sets the colour and a small block size so the
+   * icon doesn't shift the title baseline when fonts swap in.
+   * ------------------------------------------------------------------------ */
+  .services__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--color-accent-400);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Card title. Fraunces 600, slightly larger than body to anchor each card.
+   * Tight line-height keeps two-line titles compact.
+   * ------------------------------------------------------------------------ */
+  .services__card-title {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Card description. Inter body in the muted text colour so the title
+   * remains the primary visual anchor inside each card.
+   * ------------------------------------------------------------------------ */
+  .services__card-description {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-2);
+  }
+</style>

@@ -1,72 +1,69 @@
 ---
 title: "Recetas Novatex"
-description: "Libreta digital para parámetros de máquinas RAMs en industria textil — preserva el conocimiento de planta antes de que se jubile con sus operarios."
+description: "Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas, para que el conocimiento de tus mejores empleados quede guardado para siempre."
 lang: "es"
 draft: false
 featured: true
 order: 2
-tagline: "Libreta digital para parámetros de máquinas RAMs — knowledge transfer en industria textil."
-client: "Industria textil — empresa cliente"
+tagline: "Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre."
+client: "Empresa textil — sector industrial"
 year: 2025
-role: "Software Engineer"
+role: "Diseño y desarrollo del producto"
 stack:
-  - "Angular"
-  - "TypeScript"
-  - "Tailwind"
-  - "Supabase"
-  - "PostgreSQL"
+  - "Industria textil"
+  - "Móvil"
+  - "Búsqueda rápida"
+  - "Multi-empresa"
+  - "Histórico de cambios"
 status: "success"
 ---
 
+import Callout from '@/components/ui/Callout.astro';
+import MetricsGrid from '@/components/ui/MetricsGrid.astro';
+
 ## Contexto
 
-En una planta textil de las que llevan décadas funcionando, las máquinas RAMs son el corazón del acabado: estiran, secan y fijan el tejido a temperaturas y velocidades muy específicas. Cada cliente tiene sus exigencias, cada artículo tiene su receta, y cada receta es un equilibrio fino entre temperatura por zonas, velocidad de paso, tensión y tiempo de permanencia. Ese saber rara vez está escrito de forma sistemática: vive en libretas, en papelitos pegados al cuadro de mandos y, sobre todo, en la cabeza de los operarios que llevan veinte o treinta años en la planta.
+En una fábrica textil, las máquinas industriales no funcionan solas: necesitan que alguien les diga a qué temperatura trabajar, a qué velocidad pasar la tela y cómo configurarse para cada cliente y cada tipo de tejido. Cada producto pide unos ajustes distintos, y dar con los correctos es la diferencia entre una tela bien acabada y un lote echado a perder. Ese saber, durante décadas, ha vivido en la cabeza de los operarios con más años de oficio, los que conocen cada máquina y cada cliente como la palma de su mano.
 
 ## El problema
 
-La libreta es un sistema que funciona hasta que deja de funcionar. Mientras el operario que la escribió esté ahí para interpretarla, todo bien: él sabe que ese "85" en una columna sin etiqueta es la temperatura de la zona 3, y que la receta de cierto cliente cambió hace dos meses pero el cambio se anotó en otra libreta. El conocimiento existe, pero está cifrado en convenciones tribales que nadie documentó nunca.
+Cada operario lleva su propia libreta. En ella apunta a mano los ajustes que necesita la máquina para cada cliente y cada tela: temperatura, velocidad, configuración. Es su herramienta de trabajo más valiosa, y también la más frágil. Se mancha, se moja, se pierde, se gasta. Y nadie más que él sabe interpretar lo que hay escrito dentro.
 
-El problema real no es la libreta — es lo que pasa cuando esa persona se jubila, se enferma o simplemente libra. La planta queda con un libro de recetas que nadie más sabe leer, los relevos jóvenes reaprenden por ensayo y error, y cada artículo nuevo arranca con tela quemada o lotes fuera de especificación hasta que alguien encuentra el punto. La transmisión generacional, que durante décadas fue el mecanismo natural de la industria, se rompe cuando los más jóvenes ya no entran a quedarse veinte años.
+El problema serio llega cuando un operario con treinta años de experiencia se jubila. Su libreta se va con él. La empresa pierde de golpe un conocimiento que tardó décadas en construirse, y los nuevos empleados tienen que empezar prácticamente de cero. Es una sangría silenciosa que muchas fábricas ni siquiera ven venir hasta que es tarde.
+
+Y luego está el día a día. En plena jornada de producción, parar una máquina para llamar al jefe y preguntar "qué temperatura le pongo a este pedido" es perder dinero. Cada minuto de máquina parada cuenta.
 
 ## La solución
 
-Recetas Novatex es la libreta de toda la vida, pero desbloqueada del cuaderno y de la memoria del operario que la escribió. La aplicación permite buscar por cliente, encontrar el artículo y consultar los parámetros exactos que hay que cargar en la máquina antes de arrancar la producción. Lo importante no es que sea digital — es que el conocimiento deja de depender de una sola persona para vivir en un lugar que cualquier turno puede consultar.
+Recetas Novatex es una aplicación móvil que cualquier operario puede usar desde su teléfono. Busca el cliente, busca el producto, y aparecen en pantalla los ajustes exactos que tiene que poner en la máquina. En segundos. Sin libretas, sin llamadas, sin esperar a que llegue alguien con más experiencia.
 
-El flujo de uso es deliberadamente simple, porque la herramienta entra en una planta donde la pantalla compite con el ruido, la prisa y manos no siempre limpias. El operario abre la app desde un dispositivo cerca de la máquina, busca el cliente, elige el artículo y ve la receta lista para cargar. Las recetas que se actualizan quedan registradas con quién las cambió y cuándo, así que la trazabilidad deja de depender de descifrar caligrafías ajenas.
+Y cuando un operario quiere actualizar un ajuste —porque ha descubierto algo mejor, porque ha cambiado la materia prima o porque el cliente ha modificado sus exigencias— lo registra desde la propia app. Ese conocimiento ya no se pierde: queda guardado para siempre y al instante está disponible para todos sus compañeros, en todos los turnos.
 
-El cambio de fondo es de dependencia: antes el conocimiento dependía de quién estaba en planta ese día; ahora la planta depende de un sistema que cualquiera puede consultar. Eso no reemplaza la experiencia del operario veterano — la pone disponible, replicable y enseñable.
+## Cómo funciona en el día a día
 
-## Decisiones técnicas
+**Buscar y aplicar.** El operario llega a la máquina, abre la app en el móvil, busca el cliente y el producto, y ve los ajustes en pantalla. Los introduce en la máquina y empieza a producir. Sin esperar, sin llamar, sin libretas.
 
-### Supabase como backend, RLS por empresa cliente
+**Registrar y compartir.** Cuando alguien encuentra una mejora —un ajuste que da mejor calidad o ahorra tiempo—, la guarda en la app. Al instante, todo el equipo tiene acceso a esa mejora.
 
-El proyecto se montó sobre Supabase porque el dominio se modelaba bien con Postgres y porque el equipo necesitaba avanzar rápido sin armar infraestructura de auth, storage y API desde cero. Las recetas son datos sensibles — son parte del know-how productivo del cliente — así que el aislamiento entre tenants se resolvió con Row Level Security a nivel de tabla: cada empresa solo ve sus propias recetas, sus propios artículos y sus propios clientes, y el modelo permite escalar a más plantas sin tocar la lógica de negocio.
-
-### Angular para una UI funcional sobre robusta
-
-La elección de Angular en frontend respondió a dos cosas: el equipo lo dominaba y la app necesitaba estructura clara, no animaciones llamativas. El usuario final no quiere descubrir la interfaz — quiere encontrar el dato y volver a la máquina. Formularios consistentes, navegación predecible y vistas que cargan rápido le ganaron a cualquier ambición visual.
-
-### Búsqueda fuzzy de cliente y artículo
-
-Los nombres de cliente y artículo en planta no siempre coinciden con cómo están registrados: hay siglas, abreviaturas, variantes con guión y sin guión. Implementar búsqueda fuzzy con tolerancia a tipos y orden de palabras fue una de las decisiones que más fricción quitó del uso diario. El operario tipea lo primero que se le viene a la cabeza y el resultado aparece igual.
-
-### Histórico y trazabilidad de cambios
-
-Cada receta guarda versiones: quién la editó, cuándo, qué parámetro cambió. No es una feature vistosa, pero es la que convierte la app en una herramienta que un encargado puede defender frente a una auditoría o frente a un reclamo de cliente. La libreta no podía hacer eso.
-
-## Impacto
-
-El sistema entró en producción y reemplazó las libretas físicas como fuente de verdad para los parámetros de máquina. El cambio en la operación diaria es más sutil de lo que parece: los operarios jóvenes tienen ahora un punto de partida sólido para cada artículo que arranca, los veteranos pueden dejar el conocimiento en un lugar que sobrevive a su turno, y los encargados ganan visibilidad sobre qué se está produciendo y con qué configuración.
-
-Más allá de la velocidad — que sí, es más rápido buscar en la app que en una libreta —, el impacto real es de continuidad. Una jubilación dejó de ser un evento que pone en riesgo la calidad del producto. Eso es lo que el cliente compró cuando arrancó el proyecto, y eso es lo que el sistema entrega todos los días.
+**Conocimiento que no se pierde.** Cuando un operario se jubila, su cuaderno ya no se va con él. Todo lo que sabía está dentro de la aplicación, listo para que el siguiente lo aproveche desde el primer día.
 
 <MetricsGrid metrics={[
-  { label: "Aislamiento", value: "Multi-tenant", sublabel: "RLS por empresa cliente" },
-  { label: "Búsqueda", value: "<500ms", sublabel: "Fuzzy sobre cliente y artículo" },
-  { label: "Acceso", value: "Mobile-first", sublabel: "Pensado para uso en planta" },
-  { label: "Trazabilidad", value: "Histórico", sublabel: "Versiones por receta" }
+  { label: "Acceso", value: "Móvil", sublabel: "desde cualquier máquina" },
+  { label: "Búsqueda", value: "Segundos", sublabel: "cliente + producto" },
+  { label: "Histórico", value: "Completo", sublabel: "cada cambio queda guardado" },
+  { label: "Equipos", value: "Conectados", sublabel: "todos al mismo conocimiento" },
 ]} />
+
+## Resultados
+
+La fábrica deja de depender de cuadernos físicos y de la memoria individual de cada operario. El conocimiento que tardó años en construirse queda protegido y accesible para cualquier empleado autorizado, desde el móvil, en cualquier momento.
+
+Y los operarios nuevos se incorporan mucho más rápido. Ya no hacen falta seis meses de aprendizaje al lado de un veterano para empezar a producir con seguridad: la información está ahí, en la app, lista para consultar.
+
+<Callout type="tip" title="Para gerentes de producción">
+Si tu equipo aún apunta los ajustes de máquina en cuadernos, estás a un paso de perder ese conocimiento. Empezar a digitalizarlo hoy es proteger tu fábrica.
+</Callout>
 
 ## Próximos pasos
 
-La hoja de ruta que se discute con el cliente apunta a cerrar el bucle entre la receta cargada y lo que efectivamente pasó en la máquina: alertas cuando un parámetro real se aleja de la receta, históricos de producción cruzados con receta usada para detectar derivas y, eventualmente, una capa de sugerencias basada en lo que funcionó bien con artículos similares. La idea no es automatizar la decisión del operario — es darle más contexto antes de tomarla.
+Próximamente, la aplicación incorporará alertas automáticas cuando un cliente cambie sus especificaciones, e informes mensuales que comparen producciones por cliente y producto. Más control, menos sorpresas.
