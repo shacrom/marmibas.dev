@@ -4,13 +4,8 @@
  *
  * Carga `getCollection('experience', e => e.data.lang === 'es')`, ordena por
  * `order` ascendente (1 = más reciente) y renderiza cada entrada como una card
- * con su Pill, título (company · role), period, stack como TechBadges y body
- * MD renderizado dentro de Prose.
- *
- * Disclaimer (Callout info) arriba: aclara que las empresas listadas son
- * empleadores anteriores; hoy trabajo de forma independiente. Esto es la única
- * concesión a la doble identidad ("hoy soy independiente" + "antes estuve en
- * estas empresas") sin contaminar cada card con un disclaimer per-entry.
+ * con período, título (company · role), stack como TechBadges y body MD
+ * renderizado dentro de Prose.
  *
  * Sección de educación al final, hardcoded en `ui.ts` (no es content
  * collection): Grado en Ingeniería Informática · ETSE Universidad de Valencia
@@ -29,8 +24,6 @@
 
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Callout from '../../components/ui/Callout.astro';
-import Pill from '../../components/ui/Pill.astro';
 import TechBadge from '../../components/ui/TechBadge.astro';
 import Prose from '../../components/ui/Prose.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
@@ -77,20 +70,13 @@ const items = await Promise.all(
       <p class="experience__tagline">{t('experience.tagline')}</p>
     </header>
 
-    <div class="experience__disclaimer">
-      <Callout type="info">{t('experience.disclaimer')}</Callout>
-    </div>
-
     <ol class="timeline" role="list">
       {
         items.map(({ entry, Content }) => (
           <li class="timeline__item">
             <span class="timeline__dot" aria-hidden="true" />
             <article class="timeline__card">
-              <header class="timeline__card-header">
-                <Pill status="prev-experience" lang={lang} />
-                <p class="timeline__period font-mono">{entry.data.period}</p>
-              </header>
+              <p class="timeline__period font-mono">{entry.data.period}</p>
 
               <h2 class="timeline__heading font-display">
                 <span class="timeline__company">{entry.data.company}</span>
@@ -179,12 +165,6 @@ const items = await Promise.all(
     margin: 0;
   }
 
-  .experience__disclaimer {
-    max-width: 720px;
-    margin-inline: auto;
-    margin-bottom: 48px;
-  }
-
   /* --- Timeline ---------------------------------------------------------- */
   .timeline {
     list-style: none;
@@ -243,14 +223,6 @@ const items = await Promise.all(
     display: flex;
     flex-direction: column;
     gap: 14px;
-  }
-
-  .timeline__card-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-    justify-content: space-between;
   }
 
   .timeline__period {
