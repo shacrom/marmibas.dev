@@ -1,0 +1,308 @@
+---
+/**
+ * /servicios — índice de servicios (ES) — landing principal del catálogo.
+ *
+ * Lista las 6 landings dedicadas con cards pequeñas y enlaza a cada una.
+ * Audiencia: PYMEs y emprendedores buscando "qué puede hacer marmibas
+ * por mi negocio".
+ *
+ * Tono: ES neutro de España, tuteo (tú/tu/te).
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const services = [
+  {
+    slug: 'tiendas-online',
+    title: 'Tiendas online a medida',
+    description:
+      'E-commerce con pasarelas de pago, stock, envíos y panel propio para vender sin pelearte con plantillas.',
+    keyword: 'E-commerce',
+  },
+  {
+    slug: 'sistemas-de-gestion',
+    title: 'Sistemas de gestión',
+    description:
+      'Software interno para llevar clientes, presupuestos, facturas y calendario en un único sitio.',
+    keyword: 'Backoffice',
+  },
+  {
+    slug: 'aplicaciones-moviles',
+    title: 'Aplicaciones móviles',
+    description:
+      'Apps iOS y Android para empleados o clientes, con publicación en stores incluida.',
+    keyword: 'Mobile',
+  },
+  {
+    slug: 'automatizaciones',
+    title: 'Automatizaciones',
+    description:
+      'Tareas repetitivas que se ejecutan solas: presupuestos, emails, informes, facturación.',
+    keyword: 'Procesos',
+  },
+  {
+    slug: 'webs-corporativas',
+    title: 'Webs corporativas',
+    description:
+      'Webs rápidas, accesibles y bien posicionadas en buscadores, sin plantillas genéricas.',
+    keyword: 'Web',
+  },
+  {
+    slug: 'integraciones',
+    title: 'Integraciones',
+    description:
+      'Conexiones entre WhatsApp, ERP, hojas de cálculo, email y demás herramientas que ya usas.',
+    keyword: 'Conexión',
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Servicios — Software a medida para empresas | marmibas.dev"
+  description="Tiendas online, sistemas de gestión, apps móviles, automatizaciones, webs corporativas e integraciones a medida. Software pensado para PYMEs y emprendedores."
+>
+  <section class="srv-index-hero" aria-labelledby="srv-index-title">
+    <div class="srv-index-hero__ambient" aria-hidden="true"></div>
+    <div class="srv-index-hero__inner">
+      <p class="srv-index-hero__eyebrow font-mono">marmibas · servicios</p>
+      <h1 id="srv-index-title" class="srv-index-hero__title font-display">
+        Lo que puedo hacer por tu negocio
+      </h1>
+      <p class="srv-index-hero__tagline">
+        Seis líneas de trabajo enfocadas a un único objetivo: que el software
+        te ahorre horas, te traiga clientes o te ordene la operativa. Sin
+        jerga técnica, sin plantillas genéricas.
+      </p>
+    </div>
+  </section>
+
+  <section class="srv-index" aria-labelledby="srv-index-grid-title">
+    <h2 id="srv-index-grid-title" class="sr-only">Catálogo de servicios</h2>
+    <div class="srv-index__inner">
+      <ul class="srv-index__grid" role="list">
+        {
+          services.map((s) => (
+            <li class="srv-index__card">
+              <a class="srv-index__link" href={`/servicios/${s.slug}`}>
+                <span class="srv-index__keyword font-mono">{s.keyword}</span>
+                <h3 class="srv-index__title font-display">{s.title}</h3>
+                <p class="srv-index__desc">{s.description}</p>
+                <span class="srv-index__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="srv-index-final" aria-labelledby="srv-index-final-title">
+    <div class="srv-index-final__inner">
+      <h2 id="srv-index-final-title" class="srv-index-final__title font-display">
+        ¿No ves lo que necesitas? Hablemos →
+      </h2>
+      <p class="srv-index-final__sub">
+        Si tu proyecto encaja a medio camino entre dos servicios, o no encaja
+        en ninguno, cuéntamelo igualmente. Lo más útil suele ser empezar por
+        una llamada para entender el problema antes de etiquetarlo.
+      </p>
+      <a class="srv-cta srv-cta--primary" href="/contacto">Hablemos</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --- Hero ----------------------------------------------------------- */
+  .srv-index-hero {
+    position: relative;
+    isolation: isolate;
+    padding-block: clamp(72px, 10vw, 120px) clamp(48px, 7vw, 80px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+  .srv-index-hero__ambient {
+    position: absolute;
+    inset: -40px -10vw auto -10vw;
+    height: 520px;
+    background: var(--gradient-hero-ambient);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .srv-index-hero__inner { max-width: 760px; }
+  .srv-index-hero__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 16px;
+  }
+  .srv-index-hero__title {
+    font-size: clamp(2.6rem, 6vw + 0.6rem, 3.8rem);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+  }
+  .srv-index-hero__tagline {
+    margin-top: 18px;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    max-width: 660px;
+  }
+
+  /* --- CTA shared ----------------------------------------------------- */
+  .srv-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+  .srv-cta--primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    background-size: 200% 200%;
+    border: 1px solid transparent;
+  }
+  .srv-cta--primary:hover,
+  .srv-cta--primary:focus-visible {
+    background: var(--gradient-cta-hover);
+    background-position: 100% 50%;
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* --- Grid ----------------------------------------------------------- */
+  .srv-index {
+    padding-block: clamp(48px, 8vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+  .srv-index__inner { max-width: 1080px; margin-inline: auto; }
+
+  .srv-index__grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 720px) {
+    .srv-index__grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1000px) {
+    .srv-index__grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  }
+
+  .srv-index__card { display: contents; }
+
+  .srv-index__link {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 12px;
+    height: 100%;
+    padding: 28px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-base) var(--motion-ease-out);
+  }
+  .srv-index__link:hover,
+  .srv-index__link:focus-visible {
+    border-color: var(--accent-400);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-hover);
+    outline: none;
+  }
+
+  .srv-index__keyword {
+    display: inline-block;
+    width: fit-content;
+    padding: 4px 10px;
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 24%, transparent);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+  }
+  .srv-index__title {
+    color: var(--text-0);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .srv-index__desc {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+  .srv-index__arrow {
+    color: var(--accent-400);
+    font-size: var(--text-lg);
+    line-height: 1;
+    transition: transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+  .srv-index__link:hover .srv-index__arrow,
+  .srv-index__link:focus-visible .srv-index__arrow {
+    transform: translateX(4px);
+  }
+
+  /* --- Final CTA ------------------------------------------------------ */
+  .srv-index-final {
+    padding: clamp(48px, 9vw, 128px) clamp(20px, 5vw, 48px);
+  }
+  .srv-index-final__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding: clamp(32px, 6vw, 64px);
+    background: color-mix(in oklch, var(--bg-1) 82%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 26%, var(--border));
+    border-radius: var(--radius-2xl);
+    text-align: center;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+  }
+  .srv-index-final__title {
+    color: var(--text-0);
+    font-size: clamp(1.85rem, 4vw + 0.5rem, 2.6rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tighter);
+  }
+  .srv-index-final__sub {
+    margin: 16px auto 32px;
+    max-width: 600px;
+    color: var(--text-2);
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+</content>
+</invoke>

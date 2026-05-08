@@ -1,0 +1,681 @@
+---
+/**
+ * /servicios/tiendas-online — landing dedicada (ES) — SEO PYMEs.
+ *
+ * Keyword principal: "tiendas online a medida".
+ * Audiencia: emprendedores y PYMEs que venden producto físico y necesitan
+ * una plataforma e-commerce sin pelearse con plantillas genéricas.
+ *
+ * Tono: ES neutro de España, tuteo (tú/tu/te).
+ *
+ * Tokens (DESIGN.md):
+ *   §2 → --bg-1, --border, --text-0/1/2/3, --accent-300/400, --accent-glow
+ *   §3 → --gradient-cta, --gradient-cta-hover, --gradient-hero-ambient
+ *   §4 → --font-display (h1/h2), --font-sans (body), --font-mono (eyebrow)
+ *   §5 → padding rhythm clamp(64px, 10vw, 128px) entre secciones
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Desarrollo de tiendas online a medida | marmibas.dev"
+  description="E-commerce a medida con pasarelas de pago, gestión de stock, envíos y cuadro de mando. Vende online sin pelearte con plantillas genéricas."
+  noindex
+>
+  {/* ----------------------------------------------------------------- */}
+  {/* Hero compacto                                                     */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-hero" aria-labelledby="srv-hero-title">
+    <div class="srv-hero__ambient" aria-hidden="true"></div>
+    <div class="srv-hero__inner">
+      <p class="srv-hero__eyebrow font-mono">marmibas · servicios</p>
+      <h1 id="srv-hero-title" class="srv-hero__title font-display">
+        Tiendas online a medida que venden
+      </h1>
+      <p class="srv-hero__tagline">
+        Plataformas de e-commerce diseñadas para tu negocio, no para encajar en
+        una plantilla genérica.
+      </p>
+      <div class="srv-hero__ctas">
+        <a class="srv-cta srv-cta--primary" href="/contacto">Hablemos</a>
+      </div>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* El problema                                                       */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-block" aria-labelledby="srv-problem-title">
+    <div class="srv-block__inner">
+      <header class="srv-block__header">
+        <p class="srv-block__eyebrow font-mono">El problema</p>
+        <h2 id="srv-problem-title" class="srv-block__title font-display">
+          Una tienda online no es solo una web bonita
+        </h2>
+      </header>
+      <div class="srv-prose">
+        <p>
+          Has probado plantillas genéricas, plugins que se rompen al actualizar
+          y temas de marketplace que prometen mucho y rinden poco. El resultado
+          es siempre el mismo: una tienda lenta, difícil de mantener y con
+          fricción en el momento más importante, el del pago.
+        </p>
+        <p>
+          Cada vez que necesitas algo concreto (un campo extra en el checkout,
+          una promoción combinada, sincronizar stock con tu proveedor) acabas
+          pagando un plugin más, perdiendo horas o renunciando a la
+          funcionalidad. La tienda se convierte en un puzle frágil que cuesta
+          tocar sin romper.
+        </p>
+        <p>
+          A esto se suma que los catálogos crecen, los envíos se complican y
+          el panel de control se queda corto. Sabes qué quieres ofrecer, pero
+          la herramienta no acompaña. Una tienda a medida resuelve justo eso:
+          la forma se adapta al negocio, no al revés.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* Lo que entrego                                                    */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-block srv-block--alt" aria-labelledby="srv-deliver-title">
+    <div class="srv-block__inner">
+      <header class="srv-block__header">
+        <p class="srv-block__eyebrow font-mono">Lo que entrego</p>
+        <h2 id="srv-deliver-title" class="srv-block__title font-display">
+          Una tienda lista para vender, no un proyecto eterno
+        </h2>
+      </header>
+      <ul class="srv-list" role="list">
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Catálogo y fichas de producto</strong>
+            <p>
+              Estructura adaptada a tu tipo de producto, con variantes, stock
+              en tiempo real, fotos optimizadas y SEO en cada ficha.
+            </p>
+          </div>
+        </li>
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Checkout y pasarelas de pago</strong>
+            <p>
+              Stripe, Redsys, PayPal o la que necesites. Pago en un paso,
+              tarjeta, Bizum, transferencia, sin redirecciones extrañas.
+            </p>
+          </div>
+        </li>
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Envíos y zonas de reparto</strong>
+            <p>
+              Tarifas por peso, volumen o zona, integración con
+              transportistas y emails automáticos al cliente con seguimiento.
+            </p>
+          </div>
+        </li>
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Cuadro de mando para tu equipo</strong>
+            <p>
+              Panel propio para ver pedidos, gestionar devoluciones, exportar
+              ventas y editar productos sin tocar código.
+            </p>
+          </div>
+        </li>
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Rendimiento y SEO técnico</strong>
+            <p>
+              Tienda rápida en móvil, datos estructurados de producto, sitemap
+              y meta tags listos para Google y redes sociales.
+            </p>
+          </div>
+        </li>
+        <li class="srv-list__item">
+          <span class="srv-list__check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Documentación y formación</strong>
+            <p>
+              Te dejo una guía clara y una sesión de formación para que tu
+              equipo gestione la tienda sin dependencia.
+            </p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* Cómo trabajo                                                      */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-block" aria-labelledby="srv-how-title">
+    <div class="srv-block__inner">
+      <header class="srv-block__header">
+        <p class="srv-block__eyebrow font-mono">Cómo trabajo</p>
+        <h2 id="srv-how-title" class="srv-block__title font-display">
+          De la idea al primer pedido en fases cortas
+        </h2>
+      </header>
+      <ol class="srv-steps">
+        <li class="srv-steps__item">
+          <span class="srv-steps__num">01</span>
+          <div>
+            <h3 class="srv-steps__title font-display">Descubrimiento</h3>
+            <p>
+              Reviso tu catálogo, tu proceso de venta actual y tu cliente
+              objetivo. Acordamos prioridades, MVP y métricas que importan.
+            </p>
+          </div>
+        </li>
+        <li class="srv-steps__item">
+          <span class="srv-steps__num">02</span>
+          <div>
+            <h3 class="srv-steps__title font-display">Diseño</h3>
+            <p>
+              Diseño del flujo completo (home, ficha, carrito, checkout,
+              panel) con foco en conversión y velocidad de carga.
+            </p>
+          </div>
+        </li>
+        <li class="srv-steps__item">
+          <span class="srv-steps__num">03</span>
+          <div>
+            <h3 class="srv-steps__title font-display">Desarrollo</h3>
+            <p>
+              Construcción por iteraciones cortas. Tienes acceso al entorno
+              de pruebas desde el primer sprint para revisar y opinar.
+            </p>
+          </div>
+        </li>
+        <li class="srv-steps__item">
+          <span class="srv-steps__num">04</span>
+          <div>
+            <h3 class="srv-steps__title font-display">Entrega</h3>
+            <p>
+              Migración de datos, pasarelas en producción, formación y
+              soporte tras el lanzamiento. La tienda queda lista para vender.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* Para quién es                                                     */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-block srv-block--alt" aria-labelledby="srv-fit-title">
+    <div class="srv-block__inner">
+      <header class="srv-block__header">
+        <p class="srv-block__eyebrow font-mono">Para quién es</p>
+        <h2 id="srv-fit-title" class="srv-block__title font-display">
+          Encaja contigo si te reconoces aquí
+        </h2>
+      </header>
+      <ul class="srv-fit" role="list">
+        <li class="srv-fit__item">
+          <h3 class="srv-fit__title font-display">
+            Emprendedores con producto físico
+          </h3>
+          <p>
+            Vendes un producto que ya funciona en mercado pequeño y quieres
+            llevarlo online sin perder margen ni control.
+          </p>
+        </li>
+        <li class="srv-fit__item">
+          <h3 class="srv-fit__title font-display">
+            Marcas que ya venden y quieren escalar
+          </h3>
+          <p>
+            Has empezado con una plantilla, vendes algo, pero la plataforma
+            actual no aguanta más catálogo, más tráfico o más operaciones.
+          </p>
+        </li>
+        <li class="srv-fit__item">
+          <h3 class="srv-fit__title font-display">
+            Empresas tradicionales abriendo canal online
+          </h3>
+          <p>
+            Tienes tienda física o distribución y quieres dar el salto a
+            internet sin replicar las limitaciones del canal tradicional.
+          </p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* CTA final                                                         */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-final" aria-labelledby="srv-final-title">
+    <div class="srv-final__inner">
+      <h2 id="srv-final-title" class="srv-final__title font-display">
+        ¿Te encaja? Hablemos →
+      </h2>
+      <p class="srv-final__sub">
+        Cuéntame qué vendes y cómo lo vendes hoy. En una llamada corta
+        valoramos si una tienda a medida tiene sentido para ti y por dónde
+        empezar.
+      </p>
+      <a class="srv-cta srv-cta--primary" href="/contacto">Hablemos</a>
+    </div>
+  </section>
+
+  {/* ----------------------------------------------------------------- */}
+  {/* Internal linking                                                  */}
+  {/* ----------------------------------------------------------------- */}
+  <section class="srv-related" aria-labelledby="srv-related-title">
+    <div class="srv-related__inner">
+      <h2 id="srv-related-title" class="srv-related__title font-display">
+        Sigue explorando
+      </h2>
+      <ul class="srv-related__list" role="list">
+        <li>
+          <a href="/trabajos" class="srv-related__link">
+            <span class="srv-related__kicker font-mono">Casos de éxito</span>
+            <span class="srv-related__label">Ver proyectos en producción</span>
+          </a>
+        </li>
+        <li>
+          <a href="/servicios/sistemas-de-gestion" class="srv-related__link">
+            <span class="srv-related__kicker font-mono">Servicio</span>
+            <span class="srv-related__label">Sistemas de gestión</span>
+          </a>
+        </li>
+        <li>
+          <a href="/servicios/integraciones" class="srv-related__link">
+            <span class="srv-related__kicker font-mono">Servicio</span>
+            <span class="srv-related__label">Integraciones</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --- Hero ----------------------------------------------------------- */
+  .srv-hero {
+    position: relative;
+    isolation: isolate;
+    padding-block: clamp(72px, 10vw, 120px) clamp(48px, 7vw, 80px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+
+  .srv-hero__ambient {
+    position: absolute;
+    inset: -40px -10vw auto -10vw;
+    height: 520px;
+    background: var(--gradient-hero-ambient);
+    opacity: 0.62;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .srv-hero__inner {
+    max-width: 760px;
+  }
+
+  .srv-hero__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 16px;
+  }
+
+  .srv-hero__title {
+    font-size: clamp(2.4rem, 5.5vw + 0.6rem, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+  }
+
+  .srv-hero__tagline {
+    margin-top: 18px;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    max-width: 620px;
+  }
+
+  .srv-hero__ctas {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* --- CTA buttons ---------------------------------------------------- */
+  .srv-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .srv-cta--primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    background-size: 200% 200%;
+    border: 1px solid transparent;
+  }
+
+  .srv-cta--primary:hover,
+  .srv-cta--primary:focus-visible {
+    background: var(--gradient-cta-hover);
+    background-position: 100% 50%;
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* --- Block (genérico para todas las secciones) ---------------------- */
+  .srv-block {
+    padding-block: clamp(64px, 10vw, 128px);
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+
+  .srv-block--alt {
+    background: color-mix(in oklch, var(--bg-1) 32%, transparent);
+    border-block: 1px solid var(--border);
+  }
+
+  .srv-block__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+
+  .srv-block__header {
+    max-width: 760px;
+    margin-bottom: 40px;
+  }
+
+  .srv-block__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 12px;
+  }
+
+  .srv-block__title {
+    font-size: clamp(1.85rem, 3.2vw + 0.6rem, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
+  }
+
+  /* --- Prose ---------------------------------------------------------- */
+  .srv-prose {
+    max-width: 720px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .srv-prose p {
+    color: var(--text-1);
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+
+  /* --- Lista de entregables ------------------------------------------- */
+  .srv-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  @media (min-width: 760px) {
+    .srv-list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+  }
+
+  .srv-list__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 22px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .srv-list__item:hover {
+    border-color: color-mix(in oklch, var(--accent-400) 42%, var(--border));
+    transform: translateY(-2px);
+  }
+
+  .srv-list__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--accent-400) 16%, transparent);
+    color: var(--accent-300);
+    font-size: var(--text-sm);
+    flex-shrink: 0;
+  }
+
+  .srv-list__item strong {
+    display: block;
+    color: var(--text-0);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .srv-list__item p {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  /* --- Steps (cómo trabajo) ------------------------------------------- */
+  .srv-steps {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    counter-reset: srv-step;
+  }
+
+  @media (min-width: 880px) {
+    .srv-steps {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+  }
+
+  .srv-steps__item {
+    display: grid;
+    gap: 12px;
+    padding: 24px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .srv-steps__num {
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+  }
+
+  .srv-steps__title {
+    color: var(--text-0);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .srv-steps__item p {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+  }
+
+  /* --- Para quién (fit) ----------------------------------------------- */
+  .srv-fit {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  @media (min-width: 760px) {
+    .srv-fit {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+  }
+
+  .srv-fit__item {
+    padding: 24px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .srv-fit__title {
+    color: var(--text-0);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .srv-fit__item p {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  /* --- CTA final ------------------------------------------------------ */
+  .srv-final {
+    padding: clamp(64px, 10vw, 128px) clamp(20px, 5vw, 48px);
+  }
+
+  .srv-final__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding: clamp(32px, 6vw, 64px);
+    background: color-mix(in oklch, var(--bg-1) 82%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 26%, var(--border));
+    border-radius: var(--radius-2xl);
+    text-align: center;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+  }
+
+  .srv-final__title {
+    color: var(--text-0);
+    font-size: clamp(1.85rem, 4vw + 0.5rem, 2.6rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .srv-final__sub {
+    margin: 16px auto 32px;
+    max-width: 580px;
+    color: var(--text-2);
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  /* --- Internal linking ----------------------------------------------- */
+  .srv-related {
+    padding-block: clamp(48px, 7vw, 96px);
+    padding-inline: clamp(20px, 5vw, 48px);
+    border-top: 1px solid var(--border);
+  }
+
+  .srv-related__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+
+  .srv-related__title {
+    color: var(--text-0);
+    font-size: var(--text-xl);
+    margin-bottom: 24px;
+  }
+
+  .srv-related__list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  @media (min-width: 760px) {
+    .srv-related__list {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+  }
+
+  .srv-related__link {
+    display: grid;
+    gap: 6px;
+    padding: 18px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .srv-related__link:hover {
+    border-color: var(--accent-400);
+    transform: translateY(-2px);
+  }
+
+  .srv-related__kicker {
+    color: var(--text-3);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+  }
+
+  .srv-related__label {
+    color: var(--text-0);
+    font-size: var(--text-base);
+    font-weight: 500;
+  }
+</style>
+</content>
+</invoke>
