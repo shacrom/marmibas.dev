@@ -64,7 +64,7 @@ export const ui = {
     'form.email.label': 'Email',
     'form.email.placeholder': 'tu@email.com',
     'form.message.label': 'Mensaje',
-    'form.message.placeholder': 'Contame en qué andás y cómo puedo ayudarte',
+    'form.message.placeholder': 'Cuéntame en qué estás y cómo puedo ayudarte',
     'form.submit': 'Enviar mensaje',
     'form.sending': 'Enviando…',
     'form.success': 'Mensaje enviado. Te respondo en menos de 48 h.',
@@ -75,7 +75,7 @@ export const ui = {
     'form.validation.nameTooShort': 'El nombre debe tener al menos 2 caracteres.',
     'form.validation.emailRequired': 'Necesito un email para responderte.',
     'form.validation.emailInvalid': 'El email no parece válido.',
-    'form.validation.messageRequired': 'Contame en qué puedo ayudarte.',
+    'form.validation.messageRequired': 'Cuéntame en qué puedo ayudarte.',
     'form.validation.messageMinLength': 'El mensaje necesita al menos 10 caracteres.',
     'form.validation.messageMaxLength': 'El mensaje no puede pasar de 2000 caracteres.',
 

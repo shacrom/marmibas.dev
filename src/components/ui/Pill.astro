@@ -63,7 +63,7 @@ export interface Props {
 
 const { status, lang, size = 'sm', class: className } = Astro.props;
 
-// Map status → key del diccionario (ui.ts). Centralizado acá para que el
+// Map status → key del diccionario (ui.ts). Centralizado aquí para que el
 // consumidor no tenga que conocer las keys.
 const STATUS_KEY: Record<PillStatus, UIKey> = {
   success: 'status.success',
