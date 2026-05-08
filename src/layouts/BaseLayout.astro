@@ -49,6 +49,12 @@ interface Props {
   noindex?: boolean;
   /** OpenGraph type. Default `website`. */
   type?: 'website' | 'article';
+  /**
+   * Optional FAQ entries used to emit a Schema.org `FAQPage` JSON-LD block
+   * in `<head>`. Pass-through to `<SeoHead>`. Today only the home sets this,
+   * but any page with FAQ content can opt in.
+   */
+  faqs?: { question: string; answer: string }[];
 }
 
 const {
@@ -57,6 +63,7 @@ const {
   ogImage,
   noindex = false,
   type = 'website',
+  faqs,
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
@@ -73,6 +80,7 @@ const lang = getLangFromUrl(Astro.url);
       ogImage={ogImage}
       noindex={noindex}
       type={type}
+      faqs={faqs}
     />
 
     {/* Astro 6 View Transitions. Lives in <head> so the script registers

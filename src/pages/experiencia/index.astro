@@ -33,12 +33,13 @@ import Callout from '../../components/ui/Callout.astro';
 import Pill from '../../components/ui/Pill.astro';
 import TechBadge from '../../components/ui/TechBadge.astro';
 import Prose from '../../components/ui/Prose.astro';
-import { useTranslations } from '../../i18n/helpers';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
 
 type ExperienceEntry = CollectionEntry<'experience'>;
 
 const lang = 'es' as const;
 const t = useTranslations(lang);
+const contactHref = getRoutePath('contact', lang);
 
 // Carga + orden por `order` ascendente (1 = más reciente). Las entries sin
 // `order` definido caen al final (Number.POSITIVE_INFINITY como fallback).
@@ -63,8 +64,8 @@ const items = await Promise.all(
 ---
 
 <BaseLayout
-  title="Experiencia profesional — marmibas"
-  description="Timeline cronológico de empleos: Devoltec, Capgemini, Cleverpy Machine Learning. 5 años construyendo software."
+  title="Experiencia profesional — Ingeniero informático | marmibas.dev"
+  description="5 años desarrollando software para grandes empresas y consultoras. Capgemini, Cleverpy, Devoltec. Hoy trabajo de forma independiente."
   noindex
 >
   <section class="experience" aria-labelledby="experience-title">
@@ -126,6 +127,13 @@ const items = await Promise.all(
         <p class="education__years font-mono">{t('experience.education.years')}</p>
       </div>
     </section>
+
+    <aside class="experience__cta" aria-label="Contacto">
+      <p class="experience__cta-text font-display">
+        ¿Tu empresa busca alguien con experiencia en estos sectores?
+        <a class="experience__cta-link" href={contactHref}>Hablemos <span aria-hidden="true">→</span></a>
+      </p>
+    </aside>
   </section>
 </BaseLayout>
 
@@ -339,5 +347,49 @@ const items = await Promise.all(
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-top: 4px;
+  }
+
+  /* --- CTA al cierre del timeline --------------------------------------- */
+  /* Cierra la página invitando a contacto sin recurrir a un panel pleno
+     tipo LeadCTA — en /experiencia el visitante ya está leyendo prosa,
+     un pasaje fino con link inline mantiene el ritmo editorial. */
+  .experience__cta {
+    max-width: 720px;
+    margin-inline: auto;
+    margin-top: 64px;
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+    padding-inline: 0;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .experience__cta-text {
+    margin: 0;
+    color: var(--text-1);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 768px) {
+    .experience__cta-text {
+      font-size: var(--text-2xl);
+    }
+  }
+
+  .experience__cta-link {
+    color: var(--accent-400);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .experience__cta-link:hover,
+  .experience__cta-link:focus-visible {
+    color: var(--accent-300);
+    border-bottom-color: var(--accent-400);
   }
 </style>

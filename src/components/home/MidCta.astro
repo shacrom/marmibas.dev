@@ -1,0 +1,107 @@
+---
+/**
+ * MidCta.astro — banda fina con CTA de transición entre secciones del home.
+ *
+ * Pensado como elemento de transición SUTIL: no rompe el ritmo visual con un
+ * botón gradient pleno (eso lo cubren Hero y LeadCTA), pero sí lanza un
+ * recordatorio textual de "puedes contactarme ahora" entre bloques de
+ * contenido. Más cercano a un divisor con copy que a una CTA fuerte.
+ *
+ * Visual (DESIGN.md tokens):
+ *   - max-width 720px centrado (mismo ancho que prose pages, §9).
+ *   - padding-block 64-96px (clamp), heredado del ritmo §5.
+ *   - border-top + border-bottom 1px `--border` para separar visualmente sin
+ *     pintar fondo: el componente es un "pasaje" entre secciones.
+ *   - Texto Fraunces (§4) `--text-xl` para que el copy lea como afirmación
+ *     editorial, no como UI auxiliar.
+ *   - Link `--accent-400` con underline al hover (transición 150ms motion.css).
+ *
+ * Por qué NO gradient ni background:
+ *   - El home ya tiene Hero (gradient ambient + CTA gradient) y LeadCTA (panel
+ *     destacado al final). Otra banda gradient en mitad rompería la jerarquía.
+ *   - El propósito aquí es "aire" + recordatorio, no conversión primaria.
+ *
+ * Accesibilidad:
+ *   - Wrapper `<aside>` para que screen readers lo identifiquen como contenido
+ *     complementario y no parte de la sección anterior/posterior.
+ *   - Link es un `<a>` nativo con href absoluto (no localePath: la página que
+ *     embeda este componente ya pasa el href correcto en el lang activo).
+ */
+
+export interface Props {
+  /** Copy completo del párrafo (sin la flecha del CTA, que se renderiza aparte). */
+  text: string;
+  /** Copy del link clicable. La flecha → se añade automáticamente. */
+  cta: string;
+  /** Href destino. Quien embeda pasa el path localizado (e.g. /contacto vs /en/contact). */
+  href: string;
+  /** Idioma activo — usado solo para el aria-label del aside. */
+  lang: 'es' | 'en';
+}
+
+const { text, cta, href, lang } = Astro.props;
+
+const ariaLabel = lang === 'es' ? 'Contacto' : 'Contact';
+---
+
+<aside class="mid-cta" aria-label={ariaLabel}>
+  <p class="mid-cta__text font-display">
+    {text}
+    <a class="mid-cta__link" href={href}>{cta} <span aria-hidden="true">→</span></a>
+  </p>
+</aside>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Wrapper: ancho de prose (720px), centrado, padding vertical generoso para
+   * actuar como "pasaje" entre dos secciones. border-top + border-bottom 1px
+   * `--border` da el corte visual sin background.
+   * ------------------------------------------------------------------------ */
+  .mid-cta {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-block: clamp(4rem, 8vw, 6rem);
+    padding-inline: clamp(20px, 5vw, 32px);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Copy: Fraunces 600, --text-xl (~25px). Ligeramente más calmado que un H2.
+   * `text-wrap: balance` (heredado global) ya equilibra dos-líneas.
+   * ------------------------------------------------------------------------ */
+  .mid-cta__text {
+    margin: 0;
+    color: var(--text-1);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 768px) {
+    .mid-cta__text {
+      font-size: var(--text-2xl);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Link: color accent + underline al hover. Inline (no botón) — la idea es
+   * que parezca un cierre de frase clicable, no una CTA tipo Hero.
+   * ------------------------------------------------------------------------ */
+  .mid-cta__link {
+    color: var(--accent-400);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .mid-cta__link:hover,
+  .mid-cta__link:focus-visible {
+    color: var(--accent-300);
+    border-bottom-color: var(--accent-400);
+  }
+</style>

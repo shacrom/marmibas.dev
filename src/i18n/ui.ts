@@ -123,7 +123,7 @@ export const ui = {
     'featured.viewAll': 'Ver todos los proyectos →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
-    'work.heading': 'Trabajos',
+    'work.heading': 'Proyectos de software a medida',
     'work.tagline':
       'Una selección de proyectos en producción, en desarrollo y exploraciones.',
     'work.filter.label': 'Filtrar por',
@@ -186,7 +186,7 @@ export const ui = {
     'experience.fallback': 'Experience details only available in Spanish for now.',
 
     // -- Blog (T-36 / T-37) ---------------------------------------------------
-    'blog.heading': 'Blog',
+    'blog.heading': 'Notas sobre software y digitalización',
     'blog.tagline': 'Notas técnicas, decisiones y aprendizajes desde el camino.',
     'blog.empty': 'Pronto subo el primer post.',
     'blog.readingTime': '{n} min de lectura',
@@ -297,7 +297,7 @@ export const ui = {
     'featured.viewAll': 'View all projects →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
-    'work.heading': 'Work',
+    'work.heading': 'Custom software projects',
     'work.tagline':
       'A selection of projects in production, in development and explorations.',
     'work.filter.label': 'Filter by',
@@ -359,7 +359,7 @@ export const ui = {
     'experience.fallback': 'Experience details only available in Spanish for now.',
 
     // -- Blog (T-36 / T-37) ---------------------------------------------------
-    'blog.heading': 'Blog',
+    'blog.heading': 'Notes on software and digitization',
     'blog.tagline': 'Technical notes, decisions and lessons from the road.',
     'blog.empty': 'First post coming soon.',
     'blog.readingTime': '{n} min read',

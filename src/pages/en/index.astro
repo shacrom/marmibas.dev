@@ -5,20 +5,42 @@ import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
 import AboutSection from '../../components/home/AboutSection.astro';
 import ServicesSection from '../../components/home/ServicesSection.astro';
 import ProcessSection from '../../components/home/ProcessSection.astro';
+import FAQSection from '../../components/home/FAQSection.astro';
 import LeadCTA from '../../components/home/LeadCTA.astro';
+import MidCta from '../../components/home/MidCta.astro';
+import { getFaqs } from '../../lib/faqs';
+import { getRoutePath } from '../../i18n/helpers';
 
 const lang = 'en' as const;
+
+// FAQs feed both the visual accordion and the Schema.org FAQPage JSON-LD
+// in `<head>`. Same source of truth guarantees the two stay aligned.
+const faqs = getFaqs(lang).map((faq) => ({
+  question: faq.question,
+  answer: faq.answer,
+}));
+
+// MidCta intermedios — same copy in both insertion points to keep editorial
+// rhythm; the surrounding sections shift but the "have an idea? let's talk"
+// reminder lands the same in either place.
+const contactHref = getRoutePath('contact', lang);
+const midCtaText = 'Have an idea or a problem you want to solve?';
+const midCtaLink = "Let's talk";
 ---
 
 <BaseLayout
-  title="marmibas — Full stack software engineer"
-  description="I design and build SaaS, e-commerce and internal tools for entrepreneurs and SMBs in Spain and LATAM."
+  title="Custom software developer for businesses | marmibas.dev"
+  description="Web applications, online stores and custom management systems. I help businesses and entrepreneurs digitize their daily operations."
   noindex
+  faqs={faqs}
 >
   <Hero lang={lang} />
   <ServicesSection lang={lang} />
+  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <FeaturedProjects lang={lang} />
   <ProcessSection lang={lang} />
+  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <AboutSection lang={lang} />
+  <FAQSection lang={lang} />
   <LeadCTA lang={lang} />
 </BaseLayout>

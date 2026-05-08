@@ -1,0 +1,266 @@
+---
+/**
+ * FAQSection.astro — sección "Preguntas frecuentes" del home (SEO + UX).
+ *
+ * Renderiza un acordeón con las FAQs declaradas en `src/lib/faqs.ts`. Usa el
+ * elemento nativo `<details>` + `<summary>` para evitar JS y conservar a11y
+ * por defecto (foco con teclado, screen readers, toggle con Enter/Space).
+ *
+ * El Schema.org FAQPage equivalente se inyecta en el `<head>` desde
+ * `<SeoHead>` cuando el home pasa la prop `faqs`. Esta sección NO inyecta
+ * JSON-LD por su cuenta para evitar duplicación.
+ *
+ * Tokens usados (DESIGN.md):
+ *   §2 → --bg-1, --border, --text-0/1/2/3, --accent-300/400
+ *   §4 → --font-display (h2), --font-sans (body), --font-mono (eyebrow)
+ *   §5 → padding-block 96-128px, max-width 720px
+ *   §6 → --motion-fast, --motion-base, --motion-ease-out
+ */
+import Reveal from '../ui/Reveal.astro';
+import { getFaqs } from '../../lib/faqs';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Idioma activo. Resuelve heading, subheading y la lista de FAQs. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const copy = {
+  es: {
+    eyebrow: 'FAQ',
+    heading: 'Preguntas frecuentes',
+    subheading:
+      'Las dudas más comunes que recibo antes de empezar un proyecto.',
+  },
+  en: {
+    eyebrow: 'FAQ',
+    heading: 'Frequently asked questions',
+    subheading:
+      'The most common questions I get before starting a project.',
+  },
+} as const;
+
+const content = copy[lang];
+const faqs = getFaqs(lang);
+---
+
+<Reveal as="section" class="faq" aria-labelledby="faq-heading">
+  <div class="faq__inner">
+    <header class="faq__header">
+      <p class="faq__eyebrow font-mono">{content.eyebrow}</p>
+      <h2 id="faq-heading" class="faq__heading font-display">
+        {content.heading}
+      </h2>
+      <p class="faq__sub">{content.subheading}</p>
+    </header>
+
+    <div class="faq__list" role="list">
+      {
+        faqs.map((faq) => (
+          <details class="faq__item" role="listitem">
+            <summary class="faq__summary">
+              <span class="faq__question font-display">{faq.question}</span>
+              <svg
+                class="faq__chevron"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 7.5L10 12.5L15 7.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </summary>
+            <div class="faq__answer">
+              <p>{faq.answer}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</Reveal>
+
+<style>
+  /* ---------------------------------------------------------------------- */
+  /* Section wrapper                                                         */
+  /* ---------------------------------------------------------------------- */
+
+  .faq {
+    padding-block: clamp(64px, 10vw, 128px);
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .faq__inner {
+    max-width: 720px;
+    margin-inline: auto;
+    display: grid;
+    row-gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Header                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  .faq__header {
+    display: grid;
+    gap: 12px;
+  }
+
+  .faq__eyebrow {
+    margin: 0;
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+  }
+
+  .faq__heading {
+    margin: 0;
+    color: var(--text-0);
+    font-size: clamp(2rem, 4vw + 0.5rem, 2.4375rem);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .faq__sub {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: var(--leading-normal);
+    text-wrap: pretty;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Accordion list                                                          */
+  /*                                                                         */
+  /* `<details>`/`<summary>` browser-native: cero JS, a11y "for free",       */
+  /* foco/teclado nativos, indexable por crawlers (Schema FAQPage refuerza). */
+  /* ---------------------------------------------------------------------- */
+
+  .faq__list {
+    display: grid;
+  }
+
+  .faq__item {
+    border-block-end: 1px solid var(--border);
+  }
+
+  .faq__item:first-of-type {
+    border-block-start: 1px solid var(--border);
+  }
+
+  /* Reset del marcador nativo (▶ / ▼) para usar nuestro chevron SVG. */
+  .faq__summary {
+    list-style: none;
+    /* Safari pinta el marcador `summary` con ::-webkit-details-marker en
+       vez de `list-style`; lo escondemos abajo con un selector específico. */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+    cursor: pointer;
+    color: var(--text-1);
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__question {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    /* `flex: 1` permite que el chevron quede pegado al borde derecho aunque
+       la pregunta ocupe varias líneas en mobile. */
+    flex: 1;
+  }
+
+  /* Hover (cualquier estado) — refresca el color a `--accent-300`. */
+  .faq__summary:hover,
+  .faq__summary:focus-visible {
+    color: var(--accent-300);
+  }
+
+  .faq__summary:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm, 4px);
+  }
+
+  /* Estado abierto: refuerza el contraste y rota el chevron. */
+  .faq__item[open] > .faq__summary {
+    color: var(--text-0);
+  }
+
+  /* Dot indicator antes de la pregunta cuando está abierta — refuerza el
+     "this is the active item" sin depender solo de la rotación del chevron. */
+  .faq__item[open] > .faq__summary > .faq__question::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 10px;
+    margin-bottom: 3px;
+    border-radius: var(--radius-full, 999px);
+    background: var(--accent-400);
+    vertical-align: middle;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Chevron — rota 180° al abrir                                            */
+  /* ---------------------------------------------------------------------- */
+
+  .faq__chevron {
+    flex-shrink: 0;
+    color: var(--text-3);
+    transition: transform var(--motion-base, 200ms) var(--motion-ease-out, ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .faq__summary:hover .faq__chevron,
+  .faq__item[open] > .faq__summary .faq__chevron {
+    color: var(--accent-400);
+  }
+
+  .faq__item[open] > .faq__summary .faq__chevron {
+    transform: rotate(180deg);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Answer body                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  .faq__answer {
+    padding: 8px 0 24px;
+  }
+
+  .faq__answer p {
+    margin: 0;
+    color: var(--text-2);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    max-width: 65ch;
+    text-wrap: pretty;
+  }
+
+  /* Reduced motion: el chevron salta sin transición. */
+  @media (prefers-reduced-motion: reduce) {
+    .faq__chevron {
+      transition: none;
+    }
+  }
+</style>

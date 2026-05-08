@@ -5,20 +5,43 @@ import FeaturedProjects from '../components/home/FeaturedProjects.astro';
 import AboutSection from '../components/home/AboutSection.astro';
 import ServicesSection from '../components/home/ServicesSection.astro';
 import ProcessSection from '../components/home/ProcessSection.astro';
+import FAQSection from '../components/home/FAQSection.astro';
 import LeadCTA from '../components/home/LeadCTA.astro';
+import MidCta from '../components/home/MidCta.astro';
+import { getFaqs } from '../lib/faqs';
+import { getRoutePath } from '../i18n/helpers';
 
 const lang = 'es' as const;
+
+// Las FAQs se duplican intencionalmente: el componente las renderiza para el
+// usuario y el layout las pasa a `<SeoHead>` para inyectar el Schema FAQPage
+// en `<head>`. Compartir la fuente de verdad evita drift entre ambos.
+const faqs = getFaqs(lang).map((faq) => ({
+  question: faq.question,
+  answer: faq.answer,
+}));
+
+// MidCta intermedios: el copy es el mismo en ambas inserciones para mantener
+// el ritmo editorial; cambia el contexto de la sección anterior pero el
+// recordatorio "tienes una idea, hablemos" es coherente en los dos cortes.
+const contactHref = getRoutePath('contact', lang);
+const midCtaText = '¿Tienes una idea o un problema que quieres resolver?';
+const midCtaLink = 'Hablemos';
 ---
 
 <BaseLayout
-  title="marmibas — Ingeniero de software full stack"
-  description="Diseño y construyo SaaS, e-commerce y herramientas internas para emprendedores y PYMEs en España y LATAM."
+  title="Desarrollador de software a medida para empresas | marmibas.dev"
+  description="Diseño y desarrollo de aplicaciones web, tiendas online y sistemas de gestión a medida. Ayudo a empresas y emprendedores a digitalizar su trabajo."
   noindex
+  faqs={faqs}
 >
   <Hero lang={lang} />
   <ServicesSection lang={lang} />
+  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <FeaturedProjects lang={lang} />
   <ProcessSection lang={lang} />
+  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <AboutSection lang={lang} />
+  <FAQSection lang={lang} />
   <LeadCTA lang={lang} />
 </BaseLayout>

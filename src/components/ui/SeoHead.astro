@@ -68,6 +68,16 @@ interface Props {
   author?: string;
   /** Free-form tags emitted as `Article.keywords`. Optional. */
   tags?: string[];
+  /**
+   * FAQ entries to emit as a Schema.org `FAQPage` JSON-LD block.
+   *
+   * When present and non-empty, the schema is rendered as a SECOND
+   * `<script type="application/ld+json">` (after Person/Article). Google
+   * supports multiple JSON-LD scripts on the same page, and the FAQPage
+   * schema is the prerequisite for FAQ-rich-result featured snippets and
+   * "People Also Ask" appearances on SERP.
+   */
+  faqs?: { question: string; answer: string }[];
 }
 
 const {
@@ -82,6 +92,7 @@ const {
   updatedAt,
   author = 'marmibas',
   tags,
+  faqs,
 } = Astro.props;
 
 // --- Title prefix ---------------------------------------------------------
@@ -218,10 +229,30 @@ const articleSchema: ArticleSchema | undefined =
 
 // Resolve the actual schema object to inject. Article wins over Person when
 // a page is somehow both home and an article (defensive — should not happen
-// in practice). We prefer to emit at most ONE JSON-LD block per page to keep
-// the head light and the structured-data validator unambiguous.
+// in practice). We prefer to emit at most ONE primary JSON-LD block per
+// page to keep the head light and the structured-data validator unambiguous.
 const structuredData: object | undefined =
   articleSchema ?? (isHome ? personSchema : undefined);
+
+// FAQPage schema: emitted as a SECONDARY JSON-LD block when the page declares
+// FAQ entries (today: home only). Google explicitly allows multiple JSON-LD
+// scripts on the same page, and the FAQPage schema is the prerequisite for
+// FAQ-rich-result snippets / People-Also-Ask SERP enrichment.
+const faqSchema =
+  faqs && faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
+      }
+    : undefined;
 ---
 
 {/* --- Document basics ----------------------------------------------- */}
@@ -301,6 +332,22 @@ const structuredData: object | undefined =
       is:inline
       type="application/ld+json"
       set:html={JSON.stringify(structuredData)}
+    />
+  )
+}
+
+{/* --- JSON-LD FAQPage (optional secondary block) ------------------ */}
+{/*
+ * Emitted as an independent script when `faqs` is provided. Google supports
+ * multiple JSON-LD blocks per page (one for the primary entity, additional
+ * ones for supplementary structured data such as FAQPage / BreadcrumbList).
+ */}
+{
+  faqSchema && (
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
     />
   )
 }

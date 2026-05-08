@@ -29,12 +29,13 @@ import Callout from '../../../components/ui/Callout.astro';
 import Pill from '../../../components/ui/Pill.astro';
 import TechBadge from '../../../components/ui/TechBadge.astro';
 import Prose from '../../../components/ui/Prose.astro';
-import { useTranslations } from '../../../i18n/helpers';
+import { useTranslations, getRoutePath } from '../../../i18n/helpers';
 
 type ExperienceEntry = CollectionEntry<'experience'>;
 
 const lang = 'en' as const;
 const t = useTranslations(lang);
+const contactHref = getRoutePath('contact', lang);
 
 // Try EN first; if empty, fall back to ES + raise the warning flag.
 const enEntries = await getCollection(
@@ -66,8 +67,8 @@ const items = await Promise.all(
 ---
 
 <BaseLayout
-  title="Professional experience — marmibas"
-  description="Chronological timeline of employment: Devoltec, Capgemini, Cleverpy Machine Learning. 5 years building software."
+  title="Professional experience — Software engineer | marmibas.dev"
+  description="5 years building software for large enterprises. Capgemini, Cleverpy, Devoltec. Today I work independently with SMBs and entrepreneurs."
   noindex
 >
   <section class="experience" aria-labelledby="experience-title">
@@ -134,6 +135,13 @@ const items = await Promise.all(
         <p class="education__years font-mono">{t('experience.education.years')}</p>
       </div>
     </section>
+
+    <aside class="experience__cta" aria-label="Contact">
+      <p class="experience__cta-text font-display">
+        Is your company looking for someone with experience across these sectors?
+        <a class="experience__cta-link" href={contactHref}>Let's talk <span aria-hidden="true">→</span></a>
+      </p>
+    </aside>
   </section>
 </BaseLayout>
 
@@ -342,5 +350,49 @@ const items = await Promise.all(
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-top: 4px;
+  }
+
+  /* --- CTA at the end of the timeline ----------------------------------- */
+  /* Closes the page inviting the visitor to reach out without resorting to
+     a full LeadCTA panel — on /experience the visitor is already reading
+     prose, so an editorial passage with an inline link keeps the rhythm. */
+  .experience__cta {
+    max-width: 720px;
+    margin-inline: auto;
+    margin-top: 64px;
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+    padding-inline: 0;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .experience__cta-text {
+    margin: 0;
+    color: var(--text-1);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 768px) {
+    .experience__cta-text {
+      font-size: var(--text-2xl);
+    }
+  }
+
+  .experience__cta-link {
+    color: var(--accent-400);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .experience__cta-link:hover,
+  .experience__cta-link:focus-visible {
+    color: var(--accent-300);
+    border-bottom-color: var(--accent-400);
   }
 </style>
