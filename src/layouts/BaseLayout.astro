@@ -81,16 +81,13 @@ const lang = getLangFromUrl(Astro.url);
   </head>
   <body class="layout-body">
     <SkipLink lang={lang} />
+    <Header currentLang={lang} currentUrl={Astro.url} />
 
-    <div class="page-frame">
-      <Header currentLang={lang} currentUrl={Astro.url} />
+    <main id="main" tabindex="-1" class="layout-main">
+      <slot />
+    </main>
 
-      <main id="main" tabindex="-1" class="layout-main">
-        <slot />
-      </main>
-
-      <Footer lang={lang} />
-    </div>
+    <Footer lang={lang} />
   </body>
 </html>
 
@@ -101,41 +98,13 @@ const lang = getLangFromUrl(Astro.url);
    */
 
   .layout-body {
-    /* Boxed layout: the body shows a violet backdrop, while the actual
-       content lives inside a rounded dark frame floating on top.
-       Inspired by reference: violet medium full-bleed + dark inner card.
-       The radial gradient adds subtle depth to the violet without breaking
-       coherence. */
+    /* Sticky footer pattern: ensure body fills the viewport so the footer
+       can pin to the bottom on short pages. global.css already sets
+       min-height: 100vh on body — we add the flex column here so
+       Footer's `margin-top: auto` actually has somewhere to push to. */
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-    background:
-      radial-gradient(ellipse 90% 60% at 50% 0%,
-        oklch(0.45 0.22 290) 0%,
-        oklch(0.32 0.18 285) 60%,
-        oklch(0.28 0.16 280) 100%);
-    background-attachment: fixed;
-    padding: clamp(8px, 1.5vw, 20px);
-  }
-
-  /*
-   * Page frame — the dark card that holds Header, main and Footer.
-   * border-radius rounds the corners; overflow: clip lets us round the
-   * descendants without breaking the sticky header (unlike overflow: hidden,
-   * which would create a containing block and pin the sticky header to
-   * the top of the frame on every scroll).
-   */
-  .page-frame {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    background: var(--color-bg-0);
-    border-radius: clamp(16px, 2vw, 28px);
-    overflow: clip;
-    box-shadow:
-      0 0 0 1px oklch(0.18 0.05 285 / 0.6),
-      0 24px 48px -16px oklch(0.05 0.02 285 / 0.5);
-    isolation: isolate;
   }
 
   .layout-main {
