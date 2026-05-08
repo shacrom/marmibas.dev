@@ -68,7 +68,7 @@ export const ui = {
     'form.submit': 'Enviar mensaje',
     'form.sending': 'Enviando…',
     'form.success': 'Mensaje enviado. Te respondo en menos de 48 h.',
-    'form.error': 'Algo salió mal. Probá de nuevo o escribime a marmibas.dev@gmail.com.',
+    'form.error': 'Algo salió mal. Probá de nuevo o escribime a info@marmibas.dev.',
     'form.error.rateLimit': 'Has enviado varios mensajes seguidos. Esperá unos minutos y volvé a intentarlo.',
     'form.error.validation': 'Revisá los campos y volvé a enviar.',
     'form.validation.nameRequired': 'Decime cómo te llamás.',
@@ -136,7 +136,7 @@ export const ui = {
     // -- Home: About section (T-31) -------------------------------------------
     'about.heading': 'Quién soy',
     'about.bio.p1':
-      'Soy marmibas. Soy ingeniero informático y llevo 5 años desarrollando software para empresas de todos los tamaños — desde startups hasta grandes compañías.',
+      'Soy Marcos. Soy ingeniero informático y llevo 5 años desarrollando software para empresas de todos los tamaños: startups, pymes y grandes compañías.',
     'about.bio.p2':
       'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
     'about.bio.p3':
@@ -145,8 +145,6 @@ export const ui = {
     'about.stats.yearsValue': '5+',
     'about.stats.projects': 'Proyectos en producción',
     'about.stats.projectsValue': '2+',
-    'about.stats.languages': 'Idiomas',
-    'about.stats.languagesValue': 'ES · EN',
     'about.cta.experience': 'Ver historia completa',
     'about.cta.contact': 'Hablemos',
 
@@ -242,7 +240,7 @@ export const ui = {
     'form.submit': 'Send message',
     'form.sending': 'Sending…',
     'form.success': 'Message sent. I will get back to you within 48 hours.',
-    'form.error': 'Something went wrong. Please try again or email marmibas.dev@gmail.com.',
+    'form.error': 'Something went wrong. Please try again or email info@marmibas.dev.',
     'form.error.rateLimit': 'Too many messages in a short time. Please wait a few minutes and try again.',
     'form.error.validation': 'Please review the fields and try again.',
     'form.validation.nameRequired': 'Please share your name.',
@@ -319,8 +317,6 @@ export const ui = {
     'about.stats.yearsValue': '5+',
     'about.stats.projects': 'Live products',
     'about.stats.projectsValue': '2+',
-    'about.stats.languages': 'Languages',
-    'about.stats.languagesValue': 'ES · EN',
     'about.cta.experience': 'Read the full story',
     'about.cta.contact': "Let's talk",
 
