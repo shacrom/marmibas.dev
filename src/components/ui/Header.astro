@@ -76,7 +76,7 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
 
 <header class="site-header" data-current-lang={currentLang}>
   <div class="site-header__inner">
-    <a class="site-header__brand" href={homeHref} aria-label="marmibas — home"> marmibas </a>
+    <a class="site-header__brand" href={homeHref} aria-label="Marmibas — home"> Marmibas </a>
 
     <nav class="site-header__nav" aria-label={navAriaLabel}>
       <ul class="site-header__list" role="list">
@@ -142,13 +142,14 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
   }
 
   /* --------------------------------------------------------------------- */
-  /* Brand wordmark — Fraunces display, peso ligero (500) según pista DESIGN.md */
-  /* "ligero" del usuario; --text-0 para foco máximo.                       */
+  /* Brand wordmark — Geist Sans display (var(--font-display)), peso 600    */
+  /* para destacar como logo. Letter-spacing ligeramente cerrado (-0.01em). */
+  /* "Marmibas" con M mayúscula, alineado con la card de visita.            */
   /* --------------------------------------------------------------------- */
   .site-header__brand {
     flex-shrink: 0;
     font-family: var(--font-display);
-    font-weight: 500;
+    font-weight: 600;
     font-size: var(--text-xl, 1.25rem);
     line-height: 1;
     letter-spacing: -0.01em;

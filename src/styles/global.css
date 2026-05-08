@@ -34,10 +34,14 @@
 /* ----------------------------------------------------------------------- */
 
 @theme {
-  /* --- Base oscura — DESIGN.md §2 ------------------------------------- */
-  --color-bg-0: #0a0a0f;
-  --color-bg-1: #12121a;
-  --color-bg-2: #1a1a26;
+  /* --- Base oscura — DESIGN.md §2 -------------------------------------
+   * Tinte violeta sutil (no neutral) para alinearse con la tarjeta de
+   * visita: same darkness level pero levemente desplazado hacia violet
+   * para que el accent morado y los gradients pink-magenta-violet
+   * encuentren un terreno coherente y no parezcan superpuestos. */
+  --color-bg-0: #0d0a14;
+  --color-bg-1: #16121f;
+  --color-bg-2: #1f1a2c;
 
   /* --- Texto — DESIGN.md §2 ------------------------------------------- */
   --color-text-0: #fafafa;
@@ -54,6 +58,15 @@
   --color-accent-600: #7c3aed;
   --color-accent-700: #6d28d9;
   --color-accent-glow: rgba(139, 92, 246, 0.15);
+
+  /* --- Acento magenta/pink — complemento al violet --------------------
+   * Tomados de la tarjeta de visita: la línea decorativa transiciona
+   * pink → magenta → violet. Estos tokens NO sustituyen al accent morado
+   * (que sigue siendo la firma de marca); existen solo para gradients
+   * decorativos puntuales. Equivalentes oklch ~0.7 0.13 350 (magenta) y
+   * ~0.82 0.07 350 (pink claro). */
+  --color-accent-magenta: #d97aaa;
+  --color-accent-pink: #e8a8c8;
 
   /* --- Status — DESIGN.md §2 ------------------------------------------ */
   --color-status-success: #a78bfa;
@@ -180,6 +193,18 @@
     var(--color-accent-600),
     var(--color-accent-400),
     var(--color-accent-600)
+  );
+
+  /* Línea decorativa horizontal — replica el reverso de la tarjeta de
+   * visita: pink → magenta → violet con fade en los extremos para que
+   * la línea "respire" sin recortes duros. Usada por DecorativeLine. */
+  --gradient-decorative: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-accent-pink) 25%,
+    var(--color-accent-magenta) 50%,
+    var(--color-accent-400) 75%,
+    transparent 100%
   );
 
   /* Color scheme hint para UA dark widgets (scrollbar, form controls). */
