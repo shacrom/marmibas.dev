@@ -1,0 +1,42 @@
+---
+/**
+ * /en/blog/[slug] — post detail page (EN) — T-37.
+ *
+ * EN counterpart of `/blog/[slug]`. Filters posts by `lang === 'en'` and
+ * `draft !== true`, renders with `PostLayout` (T-27).
+ *
+ * See ES sibling at `src/pages/blog/[slug].astro` for shared notes.
+ */
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import PostLayout from '../../../layouts/PostLayout.astro';
+import Callout from '../../../components/ui/Callout.astro';
+import { slugFromId } from '../../../lib/content';
+
+type PostEntry = CollectionEntry<'posts'>;
+
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries: PostEntry[] = await getCollection(
+    'posts',
+    (entry: PostEntry) => entry.data.lang === 'en' && entry.data.draft !== true,
+  );
+
+  return entries.map((entry: PostEntry) => ({
+    params: { slug: slugFromId(entry.id) },
+    props: { entry },
+  }));
+};
+
+interface Props {
+  entry: PostEntry;
+}
+
+const { entry } = Astro.props as Props;
+const { Content, headings } = await render(entry);
+---
+
+<PostLayout frontmatter={entry.data} headings={headings} lang="en">
+  <Content components={{ Callout }} />
+</PostLayout>

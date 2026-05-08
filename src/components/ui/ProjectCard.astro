@@ -1,0 +1,271 @@
+---
+/**
+ * ProjectCard.astro — card normal para grid de projects (T-21).
+ *
+ * Render del project card "normal" descrito en DESIGN.md §8:
+ *   - Border 1px sólido `--border` (idle).
+ *   - Hover: border-color → `--accent-400`, translateY(-2px), 150ms.
+ *   - Sin gradient (eso es exclusivo del featured card, T-22).
+ *
+ * Composición visual (header → título → descripción → stack → links):
+ *   <article class="project-card">
+ *     <a class="project-card__link" href={href}>
+ *       <header>
+ *         <Pill status={status} lang={lang} />
+ *         {year && <span class="project-card__year">{year}</span>}
+ *       </header>
+ *       <h3>{title}</h3>
+ *       <p>{pitch ?? description}</p>
+ *       <ul class="project-card__stack">…TechBadge×N…</ul>
+ *       {(repo || liveUrl) && (
+ *         <footer class="project-card__links">…</footer>
+ *       )}
+ *     </a>
+ *   </article>
+ *
+ * Props:
+ *   - title, description, pitch?, stack[], status, year?, lang
+ *   - href? (link al detail page; si está, todo el card es clickable)
+ *   - repo?, liveUrl? (URLs externas; render condicional como footer chips)
+ *
+ * Comportamiento:
+ *   - Si `href` está, el card entero es link (`<a>` envuelve todo el contenido
+ *     interno menos los footer links externos para evitar `<a>` anidados).
+ *   - Si NO está, el card es estático (sólo presenta info, los links externos
+ *     siguen funcionando).
+ *   - `repo` y `liveUrl` SIEMPRE se renderizan como `<a>` con `target=_blank`
+ *     y `rel="noopener"`. Para evitar `<a>` anidados, viven FUERA del wrapper
+ *     `<a class="project-card__link">` (el wrapper cubre la zona principal:
+ *     header + título + descripción + stack).
+ *
+ * Tokens DESIGN.md usados:
+ *   §3 (paleta)      → --bg-1, --border, --accent-400, --text-0..3
+ *   §4 (tipografía)  → --font-display (h3), --font-sans (p), --font-mono (footer)
+ *   §6 (motion)      → --motion-duration-fast (150ms), --motion-ease-out
+ *   §8 (componentes) → border sólido idle, hover translateY(-2px) + accent border
+ *
+ * Spec: TASKS.md T-21 + DESIGN.md §8 ("Project card normal").
+ *
+ * Notas:
+ *   - Pill (`./Pill.astro`) y TechBadge (`./TechBadge.astro`) viven en el mismo
+ *     directorio. Pill se crea en paralelo en T-25.
+ *   - `transition:name` para View Transitions queda fuera de scope de T-21
+ *     (lo añade el consumidor, ej. la grid en `pages/trabajos/index.astro`,
+ *     que conoce el slug). Aquí sólo se modela la presentación.
+ */
+
+import Pill from './Pill.astro';
+import TechBadge from './TechBadge.astro';
+import type { Language } from '../../i18n/ui';
+
+type ProjectStatus = 'in-development' | 'side-project' | 'paused';
+
+export interface Props {
+  /** Título del proyecto. Render en Fraunces. */
+  title: string;
+  /** Descripción corta (1–2 líneas). Fallback si no hay `pitch`. */
+  description: string;
+  /** Pitch ultra-corto (1 línea) preferido para el card. Opcional. */
+  pitch?: string;
+  /** Stack técnico — se muestran los primeros 4. */
+  stack: string[];
+  /** Estado del proyecto (alimenta el Pill). */
+  status: ProjectStatus;
+  /** Año opcional (chip discreto en el header). */
+  year?: number;
+  /** Idioma — propaga al Pill. */
+  lang: Language;
+  /** Link al detail page del proyecto (interno). Si está, el card es clickable. */
+  href?: string;
+  /** URL del repo (externa). */
+  repo?: string;
+  /** URL de la demo / live (externa). */
+  liveUrl?: string;
+  /** Clases extra a mergear con el `<article>`. */
+  class?: string;
+}
+
+const {
+  title,
+  description,
+  pitch,
+  stack,
+  status,
+  year,
+  lang,
+  href,
+  repo,
+  liveUrl,
+  class: className,
+} = Astro.props;
+
+const articleClass = ['project-card', className].filter(Boolean).join(' ');
+
+// Mostrar pitch si existe, si no description.
+const summary = pitch ?? description;
+
+// Sólo los primeros 4 técnicos según prop spec.
+const topStack = stack.slice(0, 4);
+
+const hasExternalLinks = Boolean(repo || liveUrl);
+
+// Si hay href, el bloque principal va envuelto en <a>. Si no, en <div>.
+// Evitamos <a> anidados: los links externos del footer viven FUERA del wrapper.
+const WrapperTag = href ? 'a' : 'div';
+---
+
+<article class={articleClass}>
+  <WrapperTag
+    class="project-card__link"
+    {...(href ? { href } : {})}
+  >
+    <header class="project-card__header">
+      <Pill status={status} lang={lang} />
+      {year && <span class="project-card__year">{year}</span>}
+    </header>
+
+    <h3 class="project-card__title">{title}</h3>
+    <p class="project-card__summary">{summary}</p>
+
+    {
+      topStack.length > 0 && (
+        <ul class="project-card__stack" aria-label="Stack">
+          {topStack.map((tech) => (
+            <li>
+              <TechBadge label={tech} variant="subtle" />
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </WrapperTag>
+
+  {
+    hasExternalLinks && (
+      <footer class="project-card__links">
+        {liveUrl && (
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="project-card__external"
+          >
+            Live
+          </a>
+        )}
+        {repo && (
+          <a
+            href={repo}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="project-card__external"
+          >
+            Repo
+          </a>
+        )}
+      </footer>
+    )
+  }
+</article>
+
+<style>
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  /* Hover: subir 2px y cambiar borde a accent. Aplica al article completo. */
+  .project-card:hover,
+  .project-card:focus-within {
+    border-color: var(--accent-400);
+    transform: translateY(-2px);
+  }
+
+  /* Wrapper principal — `<a>` o `<div>` según si hay href. */
+  .project-card__link {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* `<a>` wrapper: que sea bloque sin estilos extra de link global. */
+  a.project-card__link {
+    cursor: pointer;
+  }
+
+  a.project-card__link:hover,
+  a.project-card__link:focus-visible {
+    text-decoration: none;
+  }
+
+  .project-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .project-card__year {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+  }
+
+  .project-card__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem; /* 24px, dentro del rango 24–28px del DESIGN §8 */
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-0);
+    margin: 0;
+  }
+
+  .project-card__summary {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  .project-card__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+  }
+
+  .project-card__links {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .project-card__external {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-3);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .project-card__external:hover,
+  .project-card__external:focus-visible {
+    color: var(--accent-400);
+  }
+</style>

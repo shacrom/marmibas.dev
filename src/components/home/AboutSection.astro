@@ -1,0 +1,312 @@
+---
+/**
+ * AboutSection.astro — sección "Quién soy" del home (T-31).
+ *
+ * Sección "sobre mí" con narrativa cercana orientada a PYMEs LATAM/ES.
+ * Implementa RF-04 (About) con un tono profesional pero conversacional:
+ * tutea (ES), introduce credenciales sin formalismos vacíos, y termina
+ * con un CTA claro hacia /experiencia y /contacto.
+ *
+ * Estructura visual (DESIGN.md §9: max-width 720px para prose):
+ *   <Reveal>
+ *     <section class="about">
+ *       <header>
+ *         <h2 class="font-display">{t('about.heading')}</h2>
+ *       </header>
+ *       <div class="about__layout">
+ *         <div class="about__bio prose">
+ *           <p>{t('about.bio.p1')}</p>
+ *           <p>{t('about.bio.p2')}</p>
+ *           <p>{t('about.bio.p3')}</p>
+ *         </div>
+ *         <aside class="about__stats">
+ *           <dl>...</dl>
+ *         </aside>
+ *       </div>
+ *       <footer class="about__cta-row">
+ *         <a href="/experiencia">{t('about.cta.experience')}</a>
+ *         <a href="/contacto" class="about__cta-primary">
+ *           {t('about.cta.contact')}
+ *         </a>
+ *       </footer>
+ *     </section>
+ *   </Reveal>
+ *
+ * Layout:
+ *   - Padding vertical 96-128px (DESIGN.md §5).
+ *   - Layout 2 columnas en desktop (≥960px): bio prose izquierda, stats
+ *     a la derecha (chip grid). En mobile colapsa a 1 columna.
+ *   - Bio limitada a max-width 720px (DESIGN.md §9: prose pages).
+ *
+ * Tokens DESIGN.md usados:
+ *   §2 (paleta)      → --bg-1, --border, --text-0/1/2/3, --accent-400
+ *   §3 (gradients)   → --gradient-cta + glow shadow en CTA primario
+ *   §4 (tipografía)  → --font-display (h2), --font-sans (body), --font-mono (stats)
+ *   §5 (spacing)     → padding-block 96-128px, gap 48px entre col, 16px entre stat items
+ *   §6 (motion)      → --motion-fast, --motion-base, --motion-ease-out
+ *   §8 (CTA)         → CTA primario gradient + shadow glow en focus, hover gradient shift
+ *
+ * Spec: TASKS.md T-31 (renombrado) + DESIGN.md §8 (CTA primario)
+ * + §9 (max-width 720px prose).
+ */
+
+import Reveal from '../ui/Reveal.astro';
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Idioma activo. Resuelve los párrafos del bio y los CTAs. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+// Rutas localizadas para los CTAs finales.
+const experienceHref = lang === 'es' ? '/experiencia' : '/en/experience';
+const contactHref = lang === 'es' ? '/contacto' : '/en/contact';
+
+// Stats chip grid — los valores son neutros entre idiomas (números, lista
+// de idiomas), pero los labels van traducidos.
+const stats = [
+  { label: t('about.stats.years'), value: t('about.stats.yearsValue') },
+  { label: t('about.stats.projects'), value: t('about.stats.projectsValue') },
+  { label: t('about.stats.languages'), value: t('about.stats.languagesValue') },
+];
+---
+
+<Reveal as="section" class="about" aria-labelledby="about-heading">
+  <div class="about__inner">
+    <header class="about__header">
+      <h2 id="about-heading" class="about__heading font-display">
+        {t('about.heading')}
+      </h2>
+    </header>
+
+    <div class="about__layout">
+      <div class="about__bio prose">
+        <p>{t('about.bio.p1')}</p>
+        <p>{t('about.bio.p2')}</p>
+        <p>{t('about.bio.p3')}</p>
+      </div>
+
+      <aside class="about__stats" aria-label={t('about.heading')}>
+        <dl class="about__stats-list">
+          {
+            stats.map((stat) => (
+              <div class="about__stat">
+                <dt class="about__stat-label">{stat.label}</dt>
+                <dd class="about__stat-value">{stat.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </aside>
+    </div>
+
+    <div class="about__cta-row">
+      <a class="about__cta-primary" href={contactHref}>
+        {t('about.cta.contact')}
+      </a>
+      <a class="about__cta-secondary" href={experienceHref}>
+        {t('about.cta.experience')} →
+      </a>
+    </div>
+  </div>
+</Reveal>
+
+<style>
+  /* ---------------------------------------------------------------------- */
+  /* Section wrapper                                                         */
+  /* ---------------------------------------------------------------------- */
+
+  .about {
+    /* DESIGN.md §5: 96-128px desktop, 48-64px mobile. Padding lateral
+       fluido para acompañar al container interno. */
+    padding-block: clamp(64px, 10vw, 128px);
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .about__inner {
+    /* DESIGN.md §9: home/grid → 1080px. Bio prose se autolimita a 720px
+       internamente; el container más amplio deja respirar el aside con
+       los stats en desktop. */
+    max-width: 1080px;
+    margin-inline: auto;
+    display: grid;
+    row-gap: 48px;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Header                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  .about__header {
+    max-width: 720px;
+  }
+
+  .about__heading {
+    margin: 0;
+    color: var(--text-0);
+    /* DESIGN.md §4: H2 = --text-3xl (39px). Fluido para mobile. */
+    font-size: clamp(2rem, 4vw + 0.5rem, 2.4375rem);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Layout: bio + stats                                                     */
+  /*                                                                         */
+  /* Mobile: una columna. Desktop (≥960px): bio izquierda + stats derecha.   */
+  /* ---------------------------------------------------------------------- */
+
+  .about__layout {
+    display: grid;
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .about__layout {
+      grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+      gap: 64px;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Bio (prose)                                                             */
+  /*                                                                         */
+  /* `.prose` ya define typography (DESIGN.md §4): Inter body, line-height  */
+  /* 1.7, color --text-1, max-width 65ch. Aquí solo limitamos el ancho a    */
+  /* 720px adicional para acompañar el ritmo de la sección (§9).           */
+  /* ---------------------------------------------------------------------- */
+
+  .about__bio {
+    max-width: 720px;
+  }
+
+  /* Override interno: el primer `<p>` de `.prose` se renderiza como lead
+     (--text-lg). En la home queremos los 3 párrafos al MISMO peso visual
+     para que la narrativa fluya como bloque, no como artículo MDX. */
+  .about__bio :global(p:first-of-type) {
+    font-size: var(--text-base);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Stats — chip grid                                                       */
+  /*                                                                         */
+  /* DESIGN.md §8 no especifica un componente para "datos chip" — replica  */
+  /* el shape visual de las cards: --bg-1 background, border --border,     */
+  /* radius --radius-md, padding 16px. Valor en JetBrains Mono accent-400  */
+  /* para reforzar la jerarquía dentro del bloque.                         */
+  /* ---------------------------------------------------------------------- */
+
+  .about__stats {
+    /* En desktop, los stats van en una columna estrecha al lado del bio. */
+    align-self: start;
+  }
+
+  .about__stats-list {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .about__stat {
+    display: grid;
+    gap: 4px;
+    padding: 16px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .about__stat:hover {
+    border-color: var(--accent-400);
+  }
+
+  .about__stat-label {
+    margin: 0;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .about__stat-value {
+    margin: 0;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* CTA row                                                                 */
+  /*                                                                         */
+  /* DESIGN.md §8 — CTA primario:                                            */
+  /*   background: var(--gradient-cta), color: var(--text-0),               */
+  /*   padding 12px 24px, radius 8px, glow shadow en focus, gradient shift  */
+  /*   en hover (200ms ease-out).                                            */
+  /* ---------------------------------------------------------------------- */
+
+  .about__cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .about__cta-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--gradient-cta);
+    color: var(--text-0);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    /* Doble transition: gradient shift (background) en hover y glow shadow
+       en focus. 200ms ease-out (DESIGN.md §3 — único gradient animado). */
+    transition:
+      background var(--motion-base) var(--motion-ease-out),
+      box-shadow var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .about__cta-primary:hover {
+    background: var(--gradient-cta-hover);
+    transform: translateY(-1px);
+  }
+
+  .about__cta-primary:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .about__cta-secondary {
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .about__cta-secondary:hover,
+  .about__cta-secondary:focus-visible {
+    color: var(--accent-300);
+  }
+</style>

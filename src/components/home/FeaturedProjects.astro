@@ -1,0 +1,239 @@
+---
+/**
+ * FeaturedProjects.astro — sección "Casos de éxito" del home (T-30).
+ *
+ * Lista los case studies destacados (2-3) en una grid responsive y los
+ * presenta con `CaseStudyCard.astro` (T-22). Implementa RF-04/RF-05 del
+ * spec original (TASKS.md T-31 "FeaturedWork") con el naming acordado
+ * para esta iteración: el componente vive como `FeaturedProjects` y la
+ * sección se titula "Casos de éxito" / "Success stories".
+ *
+ * Estado actual (T-30): los datos están HARDCODED dentro del componente
+ * porque las collections de case-studies (T-44/T-45) todavía no existen.
+ * Cuando aterricen, esta sección leerá de la collection vía
+ * `getCaseStudies(lang)` y filtrará por `featured: true`. La firma pública
+ * (props) seguirá siendo la misma.
+ *
+ * Estructura:
+ *   <Reveal>
+ *     <section class="featured-projects">
+ *       <header>
+ *         <h2 class="font-display">{t('featured.heading')}</h2>
+ *         <p>{t('featured.sub')}</p>
+ *       </header>
+ *       <ul class="featured-projects__grid">
+ *         {featuredCases.map((c) => <li><CaseStudyCard ... featured /></li>)}
+ *       </ul>
+ *       <a class="featured-projects__view-all" href="/trabajos">
+ *         {t('featured.viewAll')}
+ *       </a>
+ *     </section>
+ *   </Reveal>
+ *
+ * Layout:
+ *   - Padding vertical 96-128px (DESIGN.md §5: secciones separan 96-128px).
+ *   - Grid 1 columna mobile, 2 columnas desktop (≥1024px). Gap 32px.
+ *   - Container max-width 1080px (DESIGN.md §9: home/grid).
+ *
+ * Tokens DESIGN.md usados:
+ *   §2 (paleta)      → --bg-0, --text-0, --text-2, --accent-400
+ *   §3 (gradients)   → indirecto via CaseStudyCard (conic en featured)
+ *   §4 (tipografía)  → --font-display (h2), --font-sans (subhead), --font-mono (CTA)
+ *   §5 (spacing)     → padding-block 96-128px, gap 32px
+ *   §6 (motion)      → --motion-fast, --motion-ease-out (hover CTA arrow)
+ *
+ * Spec: TASKS.md T-30 (renombrado) + DESIGN.md §8 ("Featured project card")
+ * + §9 ("Spacing vertical entre secciones").
+ */
+
+import CaseStudyCard from '../ui/CaseStudyCard.astro';
+import Reveal from '../ui/Reveal.astro';
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Idioma activo. Propaga a CaseStudyCard y resuelve el data set localizado. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+// ---------------------------------------------------------------------------
+// Featured case studies — hardcoded hasta que existan T-44/T-45.
+// ---------------------------------------------------------------------------
+//
+// Cuando las MDX collections aterricen, este array se reemplaza por:
+//   const featuredCases = (await getCaseStudies(lang))
+//     .filter((c) => c.data.featured)
+//     .slice(0, 3);
+//
+// Mientras tanto, mantenemos el shape compatible con CaseStudyCard.Props
+// (title, tagline, client, year, stack, lang, href, featured).
+
+const featuredCases = [
+  {
+    slug: 'voxye',
+    title: 'Voxye',
+    tagline:
+      lang === 'es'
+        ? 'SaaS multi-tenant para reformistas — del presupuesto al cobro, sin Word ni Excel.'
+        : 'Multi-tenant SaaS for renovators — from quote to invoice, no Word or Excel.',
+    client: lang === 'es' ? 'Reformistas' : 'Renovation pros',
+    year: 2026,
+    stack: ['Angular 21', 'Tailwind v4', 'Supabase', 'Resend', 'Edge Functions'],
+    href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
+  },
+  {
+    slug: 'recetas-novatex',
+    title: 'Recetas Novatex',
+    tagline:
+      lang === 'es'
+        ? 'Libreta digital para parámetros de máquinas RAMs — knowledge transfer en industria textil.'
+        : 'Digital notebook for textile RAM machine parameters — preserving expert knowledge.',
+    client: lang === 'es' ? 'Industria textil' : 'Textile industry',
+    year: 2025,
+    stack: ['Angular', 'Supabase', 'Tailwind'],
+    href: lang === 'es' ? '/case-studies/recetas-novatex' : '/en/case-studies/recetas-novatex',
+  },
+];
+
+const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
+---
+
+<Reveal as="section" class="featured-projects" aria-labelledby="featured-heading">
+  <div class="featured-projects__inner">
+    <header class="featured-projects__header">
+      <h2 id="featured-heading" class="featured-projects__heading font-display">
+        {t('featured.heading')}
+      </h2>
+      <p class="featured-projects__sub">{t('featured.sub')}</p>
+    </header>
+
+    <ul class="featured-projects__grid" role="list">
+      {
+        featuredCases.map((caseStudy) => (
+          <li class="featured-projects__item">
+            <CaseStudyCard
+              title={caseStudy.title}
+              tagline={caseStudy.tagline}
+              client={caseStudy.client}
+              year={caseStudy.year}
+              stack={caseStudy.stack}
+              lang={lang}
+              href={caseStudy.href}
+              featured={true}
+            />
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="featured-projects__view-all" href={viewAllHref}>
+      {t('featured.viewAll')}
+    </a>
+  </div>
+</Reveal>
+
+<style>
+  /* ---------------------------------------------------------------------- */
+  /* Section wrapper                                                         */
+  /* ---------------------------------------------------------------------- */
+
+  .featured-projects {
+    /* DESIGN.md §5/§9: secciones separan 96-128px en desktop, 48-64px en
+       mobile. Padding lateral fluido para acompañar el container interno. */
+    padding-block: clamp(64px, 10vw, 128px);
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .featured-projects__inner {
+    /* DESIGN.md §9: home/grid usa max-width 1080px. */
+    max-width: 1080px;
+    margin-inline: auto;
+    display: grid;
+    /* gap entre header y grid (48px) y entre grid y view-all (32px) lo
+       gestionamos a nivel de filas para no romper el ritmo vertical. */
+    row-gap: 48px;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Header                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  .featured-projects__header {
+    display: grid;
+    gap: 12px;
+    /* Limita el ancho del header para que el subhead no se estire en
+       desktop (mejor lectura). */
+    max-width: 720px;
+  }
+
+  .featured-projects__heading {
+    margin: 0;
+    color: var(--text-0);
+    /* DESIGN.md §4: H2 = --text-3xl (39px). Fluido para escalar mobile. */
+    font-size: clamp(2rem, 4vw + 0.5rem, 2.4375rem);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .featured-projects__sub {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: var(--leading-normal);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Grid                                                                    */
+  /* ---------------------------------------------------------------------- */
+
+  .featured-projects__grid {
+    display: grid;
+    /* 1 columna mobile, 2 columnas desktop (≥1024px). Gap 32px. */
+    grid-template-columns: 1fr;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .featured-projects__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .featured-projects__item {
+    display: flex;
+    /* CaseStudyCard se estira al alto del item — flex hace match de altura
+       entre cards en la misma fila. */
+  }
+
+  .featured-projects__item :global(.case-study-card) {
+    width: 100%;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* View all                                                                */
+  /* ---------------------------------------------------------------------- */
+
+  .featured-projects__view-all {
+    /* JetBrains Mono accent — coherente con CTAs de cards (DESIGN.md §8). */
+    justify-self: start;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .featured-projects__view-all:hover,
+  .featured-projects__view-all:focus-visible {
+    color: var(--accent-300);
+  }
+</style>

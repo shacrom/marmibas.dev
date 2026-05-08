@@ -1,0 +1,110 @@
+---
+/**
+ * /case-studies/[slug] — case study detail page (ES) — T-36.
+ *
+ * Dynamic route that renders a single case study from the `case-studies`
+ * collection (Astro 6 Content Layer API). Filters entries by `lang === 'es'`.
+ *
+ * URL shape:
+ *   /case-studies/voxye
+ *   /case-studies/recetas-novatex
+ *
+ * Slug derivation:
+ *   The glob loader in `src/content.config.ts` uses
+ *   `base: "./src/content/case-studies"` so an entry living at
+ *   `src/content/case-studies/es/voxye.mdx` gets `entry.id === "es/voxye"`.
+ *   The page slug is the file basename ("voxye") — we strip the lang prefix
+ *   so the URL stays clean and matches the i18n routes table
+ *   (`routes.caseStudies.es === '/case-studies'`).
+ *
+ * prev / next siblings:
+ *   Sorted by `year` DESC across all ES case-studies. From the perspective of
+ *   the current entry:
+ *     - prev = the case study with a HIGHER year (more recent / previous in
+ *       the listing).
+ *     - next = the case study with a LOWER year (older / next in the listing).
+ *   This mirrors the natural left-to-right reading order of a chronological
+ *   grid where the most recent work sits first. CaseStudyLayout receives
+ *   `null` when there is no neighbour, which hides the corresponding link.
+ *
+ * Empty collection:
+ *   T-44 / T-45 author the actual MDX content in parallel. While those tasks
+ *   are pending, `getCollection` returns an empty array, `getStaticPaths`
+ *   emits `[]`, and Astro skips this route during build — no compile errors.
+ *
+ * Source of truth:
+ *   - TASKS.md T-36.
+ *   - src/content.config.ts → `case-studies` schema.
+ *   - src/layouts/CaseStudyLayout.astro (T-27) — props contract.
+ */
+
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+import Callout from '../../components/ui/Callout.astro';
+import MetricsGrid from '../../components/ui/MetricsGrid.astro';
+import { slugFromId } from '../../lib/content';
+
+type CaseStudyEntry = CollectionEntry<'case-studies'>;
+
+
+export async function getStaticPaths() {
+  const entries = await getCollection(
+    'case-studies',
+    (entry: CaseStudyEntry) => entry.data.lang === 'es',
+  );
+
+  // Sort once, here, so the same ordered list drives both `getStaticPaths`
+  // output AND the prev / next computation for each page.
+  const sorted: CaseStudyEntry[] = [...entries].sort(
+    (a, b) => b.data.year - a.data.year,
+  );
+
+  return sorted.map((entry, index) => {
+    const prev = index > 0 ? sorted[index - 1] : null;
+    const next = index < sorted.length - 1 ? sorted[index + 1] : null;
+
+    return {
+      params: { slug: slugFromId(entry.id) },
+      props: {
+        entry,
+        prev: prev
+          ? {
+              url: `/case-studies/${slugFromId(prev.id)}`,
+              title: prev.data.title,
+            }
+          : null,
+        next: next
+          ? {
+              url: `/case-studies/${slugFromId(next.id)}`,
+              title: next.data.title,
+            }
+          : null,
+      },
+    };
+  });
+}
+
+interface SiblingRef {
+  url: string;
+  title: string;
+}
+
+interface Props {
+  entry: CaseStudyEntry;
+  prev: SiblingRef | null;
+  next: SiblingRef | null;
+}
+
+const { entry, prev, next } = Astro.props as Props;
+const { Content, headings } = await render(entry);
+---
+
+<CaseStudyLayout
+  frontmatter={entry.data}
+  headings={headings}
+  lang="es"
+  prev={prev}
+  next={next}
+>
+  <Content components={{ Callout, MetricsGrid }} />
+</CaseStudyLayout>

@@ -1,0 +1,121 @@
+---
+/**
+ * HeroIntro.astro — Cascade hero title (T-28).
+ *
+ * Visual anchor of the home hero (DESIGN.md §8 "Hero" + §7 animation #2).
+ * Each line is rendered as a `<span>` and revealed with a staggered delay
+ * driven by `--line-index`. The keyframes (`hero-reveal`) and the cascade
+ * utility (`.motion-cascade > *`) live in `src/styles/motion.css` (T-09);
+ * this component composes them — it does not redefine motion tokens.
+ *
+ * Usage:
+ *   <HeroIntro
+ *     eyebrow="Ingeniero Informático · Full Stack"
+ *     lines={["Construyo software", "que tu negocio", "necesita."]}
+ *   />
+ *
+ *   <HeroIntro lines={["Hablemos."]} as="h2" />
+ *
+ * Behaviour notes:
+ * - Pure CSS animation. No JS — keeps the home hero on the static path.
+ * - `prefers-reduced-motion: reduce` is neutralised in motion.css (single
+ *   block). No local override is needed here.
+ * - The total cascade stays within DESIGN.md §7's 400ms budget for typical
+ *   3-line hero content (3 × 120ms + 100ms baseline ≈ 460ms — accepted in
+ *   T-28 as the initial reveal feels staggered without dragging).
+ *
+ * Sources of truth: DESIGN.md §7/§8, src/styles/motion.css (T-09 utilities).
+ */
+
+type HeadingTag = 'h1' | 'h2';
+
+export interface Props {
+  /**
+   * Optional small line above the title (JetBrains Mono, uppercase, tracked).
+   * Renders inside a `<p>` so it stays decoupled from the heading semantics.
+   */
+  eyebrow?: string;
+
+  /**
+   * Title content split into independently animated lines. Each entry becomes
+   * a `<span>` with its own `--line-index` and staggered `animation-delay`.
+   */
+  lines: string[];
+
+  /**
+   * Heading tag for the title. Use `h1` on the home hero (default) and `h2`
+   * for secondary heroes (e.g. contact, 404) where an `h1` already exists
+   * upstream. Restricted to two values to keep document outline predictable.
+   */
+  as?: HeadingTag;
+}
+
+const { eyebrow, lines, as: As = 'h1' } = Astro.props;
+---
+
+{eyebrow && <p class="hero__eyebrow">{eyebrow}</p>}
+
+<As class="hero__title motion-cascade">
+  {
+    lines.map((line: string, i: number) => (
+      <span class="hero__line" style={`--line-index: ${i}`}>
+        {line}
+      </span>
+    ))
+  }
+</As>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Eyebrow — JetBrains Mono, uppercase, tracked. Fades in immediately so it
+   * frames the cascade without competing with it. Duration matches the base
+   * motion token; reduced-motion collapses it to ~0 via motion.css.
+   * ------------------------------------------------------------------------ */
+  .hero__eyebrow {
+    margin: 0 0 24px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-accent-400);
+    animation: fade-in var(--motion-duration-base) var(--motion-ease-out) both;
+    animation-delay: 0ms;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Title — Fraunces display, fluid clamp size, tight letter-spacing and
+   * line-height for the editorial hero treatment from DESIGN.md §8. The
+   * gradient text effect uses `--gradient-text-display`; the colour fallback
+   * (white) keeps the title readable wherever `background-clip: text` is not
+   * supported (Safari < 15 etc.).
+   * ------------------------------------------------------------------------ */
+  .hero__title {
+    margin: 0;
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(48px, 10vw, 112px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+    background: var(--gradient-text-display);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Each line is a block-level span so the cascade flows vertically. The
+   * `hero-reveal` keyframes + `--line-index` staggered delay come from the
+   * `.motion-cascade > *` utility in motion.css; we add a 100ms baseline
+   * delay here so the first line lands just after the eyebrow settles.
+   *
+   * `both` fill mode is provided by the utility; we only override the delay
+   * formula to include the baseline offset.
+   * ------------------------------------------------------------------------ */
+  .hero__line {
+    display: block;
+    animation-delay: calc(var(--line-index, 0) * 120ms + 100ms);
+  }
+</style>

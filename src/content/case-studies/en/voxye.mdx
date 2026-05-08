@@ -1,0 +1,118 @@
+---
+title: "Voxye"
+description: "Multi-tenant SaaS for renovation contractors: from quote to payment, without Word or Excel."
+lang: "en"
+draft: false
+featured: true
+order: 1
+tagline: "Multi-tenant SaaS for renovation contractors — from quote to payment, without Word or Excel."
+client: "Confidential client · home renovation sector"
+year: 2026
+role: "Software Engineer · Founder"
+stack:
+  - "Angular 21"
+  - "TypeScript"
+  - "Tailwind v4"
+  - "PrimeNG"
+  - "PDFMake"
+  - "Supabase (PostgreSQL + RLS)"
+  - "Edge Functions (Deno)"
+  - "Resend"
+  - "Vercel"
+  - "Playwright"
+status: "success"
+results:
+  - "Replaces Word, Excel and stray PDFs with a single flow: quote → contract → invoice → payment."
+  - "Documents carry the company's brand identity (logo, colors, typography), generated from a single template configurable per tenant."
+  - "Multi-tenant isolation verified by an SQL suite on every PR — not by convention."
+  - "Idempotent email webhooks with signature verification: each send's status reflects the provider's reality, not an optimistic guess."
+metrics:
+  - label: "Multi-tenant tables"
+    value: "24"
+    sublabel: "all carry storeId + RLS"
+  - label: "Document types"
+    value: "8"
+    sublabel: "configurable numbering"
+  - label: "SQL asserts per PR"
+    value: "9"
+    sublabel: "isolation tested"
+  - label: "Production version"
+    value: "1.35"
+    sublabel: "Angular 21 + Supabase"
+---
+
+import Callout from '@/components/ui/Callout.astro';
+import MetricsGrid from '@/components/ui/MetricsGrid.astro';
+
+## Context
+
+The home renovation sector in Spain is a fragmented market dominated by small businesses. A typical company with 5 to 30 employees runs job after job using the same toolkit they had twenty years ago: Word for quotes, Excel to add line items, stray PDFs filed in folders named "quote_garcia_v3_FINAL_FINAL". Clients receive documents that don't look alike, calculations are done by hand (with the errors that implies), and at the end of each quarter no one can answer with certainty how many quotes were signed, how much is pending invoicing, or which supplier is still waiting on a purchase order. Voxye exists to fill that gap.
+
+## The problem
+
+The first pain point is mathematical. A renovation quote has chapters, line items, labor, materials, margins, discounts and a VAT rate that varies by job type. Computing that in Excel works until someone drags a cell wrong and the total drifts by 800 euros without anyone noticing. The second pain point is visual: every document a client receives tells a different story about the company because there is no template — there is a collection of templates that each employee tweaks on their own. Misaligned logos, fonts that change mid-page, last year's tax data. Up against a competitor who sends a polished PDF, the artisanal proposal loses before anyone reads the price.
+
+The third pain point is organizational. The paper trail of a job lives scattered: the quote in one folder, the signed contract scanned into another, invoices in a third, supplier orders in an email no one knows how to search. When the client calls six months later asking about a warranty, recovering the history becomes archeology. When a payment dispute appears, there's no fast way to prove what was actually signed.
+
+The fourth pain point — the one that tips most decisions — is that generic products don't fit. Big ERPs are expensive and built for industry. General-purpose SMB tools don't speak the language of chapters and line items. The vertical tools that exist are locked to a single document format or a single way of numbering invoices. Every renovation company has its own tradition — one numbers quotes by store and year, another by user, another mixes letters and sequence — and forcing a rigid system on them is the same as not entering the market.
+
+## The solution
+
+Voxye is a multi-tenant SaaS that gives each renovation company the full document lifecycle inside a single application: quotes with chapters and line items, contracts derived from signed quotes, pro forma / ordinary / corrective invoices, supplier purchase orders, and management of clients, products, suppliers, subcontractors and on-site incidents. A trash bin, an audit trail and an admin module round out the foundation. Every document that leaves the company carries its brand identity: logo, palette, typography, tax data, legal terms — configured once in `/admin/empresa` and applied consistently everywhere.
+
+Email is a first-class citizen: every document can be sent to the client with custom templates, and the system always knows whether the message was delivered, opened, bounced or marked as spam, because it listens to provider webhooks. The numbering of each document type (quote, ordinary invoice, corrective, purchase order, etc.) is configurable through a visual chip builder with tokens — `{seq}`, `{store}`, `{user}`, `{YYYY}` — so each tenant's numbering tradition is respected without touching code.
+
+Underneath, everything sits on an architecture designed for multi-tenancy from day one: each company is a `storeId`, and that field appears on every one of the model's 24 tables. PostgreSQL RLS enforces isolation, and an SQL test suite verifies on every pull request that no tenant can read another tenant's data. It isn't discipline — it's a contract.
+
+## Notable technical decisions
+
+### Multi-tenant PDFs with brand identity
+
+Generating a "nice-looking" PDF is easy. Generating 8 different document types, each branded with the issuing company's identity, each at the same typographic quality, without going through a Word template — is not. Voxye uses PDFMake with embedded fonts (Montserrat for titles, Roboto for body) and a service that takes the tenant's `CompanySettings` — logo, primary and secondary colors, tax data, legal footer — and injects it into every document. Layouts are composed programmatically rather than rendered from HTML, which guarantees identical output across browsers and operating systems.
+
+The choice of PDFMake over Puppeteer (which the original README hinted at) was made by measuring response time and Edge Function cost: spinning up a headless Chrome per document is elegant but expensive and brittle; PDFMake runs in milliseconds and has no network dependencies.
+
+### Email orchestration with idempotent webhooks
+
+Sending email from the frontend is an invitation to disaster. Voxye delegates each send to Resend through Deno Edge Functions, and for each document keeps its own email log table — four parallel tables, one per document type that ships: quotes, contracts, invoices, supplier orders. When Resend fires a webhook (delivered, opened, bounced, complained), an Edge Function verifies the HMAC-SHA256 signature, checks the `svix-id` against a processed-events table to prevent replays, and updates the corresponding log.
+
+<Callout type="tip" title="Idempotency first">
+Most webhook bugs come from assuming each event arrives once. Resend retries. Networks drop packets. Voxye's rule is simple: record the `svix-id` in a processed-events table and reject duplicates. The email's status is always the latest valid one, never the most recent one.
+</Callout>
+
+### Unified numbering with configurable templates
+
+Every renovation company has its own inherited numbering scheme. Forcing them onto a new one is a flat no in the first demo. Voxye exposes a visual template builder in `/admin/empresa`: the admin picks tokens (`{seq}`, `{store}`, `{user}`, `{YYYY}`, literal separators) and arranges them in a chip builder that previews live what the next number will look like. Each of the 8 document types (quote, contract, ordinary invoice, pro forma invoice, corrective invoice, supplier order, etc.) has its own independent template, its own counter and its own annual reset. Number generation lives in a single parameterized function, not eight copies.
+
+### Native multi-tenant RLS tested on every PR
+
+Talking about multi-tenancy is cheap. Guaranteeing it isn't. Voxye declares `storeId` as a required column on all 24 tables, defines Postgres RLS policies that filter every `select`, `insert`, `update` and `delete` by the authenticated user's `storeId`, and ships an SQL script — `multi-tenant-isolation.sql` — with 9 asserts that run in CI on every PR against a fixture database with two tenants. The asserts attempt, from one tenant's role, to read and modify the other's data. If any of them passes, the PR doesn't merge.
+
+<Callout type="warning" title="RLS isn't documented, it's tested">
+It's trivial to add a new table and forget the RLS policy. The SQL suite is the safety net: if someone introduces a new table without a policy, the corresponding assert fails on the first push. Human discipline breaks; tests don't.
+</Callout>
+
+### Explicit document state machines
+
+Documents are not CRUDs: they have lifecycles with rules. A quote moves from `unsigned` to `completed` to `shown` to `accepted`. An ordinary invoice, once issued, is never modified — it's corrected with a new corrective invoice. A supplier order, once sent, becomes immutable. Voxye encodes these state machines into the model, not into scattered conditionals across the UI. Every transition has its validation, its audit trail and its propagation onto child documents. A client revoking the signature on a quote breaks nothing: the system knows that state has moved backward and propagates the change wherever needed.
+
+<MetricsGrid metrics={[
+  { label: "Core stack", value: "Angular 21", sublabel: "Signals + standalone" },
+  { label: "Multi-tenant tables", value: "24", sublabel: "RLS per tenant" },
+  { label: "Document types", value: "8", sublabel: "configurable numbering" },
+  { label: "SQL asserts per PR", value: "9", sublabel: "isolation verified" },
+]} />
+
+## Results and impact
+
+Voxye is live in production at version 1.35.0 and covers the full document lifecycle that used to live across Word, Excel, scattered PDFs and email inboxes. The qualitative impact is clear: the company stops generating artisanal documents and starts presenting itself to clients with a consistent visual identity; quotes no longer ship with calculation errors because there are no longer cells to drag; invoices are issued with numbering schemes the client recognizes because they follow the company's own tradition; and email traceability stops depending on "I think I sent it" and starts being a log with `delivered`, `opened` and `bounced` events sealed by the provider.
+
+The real value — without inflating numbers — lives in what stops happening: the question "which version of the quote was the last one?" stops being asked, arguments about whether an email arrived or not stop happening, and the risk of a new hire opening a stale Excel and overwriting an invoice disappears. As a builder, the value lies in proving that you can ship a multi-tenant SaaS with real test discipline — verified RLS, idempotent webhooks, explicit state machines — without the maintenance cost spiraling out of control.
+
+## Full stack
+
+Frontend in Angular 21.1.1 with Signals, standalone components and the modern control flow (`@if`, `@for`); UI with PrimeNG 21 on top of Tailwind v4; unit tests with Vitest. Backend in Supabase: PostgreSQL with multi-tenant RLS, Auth with roles (`superadmin`, `admin`, `user`), Deno Edge Functions for email, webhooks and tasks that handle secrets. Transactional email with Resend 4 and signed webhooks (HMAC-SHA256 + `svix` anti-replay). PDFs with PDFMake 0.2.20 and embedded fonts. Dual deployment on Vercel (`develop` and `main` environments), with automatic `db push` via GitHub Actions when merging into `main`. Landing in a separate Astro 6 repository. External E2E with Playwright 1.58.
+
+## Next steps
+
+The next big block on the roadmap is a client-facing view — for the homeowner whose renovation is being executed — so they can follow progress without depending on phone calls, WhatsApp photos or PDFs sent as attachments. The idea is that the client opens a signed link and sees the active quote, the contract, issued invoices, supplier orders affecting their job, and a milestone timeline with photos. For the renovation company that means fewer "give me an update" calls and a single channel where the information already lives. For the client it means their renovation stops being a black box until the invoice arrives.

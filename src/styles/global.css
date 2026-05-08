@@ -1,0 +1,329 @@
+/**
+ * marmibas.dev — global stylesheet (T-08)
+ *
+ * Layer order (Tailwind v4 CSS-first config):
+ *   1. `@import "tailwindcss"` registers Preflight + every Tailwind utility.
+ *   2. `@import "./fonts.css"` declares self-hosted @font-face (T-07). Imported
+ *      first to avoid FOIT once Tailwind utilities reference Inter / Fraunces.
+ *   3. `@theme` exposes design tokens (DESIGN.md §2-§6) AS Tailwind tokens, so
+ *      utilities like `bg-bg-0`, `text-accent-400`, `font-display` are valid.
+ *   4. `:root` mirrors raw aliases for hand-written CSS (gradients, motion).
+ *   5. Custom reset (Andy Bell + Josh Comeau, slimmed) + base typography.
+ *
+ * Source of truth for tokens: /DESIGN.md (supersedes any other palette).
+ */
+
+/* CSS imports MUST be the very first rules (per CSS spec). */
+@import './fonts.css';
+@import 'tailwindcss';
+@import './motion.css';
+@import './prose.css';
+
+/* ----------------------------------------------------------------------- */
+/* 1. Theme tokens (Tailwind v4 CSS-first config).                         */
+/*                                                                         */
+/* Each `--<namespace>-*` here generates the corresponding utility class:  */
+/*   --color-bg-0       → bg-bg-0 / text-bg-0 / border-bg-0                */
+/*   --color-text-1     → text-text-1 / bg-text-1                          */
+/*   --color-accent-400 → bg-accent-400 / text-accent-400 / ring-accent-400 */
+/*   --font-display     → font-display                                     */
+/*   --text-display     → text-display (font-size + line-height)           */
+/*   --spacing-24       → p-24 / m-24 / gap-24 (multiplied by base spacing) */
+/*   --radius-md        → rounded-md                                       */
+/*   --shadow-glow      → shadow-glow                                      */
+/* ----------------------------------------------------------------------- */
+
+@theme {
+  /* --- Base oscura — DESIGN.md §2 ------------------------------------- */
+  --color-bg-0: #0a0a0f;
+  --color-bg-1: #12121a;
+  --color-bg-2: #1a1a26;
+
+  /* --- Texto — DESIGN.md §2 ------------------------------------------- */
+  --color-text-0: #fafafa;
+  --color-text-1: #e8e8ee;
+  --color-text-2: #a8a8b8;
+  --color-text-3: #6a6a78;
+  --color-border: #252535;
+
+  /* --- Acento morado — DESIGN.md §2 ----------------------------------- */
+  --color-accent-100: #ede9fe;
+  --color-accent-300: #c4b5fd;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-accent-glow: rgba(139, 92, 246, 0.15);
+
+  /* --- Status — DESIGN.md §2 ------------------------------------------ */
+  --color-status-success: #a78bfa;
+  --color-status-progress: #c9a892;
+  --color-status-paused: #71717a;
+  --color-status-prev: #a8a8b8;
+
+  /* --- Tipografía — DESIGN.md §4 -------------------------------------- */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  /* --- Escala de texto — DESIGN.md §4 (base 16, ratio 1.25) ----------- */
+  /* Tailwind v4 acepta `--text-<name>` y derivados `--text-<name>--line-height` */
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: calc(1 / 0.75);
+  --text-sm: 0.875rem; /* 14px */
+  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-base: 1rem; /* 16px */
+  --text-base--line-height: calc(1.5 / 1);
+  --text-lg: 1.25rem; /* 20px */
+  --text-lg--line-height: calc(1.75 / 1.25);
+  --text-xl: 1.5625rem; /* 25px */
+  --text-xl--line-height: calc(2 / 1.5625);
+  --text-2xl: 1.9375rem; /* 31px */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 2.4375rem; /* 39px */
+  --text-3xl--line-height: 1.15;
+  --text-4xl: 3.0625rem; /* 49px */
+  --text-4xl--line-height: 1.1;
+  --text-5xl: 3.8125rem; /* 61px */
+  --text-5xl--line-height: 1.05;
+  --text-display: clamp(3rem, 8vw + 1rem, 4.5rem); /* hero — 72px+ */
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.02em;
+
+  /* --- Tracking ------------------------------------------------------- */
+  --tracking-tighter: -0.02em;
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em; /* eyebrow uppercase */
+
+  /* --- Leading -------------------------------------------------------- */
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5; /* body */
+  --leading-relaxed: 1.7; /* prose / MDX */
+
+  /* --- Espaciado — DESIGN.md §5 (base 4) ------------------------------ */
+  /* Tailwind v4 multiplica `--spacing` por el N de la utility (p-1, p-2…). */
+  --spacing: 0.25rem; /* 4px → genera p-1 = 4px, p-24 = 96px, etc. */
+
+  /* --- Radius --------------------------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px; /* CTA, cards */
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* --- Shadow --------------------------------------------------------- */
+  --shadow-glow: 0 0 0 4px var(--color-accent-glow);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 2. Aliases para CSS hand-written (gradientes, motion, raw vars).        */
+/*                                                                         */
+/* Tailwind v4 ya expone los `--color-*`, `--font-*` etc. en `:root`. Acá  */
+/* añadimos lo que NO pasa por @theme: gradientes (DESIGN.md §3) y aliases */
+/* cortos (`--bg-0`, `--text-1`) que son más legibles dentro de Astro      */
+/* style blocks. Los gradients NO viven en @theme — Tailwind v4 no genera  */
+/* utilities útiles para conic/radial complejos.                           */
+/* ----------------------------------------------------------------------- */
+
+:root {
+  /* Aliases cortos (puente para CSS escrito a mano dentro de componentes) */
+  --bg-0: var(--color-bg-0);
+  --bg-1: var(--color-bg-1);
+  --bg-2: var(--color-bg-2);
+  --text-0: var(--color-text-0);
+  --text-1: var(--color-text-1);
+  --text-2: var(--color-text-2);
+  --text-3: var(--color-text-3);
+  --border: var(--color-border);
+  --accent-100: var(--color-accent-100);
+  --accent-300: var(--color-accent-300);
+  --accent-400: var(--color-accent-400);
+  --accent-500: var(--color-accent-500);
+  --accent-600: var(--color-accent-600);
+  --accent-700: var(--color-accent-700);
+  --accent-glow: var(--color-accent-glow);
+
+  /* Gradients — DESIGN.md §3 ------------------------------------------- */
+  --gradient-hero-ambient: radial-gradient(
+    ellipse at top,
+    var(--color-accent-700) 0%,
+    transparent 60%
+  );
+
+  --gradient-cta: linear-gradient(
+    135deg,
+    var(--color-accent-500) 0%,
+    var(--color-accent-400) 100%
+  );
+
+  --gradient-cta-hover: linear-gradient(
+    135deg,
+    var(--color-accent-400) 0%,
+    var(--color-accent-300) 100%
+  );
+
+  --gradient-text-display: linear-gradient(
+    180deg,
+    var(--color-text-0) 0%,
+    var(--color-accent-300) 100%
+  );
+
+  --gradient-border-featured: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--color-accent-600),
+    var(--color-accent-400),
+    var(--color-accent-600)
+  );
+
+  /* Color scheme hint para UA dark widgets (scrollbar, form controls). */
+  color-scheme: dark;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 3. Reset moderno minimal — Andy Bell + Josh Comeau, slimmed.            */
+/*                                                                         */
+/* Tailwind Preflight (incluido por @import "tailwindcss") ya hace MUCHO   */
+/* del reset clásico. Acá solo añadimos lo que faltaría o se adapta al     */
+/* stack (box-sizing universal, cap text-size-adjust, body baseline).      */
+/* ----------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  background: var(--color-bg-0);
+  color: var(--color-text-1);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-accent-400);
+  text-underline-offset: 0.15em;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* Focus visible — DESIGN.md (CTA primario §8). Aplica a todo focusable. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-400);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Selection — coherente con la firma morada. */
+::selection {
+  background: var(--color-accent-700);
+  color: var(--color-text-0);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 4. Tipografía base.                                                     */
+/*                                                                         */
+/* Decisión: Inter como default global; Fraunces aplicado SELECTIVAMENTE  */
+/* (clase utility `.font-display` o asignación explícita en componentes  */
+/* hero / case study). Esto permite usar Fraunces para H1/H2 destacados  */
+/* sin imponerlo en cada h3 de prose o de UI auxiliar (DESIGN.md §4 dice */
+/* "headings de sección usan Fraunces 600", no "todos los headings").    */
+/* ----------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+}
+
+/* Utility class para opt-in a Fraunces (aplicada en hero, case study,
+   featured cards). Body NUNCA es serif (DESIGN.md §4 regla dura). */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings:
+    'ss01' on,
+    'ss02' on; /* Fraunces stylistic alternates */
+}
+
+/* ----------------------------------------------------------------------- */
+/* 5. Skip link helper (accesibilidad — usado por SkipLink.astro en T-16). */
+/* ----------------------------------------------------------------------- */
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-1);
+  color: var(--color-text-0);
+  z-index: 100;
+  transition: top 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skip-link:focus-visible {
+  top: 0;
+}

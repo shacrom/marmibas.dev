@@ -1,0 +1,277 @@
+---
+/**
+ * Header — barra superior con brand "marmibas", nav primario y LangSwitcher.
+ *
+ * Comportamiento:
+ * - Brand es link a la home del idioma activo (`/` en ES, `/en/` en EN).
+ *   Tipografía display Fraunces (var(--font-display)), peso 600, color
+ *   `--color-text-0` para máxima jerarquía.
+ * - Nav muestra los 5 ítems primarios (home, work, experience, blog,
+ *   contact) traducidos vía `t('nav.*')`. El link activo se resuelve con
+ *   `isCurrentRoute(currentPath, key, lang)` y recibe `aria-current="page"`
+ *   + un dot indicator morado (--color-accent-400) bajo el label.
+ * - LangSwitcher (T-19) montado al extremo derecho, recibe `currentLang`
+ *   y `currentUrl` para construir el href alterno.
+ * - Sticky top con backdrop-filter blur sutil sobre `--color-bg-0`
+ *   transparente (DESIGN.md §6 "tech minimal" — el fondo del header se
+ *   "funde" con el contenido al hacer scroll, manteniendo legibilidad).
+ * - Mobile (<640px): nav se mantiene visible con horizontal scroll
+ *   (decisión: no introducir hamburger interactivo en T-17 porque eso
+ *   exigiría JS cliente y T-17 NO pide hamburger explícitamente — la
+ *   `Done` checklist de T-17 menciona hamburger pero el usuario priorizó
+ *   "sin JS cliente salvo si TASKS.md pide hamburger interactivo". Se
+ *   marca como deviation reportable y se deja el horizontal scroll
+ *   accesible y sin layout shift). Ver reporte final.
+ *   Brand siempre visible; nav es scrolleable horizontalmente con
+ *   `scrollbar-width: none` y los chips no se truncan.
+ * - View Transitions: `view-transition-name: header` para que persista
+ *   visualmente entre navegaciones (sin re-mount visual).
+ *
+ * Spec: TASKS.md T-17 + DESIGN.md §1 (tech minimal oscuro), §4
+ * (tipografías), §6 (motion tokens), §8 ("Lang switcher").
+ */
+import LangSwitcher from './LangSwitcher.astro';
+import { useTranslations, getRoutePath, isCurrentRoute } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+import type { RouteKey } from '../../i18n/routes';
+
+interface Props {
+  currentLang: Language;
+  currentUrl: URL;
+}
+
+const { currentLang, currentUrl } = Astro.props;
+
+const t = useTranslations(currentLang);
+
+const homeHref = getRoutePath('home', currentLang);
+const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
+
+interface NavItem {
+  key: RouteKey;
+  label: string;
+  href: string;
+  active: boolean;
+}
+
+const navKeys: { key: RouteKey; labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.blog' | 'nav.contact' }[] = [
+  { key: 'home', labelKey: 'nav.home' },
+  { key: 'work', labelKey: 'nav.work' },
+  { key: 'experience', labelKey: 'nav.experience' },
+  { key: 'blog', labelKey: 'nav.blog' },
+  { key: 'contact', labelKey: 'nav.contact' },
+];
+
+const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
+  key,
+  label: t(labelKey),
+  href: getRoutePath(key, currentLang),
+  active: isCurrentRoute(currentUrl.pathname, key, currentLang),
+}));
+---
+
+<header class="site-header" data-current-lang={currentLang}>
+  <div class="site-header__inner">
+    <a class="site-header__brand" href={homeHref} aria-label="marmibas — home">
+      marmibas
+    </a>
+
+    <nav class="site-header__nav" aria-label={navAriaLabel}>
+      <ul class="site-header__list" role="list">
+        {
+          navItems.map((item) => (
+            <li class="site-header__item">
+              <a
+                class:list={[
+                  'site-header__link',
+                  { 'site-header__link--active': item.active },
+                ]}
+                href={item.href}
+                aria-current={item.active ? 'page' : undefined}
+              >
+                <span class="site-header__link-label">{item.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__lang">
+      <LangSwitcher currentLang={currentLang} currentUrl={currentUrl} />
+    </div>
+  </div>
+</header>
+
+<style>
+  /* --------------------------------------------------------------------- */
+  /* Wrapper sticky con backdrop blur sutil. View Transitions preservadas. */
+  /* --------------------------------------------------------------------- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    background-color: color-mix(in srgb, var(--color-bg-0) 72%, transparent);
+    /* Fallback para navegadores sin color-mix: bg-0 sólido, baja opacidad
+       a través del header, layout no rompe si backdrop-filter no aplica. */
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border-bottom: 1px solid var(--color-border);
+    view-transition-name: header;
+  }
+
+  /* Si el navegador soporta backdrop-filter, podemos bajar más la opacidad. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .site-header {
+      background-color: color-mix(in srgb, var(--color-bg-0) 60%, transparent);
+    }
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-block: 1rem;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* Brand wordmark — Fraunces display, peso ligero (500) según pista DESIGN.md */
+  /* "ligero" del usuario; --text-0 para foco máximo.                       */
+  /* --------------------------------------------------------------------- */
+  .site-header__brand {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-xl, 1.25rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--color-text-0);
+    text-decoration: none;
+    transition:
+      color var(--motion-duration-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .site-header__brand:hover,
+  .site-header__brand:focus-visible {
+    color: var(--color-accent-300);
+  }
+
+  .site-header__brand:focus-visible {
+    outline: 2px solid var(--color-accent-400);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* Nav central — flexible, ocupa el espacio disponible.                  */
+  /* --------------------------------------------------------------------- */
+  .site-header__nav {
+    flex: 1 1 auto;
+    min-width: 0; /* permite que .__list se contraiga sin overflow del flex */
+  }
+
+  .site-header__list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    /* Mobile: scroll horizontal sin scrollbar visible si los chips no caben. */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .site-header__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header__item {
+    flex-shrink: 0;
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* Links del nav — idle text-2, hover/active text-0, transición fast.    */
+  /* Dot indicator bajo el link activo con accent-400.                     */
+  /* --------------------------------------------------------------------- */
+  .site-header__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding-block: 0.375rem;
+    padding-inline: 0.125rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-text-2);
+    text-decoration: none;
+    transition: color var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .site-header__link:hover,
+  .site-header__link:focus-visible {
+    color: var(--color-text-0);
+  }
+
+  .site-header__link:focus-visible {
+    outline: 2px solid var(--color-accent-400);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  .site-header__link--active {
+    color: var(--color-text-0);
+  }
+
+  /* Dot indicator bajo el link activo. Posicionado absoluto para no
+     desplazar el layout y evitar layout shift en hover/idle.            */
+  .site-header__link--active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.375rem;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background-color: var(--color-accent-400);
+    transform: translateX(-50%);
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* LangSwitcher container — alineado al extremo derecho.                  */
+  /* --------------------------------------------------------------------- */
+  .site-header__lang {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* Mobile fine-tuning: padding compacto, gaps menores.                    */
+  /* --------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .site-header__inner {
+      gap: 0.75rem;
+      padding-block: 0.75rem;
+    }
+
+    .site-header__brand {
+      font-size: var(--text-lg, 1.125rem);
+    }
+
+    .site-header__list {
+      justify-content: flex-start;
+    }
+
+    .site-header__link {
+      font-size: var(--text-sm, 0.875rem);
+    }
+  }
+</style>

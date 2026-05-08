@@ -1,0 +1,308 @@
+---
+/**
+ * CaseStudyLayout.astro — page-level layout for `case-studies/**` MDX (T-27).
+ *
+ * Rendered as `layout: …/CaseStudyLayout.astro` from a case study MDX
+ * frontmatter (or wrapped explicitly from `pages/trabajos/[slug].astro` and
+ * its EN sibling). Composition tree:
+ *
+ *   <BaseLayout title description ogImage type="article">
+ *     <article class="case-study">
+ *       <CaseStudyHero ... />               ← T-23 (parallel)
+ *       <div class="case-study__body">
+ *         <aside class="case-study__toc">
+ *           <TableOfContents headings lang />← T-24 (parallel)
+ *         </aside>
+ *         <Prose>                            ← T-26 (parallel)
+ *           <slot />                         ← MDX body
+ *         </Prose>
+ *       </div>
+ *       <nav class="case-study__siblings"> ← prev / next (TODO siblings)
+ *     </article>
+ *   </BaseLayout>
+ *
+ * Layout grid (DESIGN.md §9 + T-27 spec):
+ *   - Desktop ≥1024px: 2 columns. TOC sticky 240px on the left, content max
+ *     720px on the right with a 48-64px gutter between them.
+ *   - Tablet/mobile <1024px: single column. TOC collapsed at the top of the
+ *     article (rendered as `<details>` inside TableOfContents — owned by T-24).
+ *
+ * prev / next siblings:
+ *   The TASKS.md spec says: "if the logic is complex, hardcode as null and
+ *   document as followup". We hardcode them to null in v1 because the
+ *   layout receives only `frontmatter` + `headings` from the MDX render —
+ *   it has NO access to the full collection at this layer. To compute prev /
+ *   next we'd need either:
+ *     a) the page (`pages/trabajos/[slug].astro`) to inject them as props, or
+ *     b) the layout to call `getCollection` itself — which is fine but
+ *        couples this layout to content-loader internals.
+ *   Cleanest path: inject from the route page once T-35 lands. Until then,
+ *   `prev` and `next` are `null` and the nav block renders empty (hidden).
+ *
+ * Source of truth:
+ *   - TASKS.md T-27 (the layout spec).
+ *   - DESIGN.md §9 (container widths) + §5 (vertical rhythm).
+ *   - content.config.ts → `case-studies` schema (frontmatter shape).
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import CaseStudyHero from '../components/ui/CaseStudyHero.astro';
+import TableOfContents from '../components/ui/TableOfContents.astro';
+import Prose from '../components/ui/Prose.astro';
+import { getLangFromUrl } from '../i18n/helpers';
+import type { Language } from '../i18n/ui';
+
+/**
+ * Heading shape Astro emits via `Astro.props.headings` when used as the
+ * `layout:` of a Markdown / MDX file. Re-declared locally so we don't depend
+ * on a deep import path that may shift across Astro versions.
+ */
+interface MarkdownHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+/**
+ * Sibling reference shape. Cheap structural typing so that whichever code
+ * eventually wires `prev` / `next` (route page or content helper) can pass
+ * it without coupling to the collection entry type.
+ */
+interface SiblingRef {
+  url: string;
+  title: string;
+}
+
+/**
+ * Frontmatter slice this layout reads. Mirrors the `case-studies` schema in
+ * `src/content.config.ts`. Optional fields stay optional so MDX validation
+ * is the single source of truth.
+ */
+interface CaseStudyFrontmatter {
+  title: string;
+  description: string;
+  tagline: string;
+  client: string;
+  year: number;
+  role: string;
+  stack: string[];
+  status: 'success';
+  heroImage?: ImageMetadata;
+  ogImage?: ImageMetadata;
+}
+
+interface Props {
+  /** Frontmatter from the rendered MDX (Astro injects it). */
+  frontmatter: CaseStudyFrontmatter;
+  /** Headings extracted from the MDX body (h1…h6). */
+  headings: MarkdownHeading[];
+  /** Active language. Optional — falls back to URL detection. */
+  lang?: Language;
+  /** Previous case study in chronological order. Null disables the link. */
+  prev?: SiblingRef | null;
+  /** Next case study in chronological order. Null disables the link. */
+  next?: SiblingRef | null;
+}
+
+const { frontmatter, headings, lang: langProp, prev = null, next = null } =
+  Astro.props;
+
+// Derive language from URL if the page didn't pass an explicit prop.
+// Both case-studies/<es|en> live under `/trabajos` or `/en/work` — the URL
+// is authoritative.
+const lang: Language = langProp ?? getLangFromUrl(Astro.url);
+
+// Convert ImageMetadata → string URL for SeoHead's ogImage prop. SeoHead
+// expects a string (absolute or root-relative path); ImageMetadata exposes
+// `.src` once Astro processes the asset.
+const ogImageUrl: string | undefined =
+  frontmatter.ogImage?.src ?? frontmatter.heroImage?.src;
+
+// TableOfContents (T-24) accepts the full `headings` list and filters
+// internally to depth 2-3 by default. We pass through unchanged so any
+// future tweak (e.g. include h4) lives in one place.
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  ogImage={ogImageUrl}
+  type="article"
+>
+  <article class="case-study">
+    <CaseStudyHero
+      title={frontmatter.title}
+      tagline={frontmatter.tagline}
+      client={frontmatter.client}
+      year={frontmatter.year}
+      role={frontmatter.role}
+      stack={frontmatter.stack}
+      heroImage={frontmatter.heroImage}
+      lang={lang}
+    />
+
+    <div class="case-study__body">
+      {
+        headings.length > 0 && (
+          <div class="case-study__toc">
+            <TableOfContents headings={headings} lang={lang} />
+          </div>
+        )
+      }
+
+      <div class="case-study__content">
+        <Prose>
+          <slot />
+        </Prose>
+      </div>
+    </div>
+
+    {
+      (prev || next) && (
+        <nav class="case-study__siblings" aria-label="Otros trabajos">
+          {prev ? (
+            <a class="case-study__sibling case-study__sibling--prev" href={prev.url}>
+              <span class="case-study__sibling-arrow" aria-hidden="true">
+                ←
+              </span>
+              <span class="case-study__sibling-title">{prev.title}</span>
+            </a>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+          {next ? (
+            <a class="case-study__sibling case-study__sibling--next" href={next.url}>
+              <span class="case-study__sibling-title">{next.title}</span>
+              <span class="case-study__sibling-arrow" aria-hidden="true">
+                →
+              </span>
+            </a>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+        </nav>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .case-study {
+    /* Outer container: full-bleed hero is allowed to break out, so we leave
+       horizontal padding to the inner wrappers. Generous top padding keeps
+       the hero from kissing the sticky header (DESIGN.md §5). */
+    padding-block: clamp(2rem, 4vw, 4rem) clamp(4rem, 8vw, 8rem);
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Body grid — TOC + content                                               */
+  /* DESIGN.md §9: max-width 1080px (large containers), prose 720px max.     */
+  /* TOC sticky 240px column on the left at lg≥1024px.                       */
+  /* ----------------------------------------------------------------------- */
+
+  .case-study__body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    /* Cap the whole row so on ultra-wide screens the prose doesn't drift. */
+    max-width: min(1080px, 100% - 2rem);
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+    margin-block-start: clamp(2rem, 5vw, 4rem);
+  }
+
+  .case-study__content {
+    /* Cap the prose column at 720px (DESIGN.md §9). The grid lets it grow
+       smaller on narrow viewports without breaking the reading rhythm. */
+    max-width: 720px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .case-study__body {
+      grid-template-columns: 240px minmax(0, 720px);
+      gap: 4rem;
+      /* Center the 2-column block inside the 1080px outer max-width. */
+      justify-content: center;
+      /* Allow the TOC's sticky positioning to escape the grid item box.
+         Grid items default to `min-height: auto` which interacts poorly
+         with `position: sticky` inside; making the row tall enough fixes
+         it. `align-items: start` keeps the TOC aligned to the top edge. */
+      align-items: start;
+    }
+
+    .case-study__content {
+      /* Reset the auto-margin so the column edge aligns with the grid track. */
+      margin-inline: 0;
+    }
+  }
+
+  /* Mobile: TOC sits above the prose. TableOfContents (T-24) collapses
+     itself into a `<details>` on narrow viewports — we just constrain the
+     wrapper width so the TOC doesn't drift past the prose column. */
+  @media (max-width: 1023.98px) {
+    .case-study__toc {
+      width: 100%;
+      max-width: 720px;
+      margin-inline: auto;
+    }
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* Siblings nav — prev / next case study links at the foot of the article  */
+  /* ----------------------------------------------------------------------- */
+
+  .case-study__siblings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 720px;
+    margin-inline: auto;
+    margin-block-start: clamp(3rem, 6vw, 5rem);
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+
+  .case-study__sibling {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-1);
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .case-study__sibling:hover,
+  .case-study__sibling:focus-visible {
+    border-color: var(--accent-400);
+    color: var(--text-1);
+    transform: translateY(-2px);
+  }
+
+  .case-study__sibling--next {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .case-study__sibling-title {
+    color: var(--text-1);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+  }
+
+  .case-study__sibling-arrow {
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+  }
+</style>

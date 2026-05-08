@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/home/Hero.astro';
+import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
+import AboutSection from '../../components/home/AboutSection.astro';
+import SkillsSection from '../../components/home/SkillsSection.astro';
+
+const lang = 'en' as const;
+---
+
+<BaseLayout
+  title="marmibas — Full stack software engineer"
+  description="I design and build SaaS, e-commerce and internal tools for entrepreneurs and SMBs in Spain and LATAM."
+  noindex
+>
+  <Hero lang={lang} />
+  <FeaturedProjects lang={lang} />
+  <AboutSection lang={lang} />
+  <SkillsSection lang={lang} />
+</BaseLayout>

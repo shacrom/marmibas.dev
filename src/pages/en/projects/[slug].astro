@@ -1,0 +1,45 @@
+---
+/**
+ * /en/projects/[slug] — dynamic detail page para projects (EN) — T-37.
+ *
+ * Equivalente al /proyectos/[slug].astro (ES) pero filtrando por
+ * `lang === 'en'`. Si la collection EN está vacía, `getStaticPaths`
+ * devuelve `[]` y Astro no genera ninguna ruta — la página simplemente
+ * no existe en el build.
+ *
+ * Comparte layout, componentes MDX y convención de slug con la versión
+ * ES — ver el comentario detallado en `pages/proyectos/[slug].astro`.
+ *
+ * Source of truth:
+ *   - TASKS.md T-37
+ *   - ProjectDetailLayout (T-27)
+ *   - content.config.ts → `projects` schema
+ */
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import ProjectDetailLayout from '../../../layouts/ProjectDetailLayout.astro';
+import Callout from '../../../components/ui/Callout.astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection(
+    'projects',
+    (entry) => entry.data.lang === 'en'
+  );
+
+  return entries.map((entry) => {
+    const slug = entry.id.split('/').pop() ?? entry.id;
+    return {
+      params: { slug },
+      props: { entry },
+    };
+  });
+};
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<ProjectDetailLayout frontmatter={entry.data} lang="en">
+  <Content components={{ Callout }} />
+</ProjectDetailLayout>

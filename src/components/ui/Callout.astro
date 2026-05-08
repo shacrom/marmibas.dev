@@ -1,0 +1,213 @@
+---
+/**
+ * Callout.astro — bloque de aviso destacado para contenido MDX (T-26).
+ *
+ * Aside con icon SVG inline (estilo Lucide), título opcional y slot para el
+ * cuerpo. Pensado principalmente para uso dentro de archivos MDX (case
+ * studies, posts) donde se necesita resaltar una nota, un warning, una
+ * recomendación o una métrica de éxito.
+ *
+ * Uso en MDX:
+ *
+ *   import Callout from '@/components/ui/Callout.astro';
+ *
+ *   <Callout type="info" title="Ojo">
+ *     El cliente espera que el deploy se haga los viernes.
+ *   </Callout>
+ *
+ * Variantes (`type`):
+ *
+ *   - `info`    (default) → icon "info", border-left `--accent-400`
+ *   - `success`           → icon "check-circle", border-left `--color-status-success`
+ *   - `warning`           → icon "alert-triangle", border-left `--color-status-progress`
+ *                           (terracotta muted)
+ *   - `tip`               → icon "lightbulb", border-left `--color-accent-300`
+ *
+ * Cada variante aplica:
+ *   - border-left 3px del color del type
+ *   - background tintado (color-mix con `--bg-1` + 8% del color del type)
+ *   - color del icon = color del type
+ *
+ * Estructura:
+ *
+ *   <aside class="callout callout--<type>" role="note">
+ *     <span class="callout__icon" aria-hidden="true">{svg}</span>
+ *     <div class="callout__body">
+ *       {title && <p class="callout__title">{title}</p>}
+ *       <div class="callout__content"><slot /></div>
+ *     </div>
+ *   </aside>
+ *
+ * Pure server-rendered: sin script, sin estado.
+ *
+ * Spec: TASKS.md T-26 + DESIGN.md §3 (color-mix + tintes 8%) + §4 (tipografía).
+ */
+
+export type CalloutType = 'info' | 'success' | 'warning' | 'tip';
+
+export interface Props {
+  /** Variante semántica. Determina icon, color del border-left y tinte del fondo. */
+  type?: CalloutType;
+  /** Título opcional, renderizado en negrita encima del slot. */
+  title?: string;
+  /** Clases extra a mergear con el wrapper. */
+  class?: string;
+}
+
+const { type = 'info', title, class: className } = Astro.props;
+
+const classes = ['callout', `callout--${type}`, className].filter(Boolean).join(' ');
+---
+
+<aside class={classes} role="note">
+  <span class="callout__icon" aria-hidden="true">
+    {
+      type === 'info' && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      )
+    }
+    {
+      type === 'success' && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <path d="m9 11 3 3L22 4" />
+        </svg>
+      )
+    }
+    {
+      type === 'warning' && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </svg>
+      )
+    }
+    {
+      type === 'tip' && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+          <path d="M9 18h6" />
+          <path d="M10 22h4" />
+        </svg>
+      )
+    }
+  </span>
+  <div class="callout__body">
+    {title && <p class="callout__title">{title}</p>}
+    <div class="callout__content"><slot /></div>
+  </div>
+</aside>
+
+<style>
+  .callout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--callout-color, var(--accent-400));
+    background: color-mix(in oklch, var(--callout-color, var(--accent-400)) 8%, var(--bg-1));
+    margin-block: 32px;
+    color: var(--text-1);
+  }
+
+  .callout__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--callout-color, var(--accent-400));
+    margin-top: 2px;
+  }
+
+  .callout__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .callout__title {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-0);
+    margin: 0 0 4px;
+    line-height: 1.4;
+  }
+
+  /* Cuando hay slot pero no title, no queremos margin top en el primer
+   * elemento del slot. Cuando hay title, queremos que el primer elemento
+   * del contenido empiece pegado al título. */
+  .callout__content :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .callout__content :global(> :last-child) {
+    margin-bottom: 0;
+  }
+
+  /* --- Variantes — exponen el color como var local para compartir el estilo
+   * base sin duplicar declaraciones (border-left, icon color, bg tint). ----- */
+
+  .callout--info {
+    --callout-color: var(--accent-400);
+  }
+
+  .callout--success {
+    --callout-color: var(--color-status-success);
+  }
+
+  .callout--warning {
+    --callout-color: var(--color-status-progress);
+  }
+
+  .callout--tip {
+    --callout-color: var(--accent-300);
+  }
+</style>

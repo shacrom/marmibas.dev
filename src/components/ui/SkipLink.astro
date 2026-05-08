@@ -1,0 +1,77 @@
+---
+/**
+ * SkipLink — accessibility utility (T-16).
+ *
+ * "Skip to content" link for keyboard users. Visually hidden until focused
+ * (via :focus-visible), at which point it animates into view at the top
+ * of the page. Targets `#main` (the main content region rendered by
+ * BaseLayout).
+ *
+ * Spec:
+ * - WCAG 2.4.1 (Bypass Blocks) — must be the first focusable element on
+ *   the page so a keyboard user pressing Tab once lands here.
+ * - i18n: label resolved via `useTranslations(lang)('meta.skipToContent')`.
+ *
+ * Implementation notes:
+ * - Pattern is the standard "absolute + clip + sr-only-on-blur" idiom: the
+ *   link is placed in normal DOM order but rendered off-canvas (top: -100px)
+ *   until it gains focus, when it slides into view at top: 0.
+ * - The transition uses motion tokens from motion.css so reduced-motion
+ *   users get an instant snap rather than a slide.
+ * - We DO NOT rely on the global `.skip-link` helper from global.css because
+ *   it lacks i18n + scoped styles; we colocate behaviour with the component.
+ */
+
+import { useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+interface Props {
+  lang: Language;
+  /**
+   * Override the default target. Useful for case-study layouts that wrap
+   * `<main>` in a different anchor. Default: `#main`.
+   */
+  target?: string;
+}
+
+const { lang, target = '#main' } = Astro.props;
+const t = useTranslations(lang);
+const label = t('meta.skipToContent');
+---
+
+<a class="skip-link" href={target} data-skip-link>{label}</a>
+
+<style>
+  .skip-link {
+    /* Visually hidden until focus — accessible to screen readers and keyboard. */
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    z-index: 1000;
+
+    /* Visual treatment when focused: chip on `--bg-1`, accent border. */
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-1);
+    color: var(--color-text-0);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent-400);
+    border-radius: var(--radius-md);
+
+    /* Animate the slide-in. Reduced-motion media query in motion.css
+       collapses the duration to 0.01ms automatically. */
+    transition: top var(--motion-duration-fast) var(--motion-ease-out);
+  }
+
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    /* Slide into view at the very top of the viewport. */
+    top: 1rem;
+    /* Override the global :focus-visible outline so the chip is the focus
+       indicator (border + glow ring), not a stacked outline. */
+    outline: none;
+    box-shadow: 0 0 0 4px var(--color-accent-glow);
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+/**
+ * /en/work — work index (EN) — T-34.
+ *
+ * Lists ALL case studies + projects (mixed) sorted by status priority desc,
+ * year desc, order asc. Status filters with progressive enhancement
+ * (form GET + client-side JS, no reload).
+ *
+ * All logic lives in `WorkIndex.astro` so it stays 1:1 with the ES
+ * `/trabajos` page (same component, different `lang`).
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import WorkIndex from '../../../components/work/WorkIndex.astro';
+
+const lang = 'en' as const;
+---
+
+<BaseLayout
+  title="Work — marmibas"
+  description="A selection of projects in production, in development and explorations — case studies, side projects and experiments."
+>
+  <WorkIndex lang={lang} />
+</BaseLayout>
