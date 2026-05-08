@@ -164,11 +164,10 @@
   --accent-glow: var(--color-accent-glow);
 
   /* Gradients — DESIGN.md §3 ------------------------------------------- */
-  --gradient-hero-ambient: radial-gradient(
-    ellipse at top,
-    var(--color-accent-700) 0%,
-    transparent 60%
-  );
+  --gradient-hero-ambient:
+    radial-gradient(60% 55% at 18% 8%, color-mix(in oklch, var(--color-accent-700) 88%, transparent) 0%, transparent 70%),
+    radial-gradient(50% 45% at 82% 22%, color-mix(in oklch, var(--color-accent-500) 60%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in oklch, var(--color-accent-600) 45%, transparent) 0%, transparent 78%);
 
   --gradient-cta: linear-gradient(
     135deg,
