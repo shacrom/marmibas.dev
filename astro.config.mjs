@@ -152,16 +152,15 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      i18n: {
-        defaultLocale: 'es',
-        locales: {
-          es: 'es-ES',
-          en: 'en-US',
-        },
-      },
+      // English content is hidden from the public UI; do NOT advertise it in
+      // the sitemap (no entries, no hreflang). The /en/* routes still build
+      // and respond, but BaseLayout forces noindex on them and robots.txt
+      // disallows the prefix. Re-enable the i18n config + drop the /en/
+      // exclusion below to bring the English version back.
       // Skip API endpoints (e.g. /api/contact) — they are not addressable
-      // pages and search engines must not index them.
-      filter: (page) => !page.includes('/api/'),
+      // pages and search engines must not index them. Skip /en/* while the
+      // English version is hidden.
+      filter: (page) => !page.includes('/api/') && !/\/en(\/|$)/.test(page),
       // Inject `lastmod` from the collection frontmatter (or file mtime) for
       // case-studies + posts. Other pages keep the integration default.
       serialize: (item) => {

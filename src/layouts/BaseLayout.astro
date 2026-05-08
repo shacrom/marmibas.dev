@@ -67,6 +67,12 @@ const {
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
+
+// English content is currently hidden from the public UI (no switcher, not in
+// sitemap, blocked in robots.txt). Force `noindex` on every EN page so search
+// engines that discover them via external links do not index them. Explicit
+// `noindex` prop still wins (always-noindex pages stay noindex regardless).
+const effectiveNoindex = noindex || lang === 'en';
 ---
 
 <!doctype html>
@@ -78,7 +84,7 @@ const lang = getLangFromUrl(Astro.url);
       lang={lang}
       currentUrl={Astro.url}
       ogImage={ogImage}
-      noindex={noindex}
+      noindex={effectiveNoindex}
       type={type}
       faqs={faqs}
     />

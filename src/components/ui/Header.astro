@@ -30,7 +30,6 @@
  * Spec: TASKS.md T-17 + DESIGN.md §1 (tech minimal oscuro), §4
  * (tipografías), §6 (motion tokens), §8 ("Lang switcher").
  */
-import LangSwitcher from './LangSwitcher.astro';
 import { useTranslations, getRoutePath, isCurrentRoute } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 import type { RouteKey } from '../../i18n/routes';
@@ -99,13 +98,6 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     <a class="site-header__cta" href={contactHref}>
       {t('cta.contact')}
     </a>
-
-    {/* LangSwitcher hidden by user request — EN content stays in repo
-        but is not exposed in the UI. Restore by uncommenting below.
-    <div class="site-header__lang">
-      <LangSwitcher currentLang={currentLang} currentUrl={currentUrl} />
-    </div>
-    */}
   </div>
 </header>
 
@@ -250,15 +242,6 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     border-radius: 9999px;
     background-color: var(--color-accent-400);
     transform: translateX(-50%);
-  }
-
-  /* --------------------------------------------------------------------- */
-  /* LangSwitcher container — alineado al extremo derecho.                  */
-  /* --------------------------------------------------------------------- */
-  .site-header__lang {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
   }
 
   .site-header__cta {
