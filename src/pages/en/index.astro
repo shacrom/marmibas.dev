@@ -4,6 +4,8 @@ import Hero from '../../components/home/Hero.astro';
 import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
 import AboutSection from '../../components/home/AboutSection.astro';
 import ServicesSection from '../../components/home/ServicesSection.astro';
+import ProcessSection from '../../components/home/ProcessSection.astro';
+import LeadCTA from '../../components/home/LeadCTA.astro';
 
 const lang = 'en' as const;
 ---
@@ -14,7 +16,9 @@ const lang = 'en' as const;
   noindex
 >
   <Hero lang={lang} />
-  <FeaturedProjects lang={lang} />
-  <AboutSection lang={lang} />
   <ServicesSection lang={lang} />
+  <FeaturedProjects lang={lang} />
+  <ProcessSection lang={lang} />
+  <AboutSection lang={lang} />
+  <LeadCTA lang={lang} />
 </BaseLayout>

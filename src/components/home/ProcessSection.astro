@@ -1,0 +1,196 @@
+---
+import Reveal from '../ui/Reveal.astro';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const copy = {
+  es: {
+    eyebrow: 'Cómo trabajo',
+    heading: 'De problema confuso a software útil, sin perder meses.',
+    sub: 'El objetivo no es construir por construir: es encontrar la pieza de software que más impacto tiene en ventas, tiempo o control del negocio.',
+    steps: [
+      {
+        title: 'Diagnóstico claro',
+        text: 'Entendemos dónde se pierde dinero, tiempo o clientes y priorizamos lo que merece convertirse en software.',
+      },
+      {
+        title: 'Primer entregable pequeño',
+        text: 'Definimos un MVP usable para validar rápido, con alcance cerrado y sin funcionalidades decorativas.',
+      },
+      {
+        title: 'Iteración con datos reales',
+        text: 'Mejoramos lo que ya usan tus clientes o equipo, midiendo fricción, errores y oportunidades de automatización.',
+      },
+    ],
+  },
+  en: {
+    eyebrow: 'How I work',
+    heading: 'From messy problem to useful software without losing months.',
+    sub: 'The goal is not to build for the sake of building. It is to find the piece of software with the highest impact on sales, time or business control.',
+    steps: [
+      {
+        title: 'Clear diagnosis',
+        text: 'We understand where money, time or clients are being lost and prioritize what deserves to become software.',
+      },
+      {
+        title: 'Small first delivery',
+        text: 'We define a usable MVP to validate quickly, with closed scope and no decorative features.',
+      },
+      {
+        title: 'Iteration with real data',
+        text: 'We improve what your customers or team already use, measuring friction, errors and automation opportunities.',
+      },
+    ],
+  },
+} as const;
+
+const content = copy[lang];
+---
+
+<Reveal as="section" class="process" aria-labelledby="process-heading">
+  <div class="process__inner">
+    <header class="process__header">
+      <p class="process__eyebrow">{content.eyebrow}</p>
+      <h2 id="process-heading" class="process__heading font-display">{content.heading}</h2>
+      <p class="process__sub">{content.sub}</p>
+    </header>
+
+    <ol class="process__steps">
+      {
+        content.steps.map((step, index) => (
+          <li class="process__step">
+            <span class="process__number">0{index + 1}</span>
+            <div class="process__step-copy">
+              <h3 class="process__step-title font-display">{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</Reveal>
+
+<style>
+  .process {
+    padding-block: clamp(64px, 10vw, 128px);
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .process__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    display: grid;
+    gap: 48px;
+  }
+
+  .process__header {
+    max-width: 760px;
+  }
+
+  .process__eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+
+  .process__heading {
+    margin: 0;
+    color: var(--text-0);
+    font-size: clamp(2rem, 4vw + 0.5rem, 2.4375rem);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .process__sub {
+    max-width: 680px;
+    margin: 16px 0 0;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: var(--leading-normal);
+  }
+
+  .process__steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: process;
+  }
+
+  @media (min-width: 860px) {
+    .process__steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .process__step {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    min-height: 100%;
+    padding: 24px;
+    background: color-mix(in oklch, var(--bg-1) 64%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .process__step::after {
+    content: '';
+    position: absolute;
+    inset: auto 24px 0;
+    height: 2px;
+    background: var(--accent-400);
+    opacity: 0.24;
+  }
+
+  .process__step:hover {
+    border-color: color-mix(in oklch, var(--accent-400) 42%, var(--border));
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+  }
+
+  .process__number {
+    width: fit-content;
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+  }
+
+  .process__step-copy {
+    display: grid;
+    gap: 10px;
+  }
+
+  .process__step-title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+  }
+
+  .process__step-copy p {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+  }
+</style>

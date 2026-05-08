@@ -9,8 +9,9 @@
  * Layout (top → bottom):
  *   1. <div class="hero__ambient">         ← radial gradient ambient (§3)
  *   2. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
- *   3. <p class="hero__tagline">           ← Inter, --text-2, max-width 540
+ *   3. <p class="hero__tagline">           ← Inter, --text-2, max-width 620
  *   4. <div class="hero__ctas">            ← primary + secondary buttons (§8)
+ *   5. <aside class="hero__panel">         ← client-facing diagnosis card
  *
  * Motion strategy (DESIGN.md §6/§7):
  *   - HeroIntro already animates the cascade (3-4 lines × 120ms + 100ms).
@@ -23,10 +24,10 @@
  *   - Reduced-motion is neutralised by `motion.css` (single source).
  *
  * CTAs:
- *   - Primary: localized "Ver mi trabajo" / "See my work" → /trabajos | /en/work.
+ *   - Primary: localized "Hablemos" / "Let's talk" → /contacto | /en/contact.
  *     Uses `--gradient-cta` background, `--shadow-glow` on focus, gradient
  *     shift on hover (DESIGN.md §3 + §8).
- *   - Secondary: localized "Hablemos" / "Let's talk" → /contacto | /en/contact.
+ *   - Secondary: localized "Ver mi trabajo" / "See my work" → /trabajos | /en/work.
  *     Outline 1px `--border`, transparent bg. Hover lifts to `--accent-400`.
  *
  * i18n:
@@ -62,16 +63,51 @@ const t = useTranslations(lang);
 // conocimientos técnicos). EN equivalente profesional internacional.
 // 3 lines for a tighter cascade — lands ~460ms total, snappier than 4.
 const heroLines: Record<Language, string[]> = {
-  es: ['Software', 'que hace crecer', 'tu negocio.'],
-  en: ['Software', 'that grows', 'your business.'],
+  es: ['Software a medida', 'para negocios', 'que quieren crecer.'],
+  en: ['Custom software', 'for businesses', 'ready to grow.'],
 };
 
 const tagline: Record<Language, string> = {
-  es: 'Ayudo a empresas y emprendedores a digitalizar su trabajo: desde tiendas online hasta sistemas de gestión a medida. Menos Word y Excel, más tiempo para lo importante.',
-  en: 'I help companies and entrepreneurs digitize their work: from online stores to custom management systems. Less Word and Excel, more time for what matters.',
+  es: 'Diseño y construyo webs, apps y sistemas internos para captar clientes, ahorrar horas y ordenar el trabajo diario. Sin jerga técnica: problema, solución y próximos pasos claros.',
+  en: 'I design and build websites, apps and internal systems to win clients, save hours and organize daily work. No technical jargon: clear problem, solution and next steps.',
 };
 
-const eyebrow = 'marmibas · marmibas.dev';
+const eyebrow: Record<Language, string> = {
+  es: 'marmibas · software a medida',
+  en: 'marmibas · custom software',
+};
+
+const proofPoints = [
+  {
+    value: lang === 'es' ? '5+ años' : '5+ years',
+    label: lang === 'es' ? 'creando productos reales' : 'building real products',
+  },
+  {
+    value: '2+',
+    label: lang === 'es' ? 'soluciones en producción' : 'live production systems',
+  },
+  {
+    value: '24-48h',
+    label: lang === 'es' ? 'para recibir respuesta' : 'typical response time',
+  },
+] as const;
+
+const diagnosis = {
+  label: lang === 'es' ? 'Primera llamada gratuita' : 'Free first call',
+  title:
+    lang === 'es'
+      ? 'Convierte una idea suelta en un plan claro.'
+      : 'Turn a rough idea into a clear plan.',
+  description:
+    lang === 'es'
+      ? 'En una conversación rápida aterrizamos qué construir, qué evitar y por dónde empezar para que el software tenga impacto real.'
+      : 'In one short conversation we define what to build, what to avoid and where to start so the software has real impact.',
+  items:
+    lang === 'es'
+      ? ['Prioridad del negocio', 'MVP posible', 'Coste y tiempos orientativos']
+      : ['Business priority', 'Possible MVP', 'Indicative cost and timeline'],
+  cta: lang === 'es' ? 'Pedir diagnóstico' : 'Request a diagnosis',
+};
 
 const lines = heroLines[lang];
 const subhead = tagline[lang];
@@ -85,20 +121,58 @@ const workHref = getRoutePath('work', lang);
   <div class="hero__ambient" aria-hidden="true"></div>
 
   <div class="hero__content">
-    <HeroIntro eyebrow={eyebrow} lines={lines} />
+    <div class="hero__copy">
+      <HeroIntro eyebrow={eyebrow[lang]} lines={lines} />
 
-    <p class="hero__tagline motion-reveal-on-scroll is-visible">
-      {subhead}
-    </p>
+      <p class="hero__tagline motion-reveal-on-scroll is-visible">
+        {subhead}
+      </p>
 
-    <div class="hero__ctas motion-reveal-on-scroll is-visible">
-      <a class="cta cta--primary" href={workHref}>
-        {t('cta.viewWork')}
-      </a>
-      <a class="cta cta--secondary" href={contactHref}>
-        {t('cta.contact')}
-      </a>
+      <div class="hero__ctas motion-reveal-on-scroll is-visible">
+        <a class="cta cta--primary" href={contactHref}>
+          {t('cta.contact')}
+        </a>
+        <a class="cta cta--secondary" href={workHref}>
+          {t('cta.viewWork')}
+        </a>
+      </div>
+
+      <ul class="hero__proof" aria-label={lang === 'es' ? 'Pruebas de confianza' : 'Trust signals'}>
+        {
+          proofPoints.map((point) => (
+            <li class="hero__proof-item">
+              <strong>{point.value}</strong>
+              <span>{point.label}</span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
+
+    <aside class="hero__panel motion-reveal-on-scroll is-visible" aria-label={diagnosis.label}>
+      <div class="hero__panel-top">
+        <span class="hero__panel-kicker">{diagnosis.label}</span>
+        <span class="hero__panel-dot" aria-hidden="true"></span>
+      </div>
+
+      <div class="hero__panel-body">
+        <h2 class="hero__panel-title font-display">{diagnosis.title}</h2>
+        <p class="hero__panel-description">{diagnosis.description}</p>
+      </div>
+
+      <ul class="hero__panel-list" role="list">
+        {
+          diagnosis.items.map((item) => (
+            <li>
+              <span aria-hidden="true">✓</span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+
+      <a class="hero__panel-cta" href={contactHref}>{diagnosis.cta}</a>
+    </aside>
   </div>
 </section>
 
@@ -112,7 +186,7 @@ const workHref = getRoutePath('work', lang);
     position: relative;
     max-width: 1080px;
     margin-inline: auto;
-    padding-block: clamp(64px, 12vw, 128px) clamp(64px, 10vw, 96px);
+    padding-block: clamp(64px, 10vw, 118px) clamp(64px, 8vw, 88px);
     padding-inline: clamp(20px, 5vw, 48px);
     z-index: 1;
     isolation: isolate;
@@ -127,10 +201,10 @@ const workHref = getRoutePath('work', lang);
    * ------------------------------------------------------------------------ */
   .hero__ambient {
     position: absolute;
-    inset: 0 0 auto 0;
-    height: 600px;
+    inset: -80px -10vw auto -10vw;
+    height: 680px;
     background: var(--gradient-hero-ambient);
-    opacity: 0.7;
+    opacity: 0.78;
     pointer-events: none;
     z-index: -1;
   }
@@ -141,8 +215,25 @@ const workHref = getRoutePath('work', lang);
    * the CTAs sit on a horizontal row at the bottom.
    * ------------------------------------------------------------------------ */
   .hero__content {
+    display: grid;
+    gap: clamp(44px, 5vw, 64px);
+    align-items: center;
+  }
+
+  @media (min-width: 920px) {
+    .hero__content {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 350px);
+    }
+  }
+
+  .hero__copy {
     display: flex;
+    min-width: 0;
     flex-direction: column;
+  }
+
+  .hero__copy :global(.hero__title) {
+    font-size: clamp(3rem, 7vw, 5.25rem);
   }
 
   /* --------------------------------------------------------------------------
@@ -154,7 +245,7 @@ const workHref = getRoutePath('work', lang);
    * (~580ms for 4 lines + 100ms baseline). 700ms keeps a gentle gap.
    * ------------------------------------------------------------------------ */
   .hero__tagline {
-    max-width: 560px;
+    max-width: 640px;
     margin-top: 32px;
     font-family: var(--font-sans);
     font-size: var(--text-lg);
@@ -177,6 +268,39 @@ const workHref = getRoutePath('work', lang);
     gap: 12px;
     margin-top: 40px;
     transition-delay: 900ms;
+  }
+
+  .hero__proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 680px;
+    margin: 36px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero__proof-item {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    background: color-mix(in oklch, var(--color-bg-1) 58%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 78%, transparent);
+    border-radius: var(--radius-lg);
+  }
+
+  .hero__proof-item strong {
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .hero__proof-item span {
+    color: var(--text-3);
+    font-size: var(--text-xs);
+    line-height: 1.35;
   }
 
   /* --------------------------------------------------------------------------
@@ -250,11 +374,133 @@ const workHref = getRoutePath('work', lang);
     box-shadow: var(--shadow-glow);
   }
 
+  .hero__panel {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 28px);
+    background: color-mix(in oklch, var(--color-bg-1) 88%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 20%, var(--border));
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+    transition-delay: 760ms;
+  }
+
+  .hero__panel::before {
+    content: '';
+    position: absolute;
+    inset: 14px 14px auto;
+    height: 1px;
+    background: color-mix(in oklch, var(--accent-400) 34%, transparent);
+    opacity: 0.7;
+  }
+
+  .hero__panel-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .hero__panel-kicker {
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hero__panel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--accent-400);
+    box-shadow: 0 0 0 6px var(--accent-glow);
+  }
+
+  .hero__panel-body {
+    display: grid;
+    gap: 12px;
+  }
+
+  .hero__panel-title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: clamp(1.75rem, 3vw, 2.4375rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .hero__panel-description {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  .hero__panel-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero__panel-list li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--text-1);
+    font-size: var(--text-sm);
+  }
+
+  .hero__panel-list span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--accent-400) 14%, transparent);
+    color: var(--accent-300);
+    font-size: var(--text-xs);
+  }
+
+  .hero__panel-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    color: var(--text-0);
+    background: color-mix(in oklch, var(--accent-500) 28%, var(--bg-2));
+    border: 1px solid color-mix(in oklch, var(--accent-400) 30%, transparent);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .hero__panel-cta:hover,
+  .hero__panel-cta:focus-visible {
+    background: color-mix(in oklch, var(--accent-500) 36%, var(--bg-2));
+    border-color: var(--accent-400);
+    transform: translateY(-1px);
+  }
+
   /* --------------------------------------------------------------------------
    * Mobile tightens the rhythm: tagline gets less margin, CTAs stack a bit
    * more aggressively while staying inline if there is room.
    * ------------------------------------------------------------------------ */
   @media (max-width: 640px) {
+    .hero__content {
+      gap: 40px;
+    }
     .hero__tagline {
       margin-top: 24px;
       font-size: var(--text-base);
@@ -264,6 +510,10 @@ const workHref = getRoutePath('work', lang);
     }
     .cta {
       flex: 1 1 auto;
+    }
+    .hero__proof {
+      grid-template-columns: 1fr;
+      margin-top: 28px;
     }
   }
 </style>

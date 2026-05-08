@@ -79,9 +79,7 @@ const {
 
 const t = useTranslations(lang);
 
-const classes = ['case-study-card', featured && 'is-featured', className]
-  .filter(Boolean)
-  .join(' ');
+const classes = ['case-study-card', featured && 'is-featured', className].filter(Boolean).join(' ');
 
 // Top 5 del stack — DESIGN.md §8 muestra badges en featured cards, evitamos
 // que la card se infle si el stack es largo.
@@ -90,7 +88,7 @@ const visibleStack = stack.slice(0, 5);
 
 <a class={classes} href={href}>
   {
-    heroImage && (
+    heroImage ? (
       <figure class="case-study-card__figure">
         <Image
           src={heroImage}
@@ -101,6 +99,27 @@ const visibleStack = stack.slice(0, 5);
           sizes="(min-width: 1024px) 480px, (min-width: 640px) 50vw, 100vw"
         />
       </figure>
+    ) : (
+      <div class="case-study-card__visual" aria-hidden="true">
+        <div class="case-study-card__visual-window">
+          <div class="case-study-card__visual-topbar">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div class="case-study-card__visual-grid">
+            <div class="case-study-card__visual-main">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div class="case-study-card__visual-side">
+              <span />
+              <span />
+            </div>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -264,6 +283,93 @@ const visibleStack = stack.slice(0, 5);
   .case-study-card:hover .case-study-card__figure :global(img),
   .case-study-card:focus-visible .case-study-card__figure :global(img) {
     transform: scale(1.02);
+  }
+
+  .case-study-card__visual {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 210px;
+    padding: 1.25rem;
+    overflow: hidden;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .case-study-card__visual-window {
+    width: min(100%, 360px);
+    padding: 0.75rem;
+    background: color-mix(in oklch, var(--bg-1) 86%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 20%, var(--border));
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+    transition: transform var(--motion-base) var(--motion-ease-out);
+  }
+
+  .case-study-card:hover .case-study-card__visual-window,
+  .case-study-card:focus-visible .case-study-card__visual-window {
+    transform: translateY(-2px);
+  }
+
+  .case-study-card__visual-topbar {
+    display: flex;
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .case-study-card__visual-topbar span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--text-3) 70%, transparent);
+  }
+
+  .case-study-card__visual-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(80px, 0.8fr);
+    gap: 0.75rem;
+  }
+
+  .case-study-card__visual-main,
+  .case-study-card__visual-side {
+    display: grid;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    min-height: 120px;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .case-study-card__visual-main span,
+  .case-study-card__visual-side span {
+    display: block;
+    height: 0.625rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--text-2) 26%, transparent);
+  }
+
+  .case-study-card__visual-main span:first-child {
+    width: 72%;
+    height: 1.75rem;
+    background: color-mix(in oklch, var(--accent-400) 34%, transparent);
+  }
+
+  .case-study-card__visual-main span:nth-child(2) {
+    width: 88%;
+  }
+
+  .case-study-card__visual-main span:nth-child(3) {
+    width: 58%;
+  }
+
+  .case-study-card__visual-side span:first-child {
+    height: 2.5rem;
+    background: color-mix(in oklch, var(--accent-300) 20%, transparent);
+  }
+
+  .case-study-card__visual-side span:last-child {
+    width: 74%;
   }
 
   /* ---------------------------------------------------------------------- */

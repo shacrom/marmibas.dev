@@ -1,0 +1,220 @@
+---
+import { getRoutePath, useTranslations } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const contactHref = getRoutePath('contact', lang);
+const workHref = getRoutePath('work', lang);
+
+const copy = {
+  es: {
+    eyebrow: 'Siguiente paso',
+    heading: 'Veamos qué software tendría más impacto en tu negocio.',
+    sub: 'Cuéntame qué estás intentando mejorar y te ayudo a convertirlo en un plan accionable. Si no tiene sentido construir algo, también te lo diré.',
+    secondary: 'Ver casos primero',
+    notes: [
+      'Respuesta en 24-48h',
+      'Primera conversación sin compromiso',
+      'Enfoque claro para PYMEs y emprendedores',
+    ],
+  },
+  en: {
+    eyebrow: 'Next step',
+    heading: 'Let’s find the software with the highest impact on your business.',
+    sub: 'Tell me what you are trying to improve and I will help turn it into an actionable plan. If building something does not make sense, I will tell you too.',
+    secondary: 'See case studies first',
+    notes: [
+      'Reply within 24-48h',
+      'First conversation with no obligation',
+      'Clear approach for SMBs and founders',
+    ],
+  },
+} as const;
+
+const content = copy[lang];
+---
+
+<section class="lead-cta" aria-labelledby="lead-cta-heading">
+  <div class="lead-cta__inner">
+    <div class="lead-cta__copy">
+      <p class="lead-cta__eyebrow">{content.eyebrow}</p>
+      <h2 id="lead-cta-heading" class="lead-cta__heading font-display">{content.heading}</h2>
+      <p class="lead-cta__sub">{content.sub}</p>
+    </div>
+
+    <div class="lead-cta__actions">
+      <a class="lead-cta__primary" href={contactHref}>{t('cta.contact')}</a>
+      <a class="lead-cta__secondary" href={workHref}>{content.secondary}</a>
+    </div>
+
+    <ul class="lead-cta__notes" role="list">
+      {content.notes.map((note) => <li>{note}</li>)}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .lead-cta {
+    padding: clamp(64px, 9vw, 128px) clamp(16px, 4vw, 32px) clamp(88px, 11vw, 144px);
+  }
+
+  .lead-cta__inner {
+    position: relative;
+    max-width: 1080px;
+    margin-inline: auto;
+    display: grid;
+    gap: 32px;
+    padding: clamp(28px, 6vw, 56px);
+    overflow: hidden;
+    background: color-mix(in oklch, var(--bg-1) 82%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 24%, var(--border));
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+  }
+
+  @media (min-width: 860px) {
+    .lead-cta__inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+  }
+
+  .lead-cta__copy {
+    max-width: 720px;
+  }
+
+  .lead-cta__eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+
+  .lead-cta__heading {
+    margin: 0;
+    color: var(--text-0);
+    font-size: clamp(2rem, 5vw, 3.8125rem);
+    font-weight: 600;
+    line-height: 1.03;
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .lead-cta__sub {
+    max-width: 680px;
+    margin: 18px 0 0;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: var(--leading-normal);
+  }
+
+  .lead-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  @media (min-width: 860px) {
+    .lead-cta__actions {
+      justify-content: end;
+    }
+  }
+
+  .lead-cta__primary,
+  .lead-cta__secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      background var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .lead-cta__primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    background-size: 200% 200%;
+    border: 1px solid transparent;
+  }
+
+  .lead-cta__primary:hover,
+  .lead-cta__primary:focus-visible {
+    background: var(--gradient-cta-hover);
+    background-position: 100% 50%;
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  .lead-cta__secondary {
+    color: var(--text-1);
+    background: transparent;
+    border: 1px solid color-mix(in oklch, var(--text-2) 24%, transparent);
+  }
+
+  .lead-cta__secondary:hover,
+  .lead-cta__secondary:focus-visible {
+    color: var(--text-0);
+    border-color: var(--accent-400);
+    transform: translateY(-1px);
+  }
+
+  .lead-cta__notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 860px) {
+    .lead-cta__notes {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .lead-cta__notes li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    color: var(--text-2);
+    background: color-mix(in oklch, var(--bg-0) 48%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 78%, transparent);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+  }
+
+  .lead-cta__notes li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--accent-400);
+  }
+
+  @media (max-width: 520px) {
+    .lead-cta__primary,
+    .lead-cta__secondary {
+      width: 100%;
+    }
+  }
+</style>

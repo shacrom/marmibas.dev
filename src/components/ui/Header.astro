@@ -40,11 +40,12 @@ interface Props {
   currentUrl: URL;
 }
 
-const { currentLang, currentUrl } = Astro.props;
+const { currentLang, currentUrl } = Astro.props as Props;
 
 const t = useTranslations(currentLang);
 
 const homeHref = getRoutePath('home', currentLang);
+const contactHref = getRoutePath('contact', currentLang);
 const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
 
 interface NavItem {
@@ -54,7 +55,10 @@ interface NavItem {
   active: boolean;
 }
 
-const navKeys: { key: RouteKey; labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.blog' | 'nav.contact' }[] = [
+const navKeys: {
+  key: RouteKey;
+  labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.blog' | 'nav.contact';
+}[] = [
   { key: 'home', labelKey: 'nav.home' },
   { key: 'work', labelKey: 'nav.work' },
   { key: 'experience', labelKey: 'nav.experience' },
@@ -72,9 +76,7 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
 
 <header class="site-header" data-current-lang={currentLang}>
   <div class="site-header__inner">
-    <a class="site-header__brand" href={homeHref} aria-label="marmibas — home">
-      marmibas
-    </a>
+    <a class="site-header__brand" href={homeHref} aria-label="marmibas — home"> marmibas </a>
 
     <nav class="site-header__nav" aria-label={navAriaLabel}>
       <ul class="site-header__list" role="list">
@@ -82,10 +84,7 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
           navItems.map((item) => (
             <li class="site-header__item">
               <a
-                class:list={[
-                  'site-header__link',
-                  { 'site-header__link--active': item.active },
-                ]}
+                class:list={['site-header__link', { 'site-header__link--active': item.active }]}
                 href={item.href}
                 aria-current={item.active ? 'page' : undefined}
               >
@@ -96,6 +95,10 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
         }
       </ul>
     </nav>
+
+    <a class="site-header__cta" href={contactHref}>
+      {t('cta.contact')}
+    </a>
 
     <div class="site-header__lang">
       <LangSwitcher currentLang={currentLang} currentUrl={currentUrl} />
@@ -151,8 +154,8 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     letter-spacing: -0.01em;
     color: var(--color-text-0);
     text-decoration: none;
-    transition:
-      color var(--motion-duration-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: color var(--motion-duration-fast, 150ms)
+      var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   .site-header__brand:hover,
@@ -212,7 +215,8 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     line-height: 1;
     color: var(--color-text-2);
     text-decoration: none;
-    transition: color var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: color var(--motion-fast, 150ms)
+      var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   .site-header__link:hover,
@@ -253,6 +257,33 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     align-items: center;
   }
 
+  .site-header__cta {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 0.875rem;
+    color: var(--color-text-0);
+    background: color-mix(in oklch, var(--color-accent-500) 24%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-accent-400) 36%, transparent);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      background var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+      border-color var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .site-header__cta:hover,
+  .site-header__cta:focus-visible {
+    background: color-mix(in oklch, var(--color-accent-500) 34%, transparent);
+    border-color: var(--color-accent-400);
+    transform: translateY(-1px);
+  }
+
   /* --------------------------------------------------------------------- */
   /* Mobile fine-tuning: padding compacto, gaps menores.                    */
   /* --------------------------------------------------------------------- */
@@ -272,6 +303,10 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
 
     .site-header__link {
       font-size: var(--text-sm, 0.875rem);
+    }
+
+    .site-header__cta {
+      display: none;
     }
   }
 </style>

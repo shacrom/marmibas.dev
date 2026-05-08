@@ -40,6 +40,11 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
+const promise: Record<Language, string> = {
+  es: 'Si hoy dependes de WhatsApp, hojas de cálculo o tareas manuales para vender y operar, aquí hay margen para ganar velocidad sin complicar el negocio.',
+  en: 'If today you depend on WhatsApp, spreadsheets or manual tasks to sell and operate, there is room to gain speed without making the business more complex.',
+};
+
 /**
  * Service catalogue. Order is intentional — most common requests first.
  * Each entry's `iconName` keys into the inline SVG switch below.
@@ -87,10 +92,14 @@ const services = [
 <Reveal as="section" class="services" aria-labelledby="services-heading">
   <div class="services__inner">
     <header class="services__header">
-      <h2 id="services-heading" class="services__heading font-display">
-        {t('services.heading')}
-      </h2>
-      <p class="services__sub">{t('services.tagline')}</p>
+      <div>
+        <p class="services__eyebrow">{lang === 'es' ? 'Servicios' : 'Services'}</p>
+        <h2 id="services-heading" class="services__heading font-display">
+          {t('services.heading')}
+        </h2>
+        <p class="services__sub">{t('services.tagline')}</p>
+      </div>
+      <p class="services__promise">{promise[lang]}</p>
     </header>
 
     <ul class="services__grid" role="list">
@@ -238,8 +247,25 @@ const services = [
    * `text-wrap: balance` (already global) keeps short headings even.
    * ------------------------------------------------------------------------ */
   .services__header {
+    display: grid;
+    gap: 24px;
     margin-bottom: 48px;
-    max-width: 640px;
+    align-items: end;
+  }
+
+  @media (min-width: 900px) {
+    .services__header {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+    }
+  }
+
+  .services__eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
   }
 
   .services__heading {
@@ -253,9 +279,21 @@ const services = [
 
   .services__sub {
     margin: 0;
+    max-width: 640px;
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     color: var(--text-2);
+  }
+
+  .services__promise {
+    margin: 0;
+    padding: 18px 20px;
+    color: var(--text-1);
+    background: color-mix(in oklch, var(--color-bg-1) 66%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 18%, var(--border));
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
   }
 
   /* --------------------------------------------------------------------------
@@ -291,13 +329,41 @@ const services = [
    * the brief's 28-32px range and the spacing rhythm of neighbouring cards.
    * ------------------------------------------------------------------------ */
   .services__card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding: 28px;
-    background: color-mix(in oklch, var(--color-bg-1) 50%, transparent);
+    overflow: hidden;
+    background: color-mix(in oklch, var(--color-bg-1) 62%, transparent);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-xl);
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .services__card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: var(--accent-400);
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .services__card:hover {
+    background: color-mix(in oklch, var(--color-bg-1) 78%, transparent);
+    border-color: color-mix(in oklch, var(--accent-400) 48%, var(--border));
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+  }
+
+  .services__card:hover::before {
+    opacity: 0.72;
   }
 
   @media (min-width: 768px) {
@@ -315,9 +381,17 @@ const services = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 48px;
+    height: 48px;
+    border: 1px solid color-mix(in oklch, var(--accent-400) 22%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--accent-400) 10%, transparent);
     color: var(--color-accent-400);
+  }
+
+  .services__icon svg {
+    width: 26px;
+    height: 26px;
   }
 
   /* --------------------------------------------------------------------------

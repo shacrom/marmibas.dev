@@ -59,6 +59,12 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
+const proofNotes = [
+  lang === 'es' ? 'Productos reales, no demos' : 'Real products, not demos',
+  lang === 'es' ? 'Problemas de negocio concretos' : 'Concrete business problems',
+  lang === 'es' ? 'Pensado para equipos no técnicos' : 'Built for non-technical teams',
+] as const;
+
 // ---------------------------------------------------------------------------
 // Featured case studies — hardcoded hasta que existan T-44/T-45.
 // ---------------------------------------------------------------------------
@@ -110,10 +116,21 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
 <Reveal as="section" class="featured-projects" aria-labelledby="featured-heading">
   <div class="featured-projects__inner">
     <header class="featured-projects__header">
-      <h2 id="featured-heading" class="featured-projects__heading font-display">
-        {t('featured.heading')}
-      </h2>
-      <p class="featured-projects__sub">{t('featured.sub')}</p>
+      <div class="featured-projects__copy">
+        <p class="featured-projects__eyebrow">{lang === 'es' ? 'Prueba real' : 'Real proof'}</p>
+        <h2 id="featured-heading" class="featured-projects__heading font-display">
+          {t('featured.heading')}
+        </h2>
+        <p class="featured-projects__sub">{t('featured.sub')}</p>
+      </div>
+
+      <ul
+        class="featured-projects__proof"
+        role="list"
+        aria-label={lang === 'es' ? 'Señales de confianza' : 'Trust signals'}
+      >
+        {proofNotes.map((note) => <li>{note}</li>)}
+      </ul>
     </header>
 
     <ul class="featured-projects__grid" role="list">
@@ -149,8 +166,20 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
   .featured-projects {
     /* DESIGN.md §5/§9: secciones separan 96-128px en desktop, 48-64px en
        mobile. Padding lateral fluido para acompañar el container interno. */
+    position: relative;
     padding-block: clamp(64px, 10vw, 128px);
     padding-inline: clamp(16px, 4vw, 32px);
+    overflow: hidden;
+  }
+
+  .featured-projects::before {
+    content: '';
+    position: absolute;
+    inset: clamp(32px, 6vw, 72px) clamp(16px, 5vw, 48px);
+    border: 1px solid color-mix(in oklch, var(--border) 58%, transparent);
+    border-radius: var(--radius-2xl);
+    pointer-events: none;
+    opacity: 0.7;
   }
 
   .featured-projects__inner {
@@ -161,6 +190,8 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
     /* gap entre header y grid (48px) y entre grid y view-all (32px) lo
        gestionamos a nivel de filas para no romper el ritmo vertical. */
     row-gap: 48px;
+    position: relative;
+    z-index: 1;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -169,10 +200,29 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
 
   .featured-projects__header {
     display: grid;
-    gap: 12px;
+    gap: 24px;
+    align-items: end;
     /* Limita el ancho del header para que el subhead no se estire en
        desktop (mejor lectura). */
+  }
+
+  @media (min-width: 900px) {
+    .featured-projects__header {
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+    }
+  }
+
+  .featured-projects__copy {
     max-width: 720px;
+  }
+
+  .featured-projects__eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
   }
 
   .featured-projects__heading {
@@ -190,6 +240,32 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
     color: var(--text-2);
     font-size: var(--text-lg);
     line-height: var(--leading-normal);
+  }
+
+  .featured-projects__proof {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .featured-projects__proof li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+  }
+
+  .featured-projects__proof li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-full);
+    background: var(--accent-400);
+    box-shadow: 0 0 0 5px var(--accent-glow);
   }
 
   /* ---------------------------------------------------------------------- */
