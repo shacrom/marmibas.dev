@@ -4,7 +4,7 @@
  * Layer order (Tailwind v4 CSS-first config):
  *   1. `@import "tailwindcss"` registers Preflight + every Tailwind utility.
  *   2. `@import "./fonts.css"` declares self-hosted @font-face (T-07). Imported
- *      first to avoid FOIT once Tailwind utilities reference Inter / Fraunces.
+ *      first to avoid FOIT once Tailwind utilities reference Inter / Geist Sans.
  *   3. `@theme` exposes design tokens (DESIGN.md §2-§6) AS Tailwind tokens, so
  *      utilities like `bg-bg-0`, `text-accent-400`, `font-display` are valid.
  *   4. `:root` mirrors raw aliases for hand-written CSS (gradients, motion).
@@ -62,7 +62,7 @@
   --color-status-prev: #a8a8b8;
 
   /* --- Tipografía — DESIGN.md §4 -------------------------------------- */
-  --font-display: 'Fraunces', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+  --font-display: 'Geist Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
 
@@ -270,11 +270,11 @@ ol {
 /* ----------------------------------------------------------------------- */
 /* 4. Tipografía base.                                                     */
 /*                                                                         */
-/* Decisión: Inter como default global; Fraunces aplicado SELECTIVAMENTE  */
-/* (clase utility `.font-display` o asignación explícita en componentes  */
-/* hero / case study). Esto permite usar Fraunces para H1/H2 destacados  */
-/* sin imponerlo en cada h3 de prose o de UI auxiliar (DESIGN.md §4 dice */
-/* "headings de sección usan Fraunces 600", no "todos los headings").    */
+/* Decisión: Inter como default global; Geist Sans aplicado SELECTIVAMENTE */
+/* (clase utility `.font-display` o asignación explícita en componentes   */
+/* hero / case study). Esto permite usar Geist Sans para H1/H2 destacados */
+/* sin imponerlo en cada h3 de prose o de UI auxiliar (DESIGN.md §4 dice  */
+/* "headings de sección usan display 600", no "todos los headings").     */
 /* ----------------------------------------------------------------------- */
 
 h1,
@@ -300,13 +300,10 @@ pre {
   font-family: var(--font-mono);
 }
 
-/* Utility class para opt-in a Fraunces (aplicada en hero, case study,
-   featured cards). Body NUNCA es serif (DESIGN.md §4 regla dura). */
+/* Utility class para opt-in a Geist Sans (aplicada en hero, case study,
+   featured cards). Body sigue siendo Inter (DESIGN.md §4). */
 .font-display {
   font-family: var(--font-display);
-  font-feature-settings:
-    'ss01' on,
-    'ss02' on; /* Fraunces stylistic alternates */
 }
 
 /* ----------------------------------------------------------------------- */

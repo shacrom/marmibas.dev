@@ -4,15 +4,14 @@ All fonts in this directory are self-hosted and distributed under the **SIL Open
 
 Full license text: <https://openfontlicense.org/open-font-license-official-text/>
 
-## Fraunces
+## Geist Sans
 
-- Files: `fraunces/fraunces-latin-full-normal.woff2`, `fraunces/fraunces-latin-ext-full-normal.woff2`
-- Variable axes: `opsz` (9..144), `wght` (100..900)
-- Designer: Phaedra Charles, Flavia Zimbardi, David Berlow
-- Foundry: Undercase Type
-- Source: <https://github.com/undercasetype/Fraunces>
-- Distributed via: <https://github.com/fontsource/font-files/tree/main/fonts/variable/fraunces>
-- Copyright (c) 2020 The Fraunces Project Authors.
+- Files: `geist-sans/geist-sans-latin-full-normal.woff2`, `geist-sans/geist-sans-latin-ext-full-normal.woff2`
+- Variable axes: `wght` (100..900)
+- Foundry: Vercel
+- Source: <https://github.com/vercel/geist-font>
+- Distributed via: <https://github.com/fontsource/font-files/tree/main/fonts/variable/geist>
+- Copyright 2023 Vercel, in collaboration with basement.studio.
 
 ## Inter
 
@@ -42,7 +41,7 @@ PERMITTED:
 - Bundle them with software (including this static site).
 
 REQUIRED:
-- Reserved Font Names (Fraunces, Inter, JetBrains Mono) cannot be used by modified derivatives.
+- Reserved Font Names (Geist, Inter, JetBrains Mono) cannot be used by modified derivatives.
 - A copy of the OFL must accompany any redistribution of the original or modified font binaries.
 - Attribution to the original authors (provided above).
 

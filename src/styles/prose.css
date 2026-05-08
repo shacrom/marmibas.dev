@@ -8,14 +8,14 @@
  *
  * Approach: fully custom `.prose` selector (no @tailwindcss/typography plugin
  * dependency at runtime). The plugin is installed (T-06) but is intentionally
- * not used here — DESIGN.md mandates Fraunces for headings, Inter for body,
+ * not used here — DESIGN.md mandates Geist Sans for headings, Inter for body,
  * JetBrains Mono for code, and a strict accent-driven color system, which
  * would require near-total overrides of the plugin's defaults. Writing this
  * from scratch is shorter and easier to reason about.
  *
  * Variables consumed (from global.css `@theme`, T-08):
  *   colors:  --bg-0/1/2, --text-0/1/2/3, --border, --accent-100/300/400/500/600
- *   fonts:   --font-display (Fraunces), --font-sans (Inter), --font-mono (JetBrains)
+ *   fonts:   --font-display (Geist Sans), --font-sans (Inter), --font-mono (JetBrains)
  *   sizes:   --text-{xs,sm,base,lg,xl,2xl,3xl}
  *   motion:  --motion-fast (150ms)
  *
@@ -61,7 +61,7 @@
 }
 
 /* ----------------------------------------------------------------------- */
-/* Headings — Fraunces 600                                                 */
+/* Headings — Geist Sans 600                                               */
 /* DESIGN.md §4: H2 = --text-3xl (39px), H3 = --text-2xl (31px),           */
 /* H4 = --text-xl (25px). Letter-spacing -0.02em on H2/H3 for tighter      */
 /* display feel; H4 stays at default tracking.                             */

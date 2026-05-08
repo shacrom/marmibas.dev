@@ -2,8 +2,8 @@
  * Self-hosted font preload paths.
  *
  * Source: T-07 (TASKS.md). Critical fonts to preload above the fold:
- *   - Fraunces variable (latin) → covers H1/hero (peso 600 al render).
- *   - Inter 400 (latin)         → covers body text on first paint.
+ *   - Geist Sans variable (latin) → covers H1/hero (peso 600 al render).
+ *   - Inter 400 (latin)           → covers body text on first paint.
  *
  * Consumed by `BaseLayout.astro` (T-16) which emits one
  * `<link rel="preload" as="font" type="font/woff2" crossorigin>` per entry.
@@ -26,7 +26,7 @@ export interface FontPreload {
 
 export const CRITICAL_FONT_PRELOADS: readonly FontPreload[] = [
   {
-    href: '/fonts/fraunces/fraunces-latin-full-normal.woff2',
+    href: '/fonts/geist-sans/geist-sans-latin-full-normal.woff2',
     type: 'font/woff2',
   },
   {

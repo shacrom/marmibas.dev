@@ -115,7 +115,7 @@ Idle states son estáticos. No hay `background: linear-gradient(... animation: s
 
 | Familia | Uso | Pesos | Fuente |
 |---|---|---|---|
-| **Fraunces** (variable) | H1, H2, hero, display | 600 (preload), 700 | Self-hosted, axes opsz 9..144 |
+| **Geist Sans** (variable) | H1, H2, hero, display | 600 (preload), 700 | Self-hosted, axis wght 100..900 |
 | **Inter** | body, nav, UI | 400 (preload), 500, 600 | Self-hosted |
 | **JetBrains Mono** | code, small metadata, badges | 400 | Self-hosted |
 
@@ -137,10 +137,10 @@ Base 16px. Ratio 1.25 (major third).
 
 ### Reglas
 
-- Hero usa Fraunces opsz alto (display optical sizing) para máximo carácter.
-- Headings de sección usan Fraunces 600.
+- Hero usa Geist Sans peso 600 para máximo carácter geométrico.
+- Headings de sección usan Geist Sans 600.
 - `code`, badges, version numbers, fechas usan JetBrains Mono.
-- Body **nunca** es serif. Body es Inter siempre.
+- Body es Inter siempre. Geist Sans queda reservado a display.
 
 ## 5. Espaciado
 
@@ -198,7 +198,7 @@ Animaciones explícitamente **prohibidas** en v1:
 
 ### Hero
 - Radial gradient ambient detrás del título.
-- Fraunces opsz 144, peso 600, line-height 1, color `--text-0`.
+- Geist Sans peso 600, line-height 1, color `--text-0`.
 - Eyebrow (línea sobre el título): JetBrains Mono uppercase tracking 0.1em, `--accent-400`.
 - Subhead Inter 18-20px, `--text-2`.
 - CTA principal abajo con gradient + shadow `--accent-glow`.
@@ -206,7 +206,7 @@ Animaciones explícitamente **prohibidas** en v1:
 ### Featured project card
 - Border conic gradient sutil que rota muy lento al hover (no idle).
 - Background `--bg-1`.
-- Title Fraunces 25px.
+- Title Geist Sans 25px.
 - Stack badges JetBrains Mono 12px sobre `--accent-100` opacity 0.1.
 - Status pill arriba a la derecha.
 
@@ -259,7 +259,7 @@ Desktop: 128px. Mobile: 64px.
 ## 12. Pendiente de iterar
 
 - Decidir si añadimos un acento secundario cálido (terracotta) además del morado, o si el morado es la única firma.
-- Validar tipografías Fraunces+Inter en mockup real (puede que Fraunces necesite peso 500 para H secundarios).
+- Validar tipografías Geist Sans+Inter en mockup real (puede que Geist Sans necesite peso 500 para H secundarios).
 - Definir patrón visual para el blog (¿hero por post? ¿solo título?).
 - Ilustraciones / fotos del usuario para about — ¿hay foto, ilustración, o solo tipografía?
 - ¿Logo propio o solo wordmark "marmibas"?
