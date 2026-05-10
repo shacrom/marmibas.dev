@@ -39,7 +39,6 @@ export const ui = {
     'footer.rss': 'RSS',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
-    'footer.social.twitter': 'X (Twitter)',
     'footer.social.email': 'Email',
 
     // -- Botones / CTAs -------------------------------------------------------
@@ -78,11 +77,11 @@ export const ui = {
     'form.validation.messageMaxLength': 'El mensaje no puede pasar de 2000 caracteres.',
 
     // -- Status labels --------------------------------------------------------
-    'status.success': 'En producción',
-    'status.inProduction': 'En producción',
-    'status.inDevelopment': 'En desarrollo',
-    'status.sideProject': 'Side project',
-    'status.paused': 'Pausado',
+    'status.success': 'Para un cliente, ya en uso',
+    'status.inProduction': 'Para un cliente, ya en uso',
+    'status.inDevelopment': 'Construyéndolo ahora',
+    'status.sideProject': 'Proyecto propio',
+    'status.paused': 'En pausa',
     'status.prevExperience': 'Experiencia previa',
 
     // -- Meta / layout / a11y -------------------------------------------------
@@ -123,12 +122,12 @@ export const ui = {
     // -- Work index — grid + filtros (T-34) ----------------------------------
     'work.heading': 'Proyectos de software a medida',
     'work.tagline':
-      'Una selección de proyectos en producción, en desarrollo y exploraciones.',
+      'Una selección de trabajos para clientes y proyectos propios.',
     'work.filter.label': 'Filtrar por',
     'work.filter.all': 'Todos',
-    'work.filter.success': 'Casos de éxito',
-    'work.filter.development': 'En desarrollo',
-    'work.filter.sideProjects': 'Side projects',
+    'work.filter.success': 'Para clientes',
+    'work.filter.development': 'Construyendo',
+    'work.filter.sideProjects': 'Propios',
     'work.empty': 'Aún no hay proyectos en esta categoría.',
 
     // -- Home: About section (T-31) -------------------------------------------
@@ -209,7 +208,6 @@ export const ui = {
     'footer.rss': 'RSS',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
-    'footer.social.twitter': 'X (Twitter)',
     'footer.social.email': 'Email',
 
     // -- Buttons / CTAs -------------------------------------------------------
@@ -248,11 +246,11 @@ export const ui = {
     'form.validation.messageMaxLength': 'Message must be under 2000 characters.',
 
     // -- Status labels --------------------------------------------------------
-    'status.success': 'In production',
-    'status.inProduction': 'In production',
-    'status.inDevelopment': 'In development',
-    'status.sideProject': 'Side project',
-    'status.paused': 'Paused',
+    'status.success': 'For a client, in use',
+    'status.inProduction': 'For a client, in use',
+    'status.inDevelopment': 'Building it now',
+    'status.sideProject': 'My own project',
+    'status.paused': 'On hold',
     'status.prevExperience': 'Previous experience',
 
     // -- Meta / layout / a11y -------------------------------------------------
@@ -293,12 +291,12 @@ export const ui = {
     // -- Work index — grid + filtros (T-34) ----------------------------------
     'work.heading': 'Custom software projects',
     'work.tagline':
-      'A selection of projects in production, in development and explorations.',
+      'A selection of work for clients and my own projects.',
     'work.filter.label': 'Filter by',
     'work.filter.all': 'All',
-    'work.filter.success': 'Success stories',
-    'work.filter.development': 'In development',
-    'work.filter.sideProjects': 'Side projects',
+    'work.filter.success': 'For clients',
+    'work.filter.development': 'Building',
+    'work.filter.sideProjects': 'Mine',
     'work.empty': 'No projects in this category yet.',
 
     // -- Home: About section (T-31) -------------------------------------------

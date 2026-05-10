@@ -18,7 +18,7 @@
  *
  * SVGs:
  *   - Lucide-style inline, stroke 1.5px, currentColor (DESIGN.md §10).
- *   - GitHub, LinkedIn, X (Twitter).
+ *   - GitHub, LinkedIn.
  *   - target=_blank + rel=noopener (sin tracker `noreferrer` para no romper
  *     analytics de los destinos; el bloqueo de referer no es un requisito
  *     declarado en DESIGN/TASKS, sí lo es no abrir vulnerabilidades a
@@ -63,7 +63,6 @@ const PHONE_DISPLAY = '+34 614 22 42 36';
 const PHONE_HREF = '+34614224236';
 const GITHUB_URL = 'https://github.com/shacrom';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/marmibas';
-const TWITTER_URL = 'https://x.com/marmibas';
 
 // Aria label localizado para el aside del footer.
 const footerLabel = lang === 'es' ? 'Pie de página' : 'Footer';
@@ -159,32 +158,6 @@ const ctaSection = {
                 <circle cx="4" cy="4" r="2" />
               </svg>
               <span>{t('footer.social.linkedin')}</span>
-            </a>
-          </li>
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={TWITTER_URL}
-              target="_blank"
-              rel="noopener"
-              aria-label={t('footer.social.twitter')}
-            >
-              {/* X / Twitter — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-              </svg>
-              <span>{t('footer.social.twitter')}</span>
             </a>
           </li>
           <li>
