@@ -35,10 +35,8 @@ export const ui = {
     'nav.contact': 'Contacto',
 
     // -- Footer ---------------------------------------------------------------
-    'footer.builtWith': 'Hecho con Astro',
     'footer.copyright': 'marmibas',
     'footer.rss': 'RSS',
-    'footer.madeWith': 'Hecho con',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
     'footer.social.twitter': 'X (Twitter)',
@@ -207,10 +205,8 @@ export const ui = {
     'nav.contact': 'Contact',
 
     // -- Footer ---------------------------------------------------------------
-    'footer.builtWith': 'Built with Astro',
     'footer.copyright': 'marmibas',
     'footer.rss': 'RSS',
-    'footer.madeWith': 'Made with',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
     'footer.social.twitter': 'X (Twitter)',

@@ -7,7 +7,7 @@
  * Estructura (DESIGN.md §3 — color sólido, sin gradient):
  *   - Top: tagline corto bilingüe (hardcoded; ver `tagline` más abajo).
  *   - Middle: 3 columnas (Navegación, Social, Legal/RSS).
- *   - Bottom: separador + copyright dinámico + "made with Astro".
+ *   - Bottom: separador + copyright dinámico.
  *
  * Tokens DESIGN.md:
  *   - Background: `--bg-0` (sólido, sin gradient en footer §3).
@@ -266,9 +266,6 @@ const ctaSection = {
               <span>{t('footer.rss')}</span>
             </a>
           </li>
-          <li class="site-footer__meta">
-            <span>{t('footer.builtWith')}</span>
-          </li>
         </ul>
       </div>
     </div>
@@ -287,9 +284,6 @@ const ctaSection = {
     <div class="site-footer__bottom">
       <p class="site-footer__copy">
         <span aria-hidden="true">©</span> {year} {t('footer.copyright')}
-      </p>
-      <p class="site-footer__made">
-        {t('footer.madeWith')} <span class="font-mono">Astro</span>
       </p>
     </div>
   </div>
@@ -388,11 +382,6 @@ const ctaSection = {
   .site-footer__link--icon svg {
     flex-shrink: 0;
     /* SVG hereda currentColor; transición incluida en `color` del padre. */
-  }
-
-  .site-footer__meta {
-    color: var(--text-3);
-    font-size: var(--text-xs);
   }
 
   /* --------------------------------------------------------------------------
@@ -503,12 +492,7 @@ const ctaSection = {
     }
   }
 
-  .site-footer__copy,
-  .site-footer__made {
+  .site-footer__copy {
     margin: 0;
-  }
-
-  .site-footer__made .font-mono {
-    color: var(--text-2);
   }
 </style>
