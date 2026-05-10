@@ -8,7 +8,7 @@
  *
  * Tokens DESIGN.md (same as ES counterpart):
  *   §2 → --bg-1, --border, --text-0/1/2/3, --accent-400, --accent-glow
- *   §3 → --gradient-cta, --gradient-cta-hover, --gradient-hero-ambient
+ *   §3 → --gradient-cta, --gradient-cta-hover
  *   §4 → --font-display (h1), --font-sans (body), --font-mono (eyebrow)
  *   §5 → padding rhythm 64-128px, gap 16/24/32
  *   §6 → --motion-duration-fast, --motion-ease-out
@@ -30,8 +30,6 @@ const tagline =
   noindex
 >
   <section class="contact" aria-labelledby="contact-title">
-    <div class="contact__ambient" aria-hidden="true"></div>
-
     <header class="contact__header">
       <p class="contact__eyebrow font-mono">{t('nav.contact')}</p>
       <h1 id="contact-title" class="contact__title font-display">Let's talk</h1>
@@ -204,16 +202,6 @@ const tagline =
     padding-block: clamp(64px, 10vw, 96px);
     padding-inline: clamp(20px, 5vw, 48px);
     isolation: isolate;
-  }
-
-  .contact__ambient {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 480px;
-    background: var(--gradient-hero-ambient);
-    opacity: 0.5;
-    pointer-events: none;
-    z-index: -1;
   }
 
   .contact__header {
