@@ -24,4 +24,4 @@ En Devoltec trabajé en el desarrollo de un MES (Manufacturing Execution System)
 
 El sistema gira en torno al trabajo en planta: se definen los procesos productivos, se crean órdenes de fabricación, se asignan las máquinas y materias primas, y se reciben datos directamente de los sensores para saber qué está pasando en cada línea. A todo eso se suma el control de operarios: quién está en cada puesto, qué tarea está ejecutando y con qué consumos. Esto permite cerrar el círculo entre lo que se planificó y lo que ocurre realmente sobre la línea de producción.
 
-Trabajé en el desarrollo del sistema completo: desde la interfaz Angular que usan los operarios hasta los servicios NestJS que reciben los datos de los sensores y la base de datos PostgreSQL donde se guarda toda la trazabilidad de cada orden, máquina y operario.
+Trabajé en el desarrollo del sistema completo: desde las pantallas que usan los operarios en planta hasta la parte que recibe los datos de las máquinas y la base de datos donde queda guardada toda la trazabilidad de cada orden, máquina y operario.

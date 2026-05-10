@@ -1,6 +1,6 @@
 ---
 title: "Cleverpy Machine Learning · Desarrollador Full Stack"
-description: "Primer rol profesional. Desarrollo frontend con React y luego salto al backend Java/Spring, con trato directo con cliente y primer GitFlow serio en equipo."
+description: "Mi primer trabajo en software. Construí la web de un cliente con trato directo y luego salté al equipo que se encarga de la lógica del servidor y la base de datos."
 lang: es
 draft: false
 featured: false
@@ -11,7 +11,7 @@ period: "Sept 2021 — May 2022"
 startDate: "2021-09-01"
 endDate: "2022-05-01"
 current: false
-summary: "Primer rol profesional. Empecé en frontend desarrollando una web con React, Redux y JWT, y después salté al equipo backend para mantener servicios Java/Spring y migrar lógica de Python a Java."
+summary: "Mi primer trabajo en software. Empecé construyendo la web de un cliente con trato directo y a los pocos meses pasé al equipo que se encarga de la lógica del servidor y la base de datos."
 stack:
   - "React"
   - "Redux"
@@ -27,4 +27,4 @@ stack:
 location: "España"
 ---
 
-Mi primer rol profesional. Empecé en frontend desarrollando una web con React, Redux, JWT y Sass, con trato directo con cliente. A los pocos meses pasé al equipo backend para mantener servicios Java/Spring sobre PostgreSQL y migrar lógica de Python a Java. Fue también mi primer GitFlow serio en equipo.
+Mi primer trabajo en software. Empecé construyendo la web de un cliente: me reunía con él para acordar qué funcionalidades entraban, revisaba prototipos y traducía cada decisión en algo concreto que se pudiera entregar. A los pocos meses pasé al equipo que se encarga de la parte invisible del producto —la lógica que corre en el servidor y la base de datos donde se guarda todo— y aprendí a trabajar en equipo con un orden serio: ramas separadas para cada cambio, revisiones de código y entregas coordinadas.
