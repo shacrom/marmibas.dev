@@ -2,16 +2,17 @@
 /**
  * Hero.astro — Home hero section (T-29).
  *
- * Compose the home hero anchor: ambient gradient + HeroIntro cascade +
- * supporting tagline + dual CTAs. This is the visual anchor described in
- * DESIGN.md §8 ("Hero") and §3 (radial gradient ambient).
+ * Compose the home hero anchor: HeroIntro cascade + supporting tagline +
+ * dual CTAs. This is the visual anchor described in DESIGN.md §8 ("Hero").
+ * The radial-gradient aurora ambient is painted at page level by
+ * BaseLayout when `body.is-home` is active (covers the whole viewport,
+ * not just this section).
  *
  * Layout (top → bottom):
- *   1. <div class="hero__ambient">         ← radial gradient ambient (§3)
- *   2. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
- *   3. <p class="hero__tagline">           ← Inter, --text-2, max-width 620
- *   4. <div class="hero__ctas">            ← primary + secondary buttons (§8)
- *   5. <aside class="hero__panel">         ← client-facing diagnosis card
+ *   1. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
+ *   2. <p class="hero__tagline">           ← Inter, --text-2, max-width 620
+ *   3. <div class="hero__ctas">            ← primary + secondary buttons (§8)
+ *   4. <aside class="hero__panel">         ← client-facing diagnosis card
  *
  * Motion strategy (DESIGN.md §6/§7):
  *   - HeroIntro already animates the cascade (3-4 lines × 120ms + 100ms).
@@ -39,7 +40,7 @@
  *
  * Tokens (DESIGN.md):
  *   §2 palette       → --text-0..3, --border, --accent-300..600
- *   §3 gradients     → --gradient-hero-ambient, --gradient-cta, --gradient-cta-hover
+ *   §3 gradients     → --gradient-cta, --gradient-cta-hover (aurora ambient at page level)
  *   §4 typography    → --font-display, --font-sans, --font-mono, --text-lg
  *   §5 spacing       → 96px / 128px vertical rhythm, 12/16/24/32/40
  *   §6 motion        → --motion-duration-base/fast, --motion-ease-out
@@ -118,7 +119,6 @@ const workHref = getRoutePath('work', lang);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
-  <div class="hero__ambient" aria-hidden="true"></div>
   <div class="hero__stars" aria-hidden="true"></div>
 
   <div class="hero__content">
@@ -194,23 +194,6 @@ const workHref = getRoutePath('work', lang);
   }
 
   /* --------------------------------------------------------------------------
-   * Ambient gradient. Radial, painted at the top, fades to transparent. The
-   * `--gradient-hero-ambient` token (DESIGN.md §3) is `radial-gradient(
-   * ellipse at top, --accent-700 0%, transparent 60%)`. We dampen with
-   * opacity to keep it sutil (the design principle is "discipline, not neón").
-   * `pointer-events: none` so it never blocks underlying interactive nodes.
-   * ------------------------------------------------------------------------ */
-  .hero__ambient {
-    position: absolute;
-    inset: -80px -10vw auto -10vw;
-    height: 680px;
-    background: var(--gradient-hero-ambient);
-    opacity: 0.78;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* --------------------------------------------------------------------------
    * Star pattern — destellos sutiles inspirados en la tarjeta de visita.
    * 8 radial-gradients micro (1-1.5px) repartidos asimétricamente, con
    * opacidad global muy baja para que el efecto sea apenas perceptible al
@@ -242,7 +225,8 @@ const workHref = getRoutePath('work', lang);
    * the CTAs sit on a horizontal row at the bottom.
    *
    * `position: relative; z-index: 1` keeps the content above .hero__stars
-   * (z-index 0) and .hero__ambient (z-index -1).
+   * (z-index 0). The aurora ambient lives at page level (body.is-home in
+   * BaseLayout), so no local stacking against it is needed here.
    * ------------------------------------------------------------------------ */
   .hero__content {
     position: relative;

@@ -73,6 +73,12 @@ const lang = getLangFromUrl(Astro.url);
 // engines that discover them via external links do not index them. Explicit
 // `noindex` prop still wins (always-noindex pages stay noindex regardless).
 const effectiveNoindex = noindex || lang === 'en';
+
+// Home pages opt into a full-viewport aurora ambient via `body.is-home`.
+// The token --gradient-hero-ambient is painted as a fixed background on the
+// body so the aurora persists across scroll and covers the whole page.
+const path = Astro.url.pathname;
+const isHome = path === '/' || path === '/en' || path === '/en/';
 ---
 
 <!doctype html>
@@ -93,7 +99,7 @@ const effectiveNoindex = noindex || lang === 'en';
         before the first paint and intercepts in-page navigation. */}
     <ClientRouter />
   </head>
-  <body class="layout-body">
+  <body class:list={['layout-body', isHome && 'is-home']}>
     <SkipLink lang={lang} />
     <Header currentLang={lang} currentUrl={Astro.url} />
 
@@ -133,5 +139,21 @@ const effectiveNoindex = noindex || lang === 'en';
 
   .layout-main:focus {
     outline: none;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Aurora ambient — home only. Paints the radial-gradient mesh from
+   * --gradient-hero-ambient as a fixed background on the body so the aurora
+   * spans the whole page and stays anchored to the viewport while scrolling.
+   * The base --color-bg-0 is preserved as the background-color underlay so
+   * the gradient blends over the dark base.
+   * ------------------------------------------------------------------------ */
+  body.is-home {
+    background-color: var(--color-bg-0);
+    background-image: var(--gradient-hero-ambient);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: 100vw 100vh;
+    background-position: center center;
   }
 </style>
