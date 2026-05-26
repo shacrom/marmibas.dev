@@ -19,8 +19,7 @@
  *   - El Map de rate-limit vive en memoria del proceso. En serverless cada
  *     instancia tiene su propio Map; es una mitigación, no una garantía
  *     férrea. Suficiente para un site personal de bajo volumen.
- *   - From `noreply@marmibas.dev` requiere DKIM verificado en Hostinger DNS
- *     (followup T-58). Sin DKIM, Resend rechaza el envío.
+ *   - El remitente usa el dominio marmibas.dev verificado en Resend.
  */
 
 import type { APIRoute } from 'astro';
