@@ -50,6 +50,10 @@ const caseStudies = defineCollection({
       heroImage: image().optional(),
       ogImage: image().optional(),
       tagline: z.string(),
+      // Public paths to the product logo and the client's brand logo
+      // (e.g. "/logos/voxye.svg"). Rendered as tiles on the card.
+      logo: z.string().optional(),
+      clientLogo: z.string().optional(),
       client: z.string(),
       year: z.number().int(),
       role: z.string(),
@@ -83,6 +87,8 @@ const projects = defineCollection({
       heroImage: image().optional(),
       ogImage: image().optional(),
       pitch: z.string(),
+      // Public path to the project logo (e.g. "/logos/visomos.svg").
+      logo: z.string().optional(),
       stack: z.array(z.string()).min(1),
       status: z.enum(["in-development", "side-project", "paused"]),
       year: z.number().int().optional(),
@@ -115,6 +121,8 @@ const experience = defineCollection({
       heroImage: image().optional(),
       ogImage: image().optional(),
       company: z.string(),
+      // Public path to the company logo (e.g. "/logos/capgemini.png").
+      logo: z.string().optional(),
       role: z.string(),
       period: z.string(),
       startDate: z.coerce.date(),

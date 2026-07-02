@@ -48,6 +48,10 @@ export interface Props {
   tagline: string;
   /** Cliente o sector ("Cliente confidencial · sector reformas"). */
   client: string;
+  /** Ruta pública del logo del producto (tile claro junto al título). */
+  logo?: string;
+  /** Ruta pública del logo del cliente (chip pequeño junto al meta). */
+  clientLogo?: string;
   /** Año del entregable (ej. 2025). */
   year: number;
   /** Stack técnico — se renderizan los primeros 5. */
@@ -68,6 +72,8 @@ const {
   title,
   tagline,
   client,
+  logo,
+  clientLogo,
   year,
   stack,
   lang,
@@ -129,11 +135,33 @@ const visibleStack = stack.slice(0, 5);
         {t('status.success')}
       </span>
       <span class="case-study-card__meta">
+        {clientLogo && (
+          <img
+            class="case-study-card__client-logo"
+            src={clientLogo}
+            alt={`Logo de ${client}`}
+            width="20"
+            height="20"
+            loading="lazy"
+          />
+        )}
         {client} · {year}
       </span>
     </header>
 
-    <h3 class="case-study-card__title font-display">{title}</h3>
+    <div class="case-study-card__title-row">
+      {logo && (
+        <img
+          class="case-study-card__logo"
+          src={logo}
+          alt={`Logo de ${title}`}
+          width="44"
+          height="44"
+          loading="lazy"
+        />
+      )}
+      <h3 class="case-study-card__title font-display">{title}</h3>
+    </div>
     <p class="case-study-card__tagline">{tagline}</p>
 
     {
@@ -413,10 +441,41 @@ const visibleStack = stack.slice(0, 5);
   }
 
   .case-study-card__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     color: var(--text-3);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: 0.02em;
+  }
+
+  .case-study-card__client-logo {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  .case-study-card__title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* Tile claro para el logo del producto: los logos de marca están pensados
+     para fondos claros; el tile preserva sus colores sobre el tema oscuro
+     (misma convención que /experiencia y ProjectCard). */
+  .case-study-card__logo {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--text-0);
+    border: 1px solid var(--border);
   }
 
   /* Heading h3 — DESIGN.md §8 indica Fraunces ~25-32px peso 600. */

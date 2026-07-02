@@ -6,6 +6,7 @@ draft: false
 featured: false
 order: 2
 company: "Capgemini"
+logo: "/logos/capgemini.png"
 role: "Desarrollador Full Stack"
 period: "Nov 2022 — Jul 2024"
 startDate: "2022-11-01"
@@ -22,6 +23,8 @@ stack:
 location: "España"
 ---
 
-Entré en Capgemini como desarrollador en la parte del servidor de un proyecto grande para una empresa: la lógica invisible que organiza lo que pasa por debajo de las pantallas. Esa primera etapa me sirvió para consolidar la forma de trabajar en una empresa grande: repositorios compartidos, revisiones de código en equipo y un buen reparto de responsabilidades.
+En Capgemini desarrollé software para grandes empresas, primero centrado en la lógica del servidor y después también en las pantallas que usaba el cliente final. Ahí aprendí a trabajar con los estándares de una consultora grande.
 
-A los pocos meses pasé a un rol completo en proyectos para grandes clientes: ya no solo la parte del servidor, también las pantallas con las que el usuario final interactúa. Aprendí a unir las dos partes con coherencia: pensar primero el negocio, definir cómo encajan las piezas entre sí y trasladar ese mismo lenguaje hasta el cliente.
+- Desarrollé la lógica de negocio del servidor en proyectos para grandes clientes.
+- Construí las pantallas con las que interactuaba el usuario final.
+- Adopté buenas prácticas de equipo: repositorios compartidos, revisiones de código y reparto de responsabilidades.

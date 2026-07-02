@@ -75,6 +75,8 @@ export interface Props {
   year?: number;
   /** Idioma — propaga al Pill. */
   lang: Language;
+  /** Ruta pública del logo del proyecto (tile claro junto al título). */
+  logo?: string;
   /** Link al detail page del proyecto (interno). Si está, el card es clickable. */
   href?: string;
   /** URL del repo (externa). */
@@ -93,6 +95,7 @@ const {
   status,
   year,
   lang,
+  logo,
   href,
   repo,
   liveUrl,
@@ -124,7 +127,19 @@ const WrapperTag = href ? 'a' : 'div';
       {year && <span class="project-card__year">{year}</span>}
     </header>
 
-    <h3 class="project-card__title">{title}</h3>
+    <div class="project-card__title-row">
+      {logo && (
+        <img
+          class="project-card__logo"
+          src={logo}
+          alt={`Logo de ${title}`}
+          width="40"
+          height="40"
+          loading="lazy"
+        />
+      )}
+      <h3 class="project-card__title">{title}</h3>
+    </div>
     <p class="project-card__summary">{summary}</p>
 
     {
@@ -178,14 +193,18 @@ const WrapperTag = href ? 'a' : 'div';
     padding: 28px;
     transition:
       border-color var(--motion-duration-fast) var(--motion-ease-out),
-      transform var(--motion-duration-fast) var(--motion-ease-out);
+      transform var(--motion-duration-base) var(--motion-ease-out),
+      box-shadow var(--motion-duration-base) var(--motion-ease-out);
   }
 
-  /* Hover: subir 2px y cambiar borde a accent. Aplica al article completo. */
+  /* Hover: elevación sutil (translateY -4px) + borde accent + sombra.
+     Sin gradient — DESIGN.md §3 reserva el borde gradient al featured card;
+     el "más impacto" en el card normal viene de la elevación, no del color. */
   .project-card:hover,
   .project-card:focus-within {
     border-color: var(--accent-400);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
   }
 
   /* Wrapper principal — `<a>` o `<div>` según si hay href. */
@@ -219,6 +238,26 @@ const WrapperTag = href ? 'a' : 'div';
     font-size: var(--text-xs);
     color: var(--text-3);
     letter-spacing: 0.04em;
+  }
+
+  .project-card__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Tile claro para el logo: los logos de marca están pensados para fondos
+     claros; el tile preserva sus colores sobre el tema oscuro (misma
+     convención que el timeline de /experiencia). */
+  .project-card__logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding: 5px;
+    border-radius: var(--radius-sm);
+    background: var(--text-0);
+    border: 1px solid var(--border);
   }
 
   .project-card__title {

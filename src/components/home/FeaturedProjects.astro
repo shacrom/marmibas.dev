@@ -86,6 +86,7 @@ const featuredCases = [
         ? 'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.'
         : 'The application that replaces Word and Excel for quotes and invoices in renovation companies. Fewer errors, more time, all branded with your identity.',
     client: lang === 'es' ? 'Empresas de reformas' : 'Renovation companies',
+    logo: '/logos/voxye.svg',
     year: 2026,
     stack:
       lang === 'es'
@@ -101,6 +102,8 @@ const featuredCases = [
         ? 'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.'
         : 'A digital notebook that replaces paper logs where machine settings are written down. The know-how of your best employees, preserved forever.',
     client: lang === 'es' ? 'Industria textil' : 'Textile industry',
+    logo: '/logos/recetas-novatex.png',
+    clientLogo: '/logos/novatex.jpg',
     year: 2025,
     stack:
       lang === 'es'
@@ -141,6 +144,8 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
               title={caseStudy.title}
               tagline={caseStudy.tagline}
               client={caseStudy.client}
+              logo={caseStudy.logo}
+              clientLogo={caseStudy.clientLogo}
               year={caseStudy.year}
               stack={caseStudy.stack}
               lang={lang}

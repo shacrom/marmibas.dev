@@ -4,8 +4,11 @@
  *
  * Carga `getCollection('experience', e => e.data.lang === 'es')`, ordena por
  * `order` ascendente (1 = más reciente) y renderiza cada entrada como una card
- * con período, título (company · role), stack como TechBadges y body MD
- * renderizado dentro de Prose.
+ * compacta: stack como TechBadges arriba, período, título (company · role) y
+ * body MD renderizado dentro de Prose. Cada entry entra con
+ * `motion-reveal-on-scroll` (via `<Reveal as="li">`) con un stagger corto
+ * (60ms por índice, tope 240ms) para que el timeline se sienta dinámico sin
+ * romper el presupuesto de motion de DESIGN.md §7.
  *
  * Sección de educación al final, hardcoded en `ui.ts` (no es content
  * collection): Grado en Ingeniería Informática · ETSE Universidad de Valencia
@@ -26,6 +29,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import TechBadge from '../../components/ui/TechBadge.astro';
 import Prose from '../../components/ui/Prose.astro';
+import Reveal from '../../components/ui/Reveal.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
 
 type ExperienceEntry = CollectionEntry<'experience'>;
@@ -72,18 +76,10 @@ const items = await Promise.all(
 
     <ol class="timeline" role="list">
       {
-        items.map(({ entry, Content }) => (
-          <li class="timeline__item">
+        items.map(({ entry, Content }, index) => (
+          <Reveal as="li" class="timeline__item" delay={Math.min(index * 60, 240)}>
             <span class="timeline__dot" aria-hidden="true" />
             <article class="timeline__card">
-              <p class="timeline__period font-mono">{entry.data.period}</p>
-
-              <h2 class="timeline__heading font-display">
-                <span class="timeline__company">{entry.data.company}</span>
-                <span class="timeline__separator" aria-hidden="true">·</span>
-                <span class="timeline__role">{entry.data.role}</span>
-              </h2>
-
               {entry.data.stack && entry.data.stack.length > 0 && (
                 <ul class="timeline__stack" role="list">
                   {entry.data.stack.map((tech: string) => (
@@ -94,11 +90,33 @@ const items = await Promise.all(
                 </ul>
               )}
 
+              <div class="timeline__head">
+                {entry.data.logo && (
+                  <img
+                    class="timeline__logo"
+                    src={entry.data.logo}
+                    alt={`Logo de ${entry.data.company}`}
+                    width="48"
+                    height="48"
+                    loading="lazy"
+                  />
+                )}
+                <div class="timeline__head-text">
+                  <p class="timeline__period font-mono">{entry.data.period}</p>
+
+                  <h2 class="timeline__heading font-display">
+                    <span class="timeline__company">{entry.data.company}</span>
+                    <span class="timeline__separator" aria-hidden="true">·</span>
+                    <span class="timeline__role">{entry.data.role}</span>
+                  </h2>
+                </div>
+              </div>
+
               <Prose class="timeline__body">
                 <Content />
               </Prose>
             </article>
-          </li>
+          </Reveal>
         ))
       }
     </ol>
@@ -219,10 +237,48 @@ const items = await Promise.all(
     background: var(--bg-1);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: clamp(20px, 3vw, 28px);
+    padding: clamp(16px, 2.4vw, 22px);
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-base) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .timeline__card:hover,
+  .timeline__card:focus-within {
+    border-color: var(--accent-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .timeline__head {
+    display: flex;
+    align-items: center;
     gap: 14px;
+  }
+
+  .timeline__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  /* Los logos oficiales (azul Capgemini, rosa Cleverpy) están pensados para
+     fondos claros; la pastilla clara preserva sus colores de marca sobre el
+     tema oscuro sin recolorearlos (DESIGN.md: assets de marca intactos). */
+  .timeline__logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--text-0);
+    border: 1px solid var(--color-border);
   }
 
   .timeline__period {
