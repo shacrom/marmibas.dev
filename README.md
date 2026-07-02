@@ -12,7 +12,7 @@ Portfolio personal de marmibas — Ingeniero Informático y Full Stack Developer
 - **[Resend](https://resend.com/)** — backend del form de contacto.
 - **[Vercel](https://vercel.com/)** — hosting + Web Analytics + adapter `@astrojs/vercel`.
 
-Fuentes self-hosted: Fraunces (display), Inter (sans), JetBrains Mono (mono). Detalle en `public/fonts/LICENSES.md`.
+Fuentes self-hosted: Geist Sans (display), Inter (sans), JetBrains Mono (mono). Detalle en `public/fonts/LICENSES.md`.
 
 ## Desarrollo
 
@@ -33,7 +33,7 @@ Comandos disponibles:
 
 | Script             | Qué hace                                        |
 | ------------------ | ----------------------------------------------- |
-| `npm run dev`      | Levanta el dev server de Astro en `:4321`.      |
+| `npm run dev`      | Levanta el dev server de Astro en `http://localhost:4322`. |
 | `npm run build`    | Build estático a `dist/`.                       |
 | `npm run preview`  | Sirve el build local para revisión final.      |
 | `npm run check`    | `astro check` + `tsc --noEmit` (typecheck).     |
@@ -60,7 +60,7 @@ Auto-deploy en [Vercel](https://vercel.com/) en cada push a `main`. Las branches
 ├── TASKS.md               # Plan de tareas vivas del bootstrap
 ├── astro.config.mjs       # i18n, adapter Vercel, integrations
 ├── public/
-│   ├── fonts/             # Fraunces + Inter + JetBrains Mono (woff2)
+│   ├── fonts/             # Geist Sans + Inter + JetBrains Mono (woff2)
 │   ├── og/                # Imágenes Open Graph
 │   ├── favicon.svg
 │   └── robots.txt

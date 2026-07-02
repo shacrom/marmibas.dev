@@ -132,6 +132,13 @@ export default defineConfig({
   site: 'https://marmibas.dev',
   output: 'static',
 
+  // Permanent local dev port for this project (4321 is contested by other
+  // Astro projects in the workspace). strictPort makes the dev server fail
+  // loudly instead of silently jumping to another port when 4322 is taken.
+  server: {
+    port: 4322,
+  },
+
   adapter: vercel({
     webAnalytics: { enabled: true },
   }),
@@ -191,5 +198,8 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      strictPort: true,
+    },
   },
 });
