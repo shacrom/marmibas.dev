@@ -492,10 +492,8 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
         </div>
       </Reveal>
 
-      {
-        /* Panel 3 — from spreadsheet to app. Full-width bento row on desktop:
-          simulator window left (~60%), title + description right, centered. */
-      }
+      {/* Panel 3 — from spreadsheet to app. Full-width bento row on desktop:
+          the dashboard takes the full row and the explanation sits below. */}
       <Reveal
         as="article"
         class="showcase__panel showcase__panel--wide"
@@ -911,24 +909,23 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
     box-shadow: var(--shadow-card-hover);
   }
 
-  /* Wide (full-row) panel on desktop: horizontal split — simulator window
-     ~60% left, title + description right, vertically centered. The window's
-     content sizes the panel; nothing stretches to match neighbours anymore. */
+  /* Wide (full-row) panel on desktop: keep the simulator full-width and place
+     the explanation below it. The dashboard needs horizontal space for native
+     filters, stats and table columns; splitting the card would compress them. */
   @media (min-width: 1024px) {
     .showcase__panel--wide {
-      grid-template-rows: none;
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-      align-items: stretch;
+      grid-template-rows: auto auto;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .showcase__panel--wide .showcase__window {
-      border-bottom: 0;
-      border-right: 1px solid var(--border);
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
     }
 
     .showcase__panel--wide .showcase__panel-body {
-      align-content: center;
-      padding: 2rem;
+      max-width: 720px;
+      padding: 1.5rem 2rem 2rem;
     }
   }
 
@@ -1358,7 +1355,7 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
 
   @media (min-width: 640px) {
     .showcase__controls {
-      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: minmax(14rem, 1.4fr) minmax(10rem, 0.9fr) minmax(13rem, 1.2fr);
     }
   }
 
