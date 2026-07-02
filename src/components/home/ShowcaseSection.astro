@@ -1,0 +1,1193 @@
+---
+/**
+ * ShowcaseSection.astro — "Ejemplos reales" / "Real examples" section for the home page.
+ *
+ * Three INTERACTIVE demo panels that look and behave like real software
+ * (plazasys.com-style fake app windows) rather than abstract illustrations.
+ * Pure HTML/CSS + one minimal vanilla `<script>` — no images, no libraries.
+ *
+ * Panels:
+ *   1. machines   — shop-floor monitor. Start/stop toggle per machine; the
+ *                   production summary recalculates from the running set.
+ *   2. management — quote document. Include/exclude line items (total
+ *                   recalculates, locale-formatted) + fake "Generate PDF"
+ *                   button with a busy → done → idle sequence.
+ *   3. data       — spreadsheet-to-app. Segmented "Before · Excel / Now · App"
+ *                   toggle (cramped spreadsheet mock vs clean table) and a
+ *                   real search input that live-filters the table rows
+ *                   (case/accent-insensitive).
+ *
+ * Visual anchors (DESIGN.md):
+ * - §8 "Showcase demo panels": extends `.case-study-card__visual` fake-window
+ *   language (3-dot topbar over `--bg-2`).
+ * - §7 animation #3 (Reveal on scroll) for section + staggered per-panel
+ *   entrance, plus the standard card hover elevation. View switching in panel 3
+ *   is an opacity-only CSS transition on `--motion-base`. No idle animation,
+ *   no new keyframes, no local reduced-motion block (motion.css is the single
+ *   source of truth).
+ *
+ * Accessibility: the mocks are NO LONGER fully decorative — they contain real
+ * native controls (`<button>`, `<input>`) with proper semantics: `aria-pressed`
+ * on toggles, a visually-hidden `<label>` for the search input, and
+ * `aria-live="polite"` regions for the recalculated values (production summary,
+ * quote total). Purely illustrative bits that never convey information (window
+ * topbar dots, status dot, progress bar, the "Before · Excel" chaos grid) stay
+ * `aria-hidden`.
+ *
+ * Progressive enhancement: server renders the complete initial state (running
+ * machines, all quote lines included, "Now · App" view, correct totals). Without
+ * JS everything is visible and static — controls simply do not respond.
+ */
+
+import type { Language } from '../../i18n/ui';
+import Reveal from '../ui/Reveal.astro';
+
+export interface Props {
+  /** Active language. Drives heading + subheading + panel copy. */
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const locale = lang === 'es' ? 'es-ES' : 'en-US';
+const nf = new Intl.NumberFormat(locale);
+const fmtMeters = (n: number): string => `${nf.format(n)} m`;
+const fmtCurrency = (n: number): string => (lang === 'es' ? `${nf.format(n)} €` : `€${nf.format(n)}`);
+
+/** Normalize for accent/case-insensitive search (same logic as the client script). */
+const normalize = (s: string): string =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const copy = {
+  es: {
+    eyebrow: 'Ejemplos reales',
+    heading: 'Así se ve el software que construyo',
+    sub: 'Paneles de demostración con datos ficticios: esto es lo que tu equipo vería en pantalla. Puedes tocarlos.',
+    panels: [
+      {
+        id: 'machines',
+        title: 'Planta industrial en tiempo real',
+        desc: 'Monitoriza máquinas y producción en tiempo real, sin pasear con la libreta.',
+      },
+      {
+        id: 'management',
+        title: 'Gestión documental',
+        desc: 'Presupuestos, facturas y contratos que se calculan solos y salen con tu marca.',
+      },
+      {
+        id: 'data',
+        title: 'Del Excel a la aplicación',
+        desc: 'Sustituye hojas de cálculo frágiles por una aplicación que cualquiera puede usar.',
+      },
+    ],
+    machines: {
+      names: ['Telar V1', 'Telar V2', 'Madejera M1'],
+      stop: 'Parar',
+      start: 'Arrancar',
+      summaryProduction: 'Producción hoy',
+      summaryStops: 'Paradas',
+    },
+    management: {
+      docTitle: 'Presupuesto #2026-041',
+      status: 'Aceptado',
+      includeLine: 'Incluir partida',
+      lines: [
+        { label: 'Diseño e implementación', amount: 3200 },
+        { label: 'Integración con TPV', amount: 950 },
+        { label: 'Soporte primer mes', amount: 700 },
+      ],
+      totalLabel: 'Total',
+      pdfIdle: 'Generar PDF',
+      pdfBusy: 'Generando…',
+      pdfDone: 'PDF listo ✓',
+    },
+    data: {
+      viewBefore: 'Antes · Excel',
+      viewAfter: 'Ahora · App',
+      searchLabel: 'Buscar cliente o producto',
+      searchPlaceholder: 'Cliente · Producto…',
+      noResults: 'Sin resultados',
+      headers: ['Cliente', 'Producto', 'Ajuste'],
+      rows: [
+        ['Ferretería Solá', 'Tornillería M6', '+2,5%'],
+        ['Mueblex S.L.', 'Bisagra reforzada', '0%'],
+        ['Distribuciones Rus', 'Perfil aluminio', '-1,2%'],
+        ['Talleres Camps', 'Chapa galvanizada', '+0,8%'],
+        ['Grupo Ánfora', 'Tornillería M8', '+1,4%'],
+      ],
+      // Deliberately cramped spreadsheet junk — 9 columns × 7 rows, flat list.
+      // Cells starting with '#' render as broken-formula error cells.
+      excel: [
+        'REF', 'CLIENTE', 'ART', 'UD', 'PRECIO', 'DTO', 'IVA', 'TOTAL', 'OBS',
+        'C-104', 'Ferret. So', 'TOR-M6', '1200', '0,045', '#REF!', '21%', '54,0', 'pdte',
+        'C-217', 'Mueblex S', 'BIS-RF', '340', '1,20', '5%', '21%', '####', 'ok',
+        'C-098', 'Distrib. R', 'PER-AL', '86', '12,40', '#REF!', '21%', '1.066', 'rev.',
+        'C-311', 'Talleres C', 'CHA-GV', '52', '=SI(B5>0', '2%', '####', '####', '??',
+        'C-402', 'Grupo Ánf', 'TOR-M8', '760', '0,052', '3%', '21%', '39,5', 'dup!',
+        'C-115', 'Ferret. So', 'TOR-M4', '2400', '0,031', '#¡DIV/0!', '21%', '####', 'pdte',
+      ],
+    },
+  },
+  en: {
+    eyebrow: 'Real examples',
+    heading: 'This is what the software I build looks like',
+    sub: 'Demo panels with fictional data: this is what your team would actually see on screen. Go ahead and try them.',
+    panels: [
+      {
+        id: 'machines',
+        title: 'Real-time shop floor',
+        desc: 'Monitor machines and production in real time, without walking the floor with a notepad.',
+      },
+      {
+        id: 'management',
+        title: 'Document management',
+        desc: 'Quotes, invoices and contracts that calculate themselves and go out under your brand.',
+      },
+      {
+        id: 'data',
+        title: 'From spreadsheet to app',
+        desc: 'Replace fragile spreadsheets with an application anyone on the team can use.',
+      },
+    ],
+    machines: {
+      names: ['Loom V1', 'Loom V2', 'Winder M1'],
+      stop: 'Stop',
+      start: 'Start',
+      summaryProduction: 'Production today',
+      summaryStops: 'Stops',
+    },
+    management: {
+      docTitle: 'Quote #2026-041',
+      status: 'Accepted',
+      includeLine: 'Include line',
+      lines: [
+        { label: 'Design & implementation', amount: 3200 },
+        { label: 'POS integration', amount: 950 },
+        { label: 'First month support', amount: 700 },
+      ],
+      totalLabel: 'Total',
+      pdfIdle: 'Generate PDF',
+      pdfBusy: 'Generating…',
+      pdfDone: 'PDF ready ✓',
+    },
+    data: {
+      viewBefore: 'Before · Excel',
+      viewAfter: 'Now · App',
+      searchLabel: 'Search customer or product',
+      searchPlaceholder: 'Customer · Product…',
+      noResults: 'No results',
+      headers: ['Customer', 'Product', 'Adjustment'],
+      rows: [
+        ['Ferretería Solá', 'M6 screws', '+2.5%'],
+        ['Mueblex S.L.', 'Reinforced hinge', '0%'],
+        ['Distribuciones Rus', 'Aluminium profile', '-1.2%'],
+        ['Talleres Camps', 'Galvanized sheet', '+0.8%'],
+        ['Grupo Ánfora', 'M8 screws', '+1.4%'],
+      ],
+      excel: [
+        'REF', 'CUSTOMER', 'ITEM', 'QTY', 'PRICE', 'DISC', 'VAT', 'TOTAL', 'NOTE',
+        'C-104', 'Ferret. So', 'SCR-M6', '1200', '0.045', '#REF!', '21%', '54.0', 'tbd',
+        'C-217', 'Mueblex S', 'HNG-RF', '340', '1.20', '5%', '21%', '####', 'ok',
+        'C-098', 'Distrib. R', 'PRF-AL', '86', '12.40', '#REF!', '21%', '1,066', 'rev.',
+        'C-311', 'Talleres C', 'SHT-GV', '52', '=IF(B5>0', '2%', '####', '####', '??',
+        'C-402', 'Grupo Ánf', 'SCR-M8', '760', '0.052', '3%', '21%', '39.5', 'dup!',
+        'C-115', 'Ferret. So', 'SCR-M4', '2400', '0.031', '#DIV/0!', '21%', '####', 'tbd',
+      ],
+    },
+  },
+} as const;
+
+const content = copy[lang];
+
+/**
+ * Panel 1 demo data. Each machine contributes `meters` to today's production
+ * while running (precalculated per state — no time simulation). Summary =
+ * base (earlier shifts) + running contributions.
+ * Initial state: 2 running + 1 stopped → 1.262 + 1.240 + 980 = 3.482 m, 2 stops.
+ */
+const MACHINE_METERS = [1240, 980, 415] as const;
+const MACHINE_RUNNING = [true, true, false] as const;
+const BASE_PRODUCTION = 1262;
+const BASE_STOPS = 1;
+
+const initialProduction =
+  BASE_PRODUCTION + MACHINE_METERS.reduce((sum, m, i) => (MACHINE_RUNNING[i] ? sum + m : sum), 0);
+const initialStops = BASE_STOPS + MACHINE_RUNNING.filter((r) => !r).length;
+
+const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount, 0);
+---
+
+<Reveal
+  as="section"
+  class="showcase"
+  aria-labelledby="showcase-heading"
+  data-showcase
+  data-lang={lang}
+  data-base-production={String(BASE_PRODUCTION)}
+  data-base-stops={String(BASE_STOPS)}
+>
+  <div class="showcase__inner">
+    <header class="showcase__header">
+      <p class="showcase__eyebrow">{content.eyebrow}</p>
+      <h2 id="showcase-heading" class="showcase__heading font-display">{content.heading}</h2>
+      <p class="showcase__sub">{content.sub}</p>
+    </header>
+
+    <div class="showcase__grid">
+      {/* Panel 1 — machines */}
+      <Reveal as="article" class="showcase__panel" delay={0} aria-labelledby="showcase-machines-title">
+        <div class="showcase__window">
+          <div class="showcase__topbar" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <ul class="showcase__machines">
+            {
+              content.machines.names.map((name, i) => (
+                <li
+                  class="showcase__machine"
+                  data-machine
+                  data-state={MACHINE_RUNNING[i] ? 'running' : 'stopped'}
+                  data-meters={String(MACHINE_METERS[i])}
+                >
+                  <span class="showcase__machine-head">
+                    <span class="showcase__dot" aria-hidden="true" />
+                    <span class="showcase__machine-name">{name}</span>
+                  </span>
+                  <span class="showcase__machine-counter" data-machine-counter>
+                    {fmtMeters(MACHINE_RUNNING[i] ? MACHINE_METERS[i] : 0)}
+                  </span>
+                  <button
+                    type="button"
+                    class="showcase__machine-toggle"
+                    data-machine-toggle
+                    aria-pressed={MACHINE_RUNNING[i] ? 'true' : 'false'}
+                    data-label-stop={content.machines.stop}
+                    data-label-start={content.machines.start}
+                  >
+                    {MACHINE_RUNNING[i] ? content.machines.stop : content.machines.start}
+                  </button>
+                  <span class="showcase__bar" aria-hidden="true">
+                    <span class="showcase__bar-fill" />
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="showcase__machines-summary" aria-live="polite">
+            <span>
+              {content.machines.summaryProduction} · <span data-summary-production
+                >{nf.format(initialProduction)}</span
+              > m
+            </span>
+            <span>
+              {content.machines.summaryStops} · <span data-summary-stops>{initialStops}</span>
+            </span>
+          </p>
+        </div>
+
+        <div class="showcase__panel-body">
+          <h3 id="showcase-machines-title" class="showcase__panel-title font-display">
+            {content.panels[0].title}
+          </h3>
+          <p class="showcase__panel-desc">{content.panels[0].desc}</p>
+        </div>
+      </Reveal>
+
+      {/* Panel 2 — document management */}
+      <Reveal as="article" class="showcase__panel" delay={80} aria-labelledby="showcase-management-title">
+        <div class="showcase__window">
+          <div class="showcase__topbar" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="showcase__doc">
+            <div class="showcase__doc-head">
+              <span class="showcase__doc-title">{content.management.docTitle}</span>
+              <span class="showcase__badge">{content.management.status}</span>
+            </div>
+            <ul class="showcase__doc-lines">
+              {
+                content.management.lines.map((line) => (
+                  <li>
+                    <label class="showcase__doc-line" data-doc-line data-amount={String(line.amount)}>
+                      <input
+                        type="checkbox"
+                        checked
+                        aria-label={`${content.management.includeLine}: ${line.label}`}
+                      />
+                      <span class="showcase__doc-label">{line.label}</span>
+                      <span class="showcase__doc-amount">{fmtCurrency(line.amount)}</span>
+                    </label>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="showcase__doc-total" aria-live="polite">
+              <span>{content.management.totalLabel}</span>
+              <span data-doc-total>{fmtCurrency(initialTotal)}</span>
+            </div>
+            <button
+              type="button"
+              class="showcase__pdf-button"
+              data-pdf-button
+              aria-live="polite"
+              data-label-idle={content.management.pdfIdle}
+              data-label-busy={content.management.pdfBusy}
+              data-label-done={content.management.pdfDone}
+            >
+              {content.management.pdfIdle}
+            </button>
+          </div>
+        </div>
+
+        <div class="showcase__panel-body">
+          <h3 id="showcase-management-title" class="showcase__panel-title font-display">
+            {content.panels[1].title}
+          </h3>
+          <p class="showcase__panel-desc">{content.panels[1].desc}</p>
+        </div>
+      </Reveal>
+
+      {/* Panel 3 — from spreadsheet to app. Full-width bento row on desktop:
+          simulator window left (~60%), title + description right, centered. */}
+      <Reveal
+        as="article"
+        class="showcase__panel showcase__panel--wide"
+        delay={160}
+        aria-labelledby="showcase-data-title"
+      >
+        <div class="showcase__window">
+          <div class="showcase__topbar" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="showcase__data">
+            <div class="showcase__segment" role="group">
+              <button type="button" data-view-toggle="before" aria-pressed="false">
+                {content.data.viewBefore}
+              </button>
+              <button type="button" data-view-toggle="after" aria-pressed="true">
+                {content.data.viewAfter}
+              </button>
+            </div>
+
+            <div class="showcase__views">
+              {/* "Before" — deliberately cramped spreadsheet mock. Purely
+                  illustrative (conveys chaos, not data) → stays aria-hidden. */}
+              <div class="showcase__view" data-view="before" aria-hidden="true">
+                <div class="showcase__excel">
+                  {
+                    content.data.excel.map((cell) => (
+                      <span class={cell.startsWith('#') ? 'is-error' : undefined}>{cell}</span>
+                    ))
+                  }
+                </div>
+              </div>
+
+              {/* "Now" — searchable clean table. Real controls, real content. */}
+              <div class="showcase__view is-active" data-view="after">
+                <label class="showcase__sr-only" for="showcase-table-search">
+                  {content.data.searchLabel}
+                </label>
+                <input
+                  id="showcase-table-search"
+                  class="showcase__search"
+                  type="search"
+                  autocomplete="off"
+                  placeholder={content.data.searchPlaceholder}
+                  data-table-search
+                />
+                <table class="showcase__table" data-demo-table>
+                  <thead>
+                    <tr>
+                      {content.data.headers.map((h) => <th>{h}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      content.data.rows.map((row, i) => (
+                        <tr
+                          class={i === 0 ? 'is-highlighted' : undefined}
+                          data-table-row
+                          data-search={normalize(`${row[0]} ${row[1]}`)}
+                        >
+                          {row.map((cell) => (
+                            <td>{cell}</td>
+                          ))}
+                        </tr>
+                      ))
+                    }
+                    <tr class="showcase__table-empty" data-table-empty hidden>
+                      <td colspan="3">{content.data.noResults}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase__panel-body">
+          <h3 id="showcase-data-title" class="showcase__panel-title font-display">
+            {content.panels[2].title}
+          </h3>
+          <p class="showcase__panel-desc">{content.panels[2].desc}</p>
+        </div>
+      </Reveal>
+    </div>
+  </div>
+</Reveal>
+
+<script>
+  /**
+   * Interactive demo panels driver. Progressive enhancement over a complete
+   * server-rendered initial state. Re-runs on astro:page-load (View
+   * Transitions) with a per-section init guard — same pattern as Reveal.astro.
+   */
+  function setupShowcase() {
+    document.querySelectorAll<HTMLElement>('[data-showcase]').forEach((section) => {
+      if (section.dataset.showcaseInit === 'true') return;
+      section.dataset.showcaseInit = 'true';
+
+      const lang = section.dataset.lang === 'en' ? 'en' : 'es';
+      const nf = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US');
+      const fmtCurrency = (n: number) => (lang === 'es' ? `${nf.format(n)} €` : `€${nf.format(n)}`);
+
+      /* ------------------------------------------------------------------ */
+      /* Panel 1 — machines                                                  */
+      /* ------------------------------------------------------------------ */
+      const baseProduction = Number(section.dataset.baseProduction) || 0;
+      const baseStops = Number(section.dataset.baseStops) || 0;
+      const machines = Array.from(section.querySelectorAll<HTMLElement>('[data-machine]'));
+      const productionEl = section.querySelector<HTMLElement>('[data-summary-production]');
+      const stopsEl = section.querySelector<HTMLElement>('[data-summary-stops]');
+
+      function recalcMachines() {
+        let production = baseProduction;
+        let stops = baseStops;
+        for (const machine of machines) {
+          if (machine.dataset.state === 'running') {
+            production += Number(machine.dataset.meters) || 0;
+          } else {
+            stops += 1;
+          }
+        }
+        if (productionEl) productionEl.textContent = nf.format(production);
+        if (stopsEl) stopsEl.textContent = String(stops);
+      }
+
+      for (const machine of machines) {
+        const toggle = machine.querySelector<HTMLButtonElement>('[data-machine-toggle]');
+        const counter = machine.querySelector<HTMLElement>('[data-machine-counter]');
+        toggle?.addEventListener('click', () => {
+          const nowRunning = machine.dataset.state !== 'running';
+          machine.dataset.state = nowRunning ? 'running' : 'stopped';
+          toggle.setAttribute('aria-pressed', String(nowRunning));
+          toggle.textContent = nowRunning
+            ? (toggle.dataset.labelStop ?? '')
+            : (toggle.dataset.labelStart ?? '');
+          if (counter) {
+            const meters = nowRunning ? Number(machine.dataset.meters) || 0 : 0;
+            counter.textContent = `${nf.format(meters)} m`;
+          }
+          recalcMachines();
+        });
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Panel 2 — quote document                                            */
+      /* ------------------------------------------------------------------ */
+      const docLines = Array.from(section.querySelectorAll<HTMLElement>('[data-doc-line]'));
+      const totalEl = section.querySelector<HTMLElement>('[data-doc-total]');
+
+      function recalcTotal() {
+        let total = 0;
+        for (const line of docLines) {
+          const checkbox = line.querySelector<HTMLInputElement>('input[type="checkbox"]');
+          if (checkbox?.checked) total += Number(line.dataset.amount) || 0;
+        }
+        if (totalEl) totalEl.textContent = fmtCurrency(total);
+      }
+
+      for (const line of docLines) {
+        const checkbox = line.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        checkbox?.addEventListener('change', () => {
+          line.classList.toggle('is-excluded', !checkbox.checked);
+          recalcTotal();
+        });
+      }
+
+      const pdfButton = section.querySelector<HTMLButtonElement>('[data-pdf-button]');
+      pdfButton?.addEventListener('click', () => {
+        if (pdfButton.disabled) return;
+        pdfButton.disabled = true;
+        pdfButton.textContent = pdfButton.dataset.labelBusy ?? '';
+        window.setTimeout(() => {
+          pdfButton.textContent = pdfButton.dataset.labelDone ?? '';
+          window.setTimeout(() => {
+            pdfButton.textContent = pdfButton.dataset.labelIdle ?? '';
+            pdfButton.disabled = false;
+          }, 2000);
+        }, 800);
+      });
+
+      /* ------------------------------------------------------------------ */
+      /* Panel 3 — before/after views + live table filter                    */
+      /* ------------------------------------------------------------------ */
+      const viewToggles = Array.from(
+        section.querySelectorAll<HTMLButtonElement>('[data-view-toggle]'),
+      );
+      const views = Array.from(section.querySelectorAll<HTMLElement>('[data-view]'));
+
+      for (const toggle of viewToggles) {
+        toggle.addEventListener('click', () => {
+          const target = toggle.dataset.viewToggle;
+          for (const other of viewToggles) {
+            other.setAttribute('aria-pressed', String(other === toggle));
+          }
+          for (const view of views) {
+            view.classList.toggle('is-active', view.dataset.view === target);
+          }
+        });
+      }
+
+      const normalize = (s: string) =>
+        s
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+
+      const searchInput = section.querySelector<HTMLInputElement>('[data-table-search]');
+      const table = section.querySelector<HTMLElement>('[data-demo-table]');
+      const rows = Array.from(section.querySelectorAll<HTMLElement>('[data-table-row]'));
+      const emptyRow = section.querySelector<HTMLElement>('[data-table-empty]');
+
+      searchInput?.addEventListener('input', () => {
+        const query = normalize(searchInput.value.trim());
+        let visible = 0;
+        for (const row of rows) {
+          const match = query === '' || (row.dataset.search ?? '').includes(query);
+          row.hidden = !match;
+          if (match) visible += 1;
+        }
+        if (emptyRow) emptyRow.hidden = visible > 0;
+        // The accent-highlighted row only stands out when no filter is active.
+        table?.classList.toggle('is-filtering', query !== '');
+      });
+    });
+  }
+
+  setupShowcase();
+  document.addEventListener('astro:page-load', setupShowcase);
+</script>
+
+<style>
+  /* --------------------------------------------------------------------------
+   * Section shell — same rhythm as ServicesSection (128px desktop / 96px mobile)
+   * and same 1080px container as the rest of the home grid.
+   * ------------------------------------------------------------------------ */
+  .showcase {
+    padding-block: 96px;
+  }
+
+  @media (min-width: 768px) {
+    .showcase {
+      padding-block: 128px;
+    }
+  }
+
+  .showcase__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 5vw, 32px);
+  }
+
+  .showcase__header {
+    max-width: 760px;
+    margin-bottom: 48px;
+  }
+
+  .showcase__eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+
+  .showcase__heading {
+    margin: 0 0 16px;
+    color: var(--text-0);
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .showcase__sub {
+    margin: 0;
+    max-width: 640px;
+    color: var(--text-2);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Visually-hidden helper for the search label (local — no global util exists). */
+  .showcase__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Grid — bento layout ≥1024px: panels 1+2 share a 2-column row, panel 3
+   * spans the full width below. 1 column on mobile (DESIGN.md §9 container).
+   * ------------------------------------------------------------------------ */
+  .showcase__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  @media (min-width: 1024px) {
+    .showcase__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .showcase__panel--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Panel shell — mirrors CaseStudyCard / ProjectCard hover convention:
+   * translateY(-4px) + shadow-card-hover, --motion-base easing, no idle motion.
+   * ------------------------------------------------------------------------ */
+  .showcase__panel {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition:
+      transform var(--motion-base) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .showcase__panel:hover,
+  .showcase__panel:focus-within {
+    transform: translateY(-4px);
+    border-color: var(--accent-400);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Wide (full-row) panel on desktop: horizontal split — simulator window
+     ~60% left, title + description right, vertically centered. The window's
+     content sizes the panel; nothing stretches to match neighbours anymore. */
+  @media (min-width: 1024px) {
+    .showcase__panel--wide {
+      grid-template-rows: none;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: stretch;
+    }
+
+    .showcase__panel--wide .showcase__window {
+      border-bottom: 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .showcase__panel--wide .showcase__panel-body {
+      align-content: center;
+      padding: 2rem;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   * Fake app window — extends `.case-study-card__visual` language: a 3-dot
+   * topbar over a `--bg-2` surface, framed like a real app screenshot.
+   * ------------------------------------------------------------------------ */
+  .showcase__window {
+    padding: 1rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .showcase__topbar {
+    display: flex;
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .showcase__topbar span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--text-3) 70%, transparent);
+  }
+
+  .showcase__panel-body {
+    display: grid;
+    gap: 8px;
+    padding: 1.5rem;
+  }
+
+  .showcase__panel-title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .showcase__panel-desc {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* --------------------------------------------------------------------------
+   * Panel 1 — machine monitoring mock.
+   * ------------------------------------------------------------------------ */
+  .showcase__machines {
+    display: grid;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .showcase__machine {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      'head counter toggle'
+      'bar bar toggle';
+    align-items: center;
+    gap: 0.375rem 0.625rem;
+    padding: 0.5rem 0.625rem;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .showcase__machine-head {
+    grid-area: head;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .showcase__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-status-paused);
+  }
+
+  .showcase__machine[data-state='running'] .showcase__dot {
+    background: var(--color-status-success);
+  }
+
+  .showcase__machine-name {
+    color: var(--text-1);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .showcase__machine-counter {
+    grid-area: counter;
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Native toggle button — ≥44px tap target, aria-pressed carries the state. */
+  .showcase__machine-toggle {
+    grid-area: toggle;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    color: var(--text-2);
+    background: color-mix(in oklch, var(--bg-1) 80%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 90%, transparent);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .showcase__machine-toggle:hover {
+    color: var(--accent-300);
+    border-color: color-mix(in oklch, var(--accent-400) 40%, var(--border));
+  }
+
+  .showcase__machine-toggle[aria-pressed='true'] {
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 10%, transparent);
+    border-color: color-mix(in oklch, var(--accent-400) 30%, transparent);
+  }
+
+  .showcase__bar {
+    grid-area: bar;
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    background: color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-full);
+  }
+
+  .showcase__bar-fill {
+    display: block;
+    width: 68%;
+    height: 100%;
+    background: var(--accent-400);
+    border-radius: var(--radius-full);
+    transition:
+      opacity var(--motion-base) var(--motion-ease-out),
+      width var(--motion-base) var(--motion-ease-out);
+  }
+
+  /* Stopped machine: shift-progress bar visually frozen (dimmed + short). */
+  .showcase__machine[data-state='stopped'] .showcase__bar-fill {
+    width: 18%;
+    opacity: 0.35;
+  }
+
+  .showcase__machines-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Panel 2 — document management (quote) mock.
+   * ------------------------------------------------------------------------ */
+  .showcase__doc {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .showcase__doc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .showcase__doc-title {
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .showcase__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--color-status-success) 12%, transparent);
+    color: var(--color-status-success);
+    border: 1px solid color-mix(in oklch, var(--color-status-success) 30%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .showcase__doc-lines {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .showcase__doc-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    color: var(--text-2);
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  .showcase__doc-line input[type='checkbox'] {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    accent-color: var(--accent-400);
+    cursor: pointer;
+  }
+
+  .showcase__doc-label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .showcase__doc-line.is-excluded .showcase__doc-label,
+  .showcase__doc-line.is-excluded .showcase__doc-amount {
+    color: var(--text-3);
+    text-decoration: line-through;
+  }
+
+  .showcase__doc-amount {
+    color: var(--text-1);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .showcase__doc-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.625rem;
+    border-top: 1px solid color-mix(in oklch, var(--accent-400) 24%, var(--border));
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .showcase__pdf-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 44px;
+    padding: 8px 16px;
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 10%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 30%, transparent);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out),
+      opacity var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .showcase__pdf-button:hover:not(:disabled) {
+    color: var(--accent-100);
+    border-color: color-mix(in oklch, var(--accent-400) 55%, transparent);
+    background: color-mix(in oklch, var(--accent-400) 18%, transparent);
+  }
+
+  .showcase__pdf-button:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  /* --------------------------------------------------------------------------
+   * Panel 3 — spreadsheet-to-app mock (before/after views + live filter).
+   * ------------------------------------------------------------------------ */
+  .showcase__data {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  /* Segmented before/after toggle — pill pair, active option in accent. */
+  .showcase__segment {
+    display: inline-flex;
+    gap: 2px;
+    width: fit-content;
+    padding: 2px;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-full);
+  }
+
+  .showcase__segment button {
+    padding: 8px 12px;
+    color: var(--text-3);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .showcase__segment button:hover {
+    color: var(--text-1);
+  }
+
+  .showcase__segment button[aria-pressed='true'] {
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 14%, transparent);
+  }
+
+  /* View stack: both views share the same grid cell; only opacity transitions
+     (--motion-base). Inactive view is also hidden from AT + pointer. */
+  .showcase__views {
+    display: grid;
+  }
+
+  .showcase__view {
+    grid-area: 1 / 1;
+    display: grid;
+    gap: 0.875rem;
+    align-content: start;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--motion-base) var(--motion-ease-out),
+      visibility 0s linear var(--motion-base);
+  }
+
+  .showcase__view.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity var(--motion-base) var(--motion-ease-out);
+  }
+
+  /* "Before" — deliberately suffocating spreadsheet: dense grid of tiny cells
+     that fills the available width (9 columns × 7 rows). */
+  .showcase__excel {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    width: 100%;
+    overflow: hidden;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .showcase__excel span {
+    padding: 5px 6px;
+    overflow: hidden;
+    color: var(--text-3);
+    border-right: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem; /* ~11px — readable but intentionally cramped */
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .showcase__excel span:nth-child(9n) {
+    border-right: 0;
+  }
+
+  /* Broken-formula cells. There is no red token in the palette — the warm
+     terracotta status token reads as "off/wrong" against the violet scheme
+     (the brief's point is the chaos, not the exact hue). */
+  .showcase__excel span.is-error {
+    color: color-mix(in oklch, var(--color-status-progress) 85%, var(--text-0));
+  }
+
+  /* "Now" — real search input filtering the table. */
+  .showcase__search {
+    padding: 0.5rem 0.75rem;
+    color: var(--text-1);
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    transition: border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .showcase__search::placeholder {
+    color: var(--text-3);
+  }
+
+  .showcase__search:hover,
+  .showcase__search:focus {
+    border-color: color-mix(in oklch, var(--accent-400) 40%, var(--border));
+  }
+
+  .showcase__table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+  }
+
+  .showcase__table th,
+  .showcase__table td {
+    padding: 0.5rem 0.625rem;
+    text-align: left;
+  }
+
+  /* Quieter header: no uppercase shout, muted mono, hairline separator. */
+  .showcase__table thead th {
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  }
+
+  .showcase__table tbody td {
+    color: var(--text-2);
+    border-top: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  }
+
+  .showcase__table tbody tr:first-of-type td {
+    border-top: 0;
+  }
+
+  .showcase__table tbody tr.is-highlighted td {
+    color: var(--text-0);
+    border-left: 2px solid var(--accent-400);
+  }
+
+  /* While filtering, the accent highlight would be misleading — mute it. */
+  .showcase__table.is-filtering tbody tr.is-highlighted td {
+    color: var(--text-2);
+    border-left-color: transparent;
+  }
+
+  .showcase__table-empty td {
+    color: var(--text-3);
+    font-style: italic;
+  }
+</style>

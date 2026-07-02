@@ -1,4 +1,5 @@
 ---
+import Reveal from '../ui/Reveal.astro';
 import { getRoutePath, useTranslations } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 
@@ -38,7 +39,7 @@ const copy = {
 const content = copy[lang];
 ---
 
-<section class="lead-cta" aria-labelledby="lead-cta-heading">
+<Reveal as="section" class="lead-cta" aria-labelledby="lead-cta-heading">
   <div class="lead-cta__inner">
     <div class="lead-cta__copy">
       <p class="lead-cta__eyebrow">{content.eyebrow}</p>
@@ -55,7 +56,7 @@ const content = copy[lang];
       {content.notes.map((note) => <li>{note}</li>)}
     </ul>
   </div>
-</section>
+</Reveal>
 
 <style>
   .lead-cta {

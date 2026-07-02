@@ -163,6 +163,53 @@
 }
 
 /* ============================================================================
+ * Scroll-driven animations (CSS animation-timeline)
+ * ----------------------------------------------------------------------------
+ * Cinematic scrub effects driven by native CSS scroll-driven animations.
+ * No JS, no libraries, and crucially NO scroll-jacking: the animation only
+ * mirrors the user's scroll position — scrolling speed and control remain
+ * untouched (DESIGN.md §7 allows this; hijacking does not).
+ *
+ * Progressive enhancement: wrapped in @supports so browsers without
+ * animation-timeline (e.g. Firefox stable) render fully static content.
+ * Easing is `linear` on purpose — the "easing" is the user's own scroll.
+ * Reduced-motion neutralization lives in the single block below.
+ * ============================================================================ */
+
+@supports (animation-timeline: view()) {
+  /* scroll-hero-exit: the hero content zooms slightly and fades out as it
+     leaves the viewport — cinematic exit. Scrubbed over the element's own
+     exit range, so at page load (progress 0) it is fully visible. */
+  @keyframes scroll-hero-exit {
+    to {
+      opacity: 0;
+      transform: scale(1.06) translate3d(0, -24px, 0);
+    }
+  }
+
+  .motion-scroll-hero-exit {
+    animation: scroll-hero-exit linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 85%;
+  }
+
+  /* scroll-scrub-in: display text grows from 96% + low opacity to full as
+     it enters the viewport, tied to scroll progress (not a one-shot). */
+  @keyframes scroll-scrub-in {
+    from {
+      opacity: 0.2;
+      transform: scale(0.96);
+    }
+  }
+
+  .motion-scroll-scrub {
+    animation: scroll-scrub-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 85%;
+  }
+}
+
+/* ============================================================================
  * Reduced motion — SINGLE SOURCE OF TRUTH
  * ----------------------------------------------------------------------------
  * Per DESIGN.md §6: "Único punto donde se neutralizan TODAS las animaciones."
@@ -204,6 +251,15 @@
   }
 
   .motion-reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Scroll-driven animations ignore duration overrides (they are timeline-
+     driven), so they must be disabled explicitly. */
+  .motion-scroll-hero-exit,
+  .motion-scroll-scrub {
+    animation: none !important;
     opacity: 1;
     transform: none;
   }

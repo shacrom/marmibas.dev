@@ -4,9 +4,9 @@ import Hero from '../components/home/Hero.astro';
 import FeaturedProjects from '../components/home/FeaturedProjects.astro';
 import AboutSection from '../components/home/AboutSection.astro';
 import ServicesSection from '../components/home/ServicesSection.astro';
+import ShowcaseSection from '../components/home/ShowcaseSection.astro';
 import ProcessSection from '../components/home/ProcessSection.astro';
 import FAQSection from '../components/home/FAQSection.astro';
-import LeadCTA from '../components/home/LeadCTA.astro';
 import MidCta from '../components/home/MidCta.astro';
 import DecorativeLine from '../components/ui/DecorativeLine.astro';
 import { getFaqs } from '../lib/faqs';
@@ -22,12 +22,13 @@ const faqs = getFaqs(lang).map((faq) => ({
   answer: faq.answer,
 }));
 
-// MidCta intermedios: el copy es el mismo en ambas inserciones para mantener
-// el ritmo editorial; cambia el contexto de la sección anterior pero el
-// recordatorio "tienes una idea, hablemos" es coherente en los dos cortes.
+// MidCta único tras los servicios: un solo recordatorio de contacto entre
+// secciones; el hero (arriba) ya concentra la conversión primaria.
+// Showcase va justo después de Services porque demuestra los servicios:
+// orden narrativo "qué hago → así se ve → contacta → pruebas reales".
 const contactHref = getRoutePath('contact', lang);
 const midCtaText = '¿Tienes una idea o un problema que quieres resolver?';
-const midCtaLink = 'Hablemos';
+const midCtaLink = 'Escríbeme';
 ---
 
 <BaseLayout
@@ -39,12 +40,11 @@ const midCtaLink = 'Hablemos';
   <Hero lang={lang} />
   <DecorativeLine />
   <ServicesSection lang={lang} />
+  <ShowcaseSection lang={lang} />
   <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <FeaturedProjects lang={lang} />
   <ProcessSection lang={lang} />
-  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <AboutSection lang={lang} />
   <DecorativeLine />
   <FAQSection lang={lang} />
-  <LeadCTA lang={lang} />
 </BaseLayout>
