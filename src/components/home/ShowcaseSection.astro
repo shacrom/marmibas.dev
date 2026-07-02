@@ -118,16 +118,14 @@ const copy = {
         ['Talleres Camps', 'Chapa galvanizada', '+0,8%'],
         ['Grupo Ánfora', 'Tornillería M8', '+1,4%'],
       ],
-      // Deliberately cramped spreadsheet junk — 9 columns × 7 rows, flat list.
+      // Deliberately simple spreadsheet with obvious problems — 5 columns × 5 rows, flat list.
       // Cells starting with '#' render as broken-formula error cells.
       excel: [
-        'REF', 'CLIENTE', 'ART', 'UD', 'PRECIO', 'DTO', 'IVA', 'TOTAL', 'OBS',
-        'C-104', 'Ferret. So', 'TOR-M6', '1200', '0,045', '#REF!', '21%', '54,0', 'pdte',
-        'C-217', 'Mueblex S', 'BIS-RF', '340', '1,20', '5%', '21%', '####', 'ok',
-        'C-098', 'Distrib. R', 'PER-AL', '86', '12,40', '#REF!', '21%', '1.066', 'rev.',
-        'C-311', 'Talleres C', 'CHA-GV', '52', '=SI(B5>0', '2%', '####', '####', '??',
-        'C-402', 'Grupo Ánf', 'TOR-M8', '760', '0,052', '3%', '21%', '39,5', 'dup!',
-        'C-115', 'Ferret. So', 'TOR-M4', '2400', '0,031', '#¡DIV/0!', '21%', '####', 'pdte',
+        'Cliente', 'Producto', 'Cant.', 'Precio', 'Estado',
+        'Ferretería Solá', 'Tornillos', '120', '54 €', 'Pendiente',
+        'Mueblex', 'Bisagras', '80', '#ERROR', 'Revisar',
+        'Talleres Camps', 'Chapa', '25', '310 €', 'OK',
+        'Grupo Ánfora', 'Tornillos', '140', 'Duplicado', 'Duplicado',
       ],
     },
   },
@@ -188,13 +186,11 @@ const copy = {
         ['Grupo Ánfora', 'M8 screws', '+1.4%'],
       ],
       excel: [
-        'REF', 'CUSTOMER', 'ITEM', 'QTY', 'PRICE', 'DISC', 'VAT', 'TOTAL', 'NOTE',
-        'C-104', 'Ferret. So', 'SCR-M6', '1200', '0.045', '#REF!', '21%', '54.0', 'tbd',
-        'C-217', 'Mueblex S', 'HNG-RF', '340', '1.20', '5%', '21%', '####', 'ok',
-        'C-098', 'Distrib. R', 'PRF-AL', '86', '12.40', '#REF!', '21%', '1,066', 'rev.',
-        'C-311', 'Talleres C', 'SHT-GV', '52', '=IF(B5>0', '2%', '####', '####', '??',
-        'C-402', 'Grupo Ánf', 'SCR-M8', '760', '0.052', '3%', '21%', '39.5', 'dup!',
-        'C-115', 'Ferret. So', 'SCR-M4', '2400', '0.031', '#DIV/0!', '21%', '####', 'tbd',
+        'Customer', 'Product', 'Qty', 'Price', 'Status',
+        'Ferretería Solá', 'Screws', '120', '€54', 'Pending',
+        'Mueblex', 'Hinges', '80', '#ERROR', 'Review',
+        'Talleres Camps', 'Sheet', '25', '€310', 'OK',
+        'Grupo Ánfora', 'Screws', '140', 'Duplicate', 'Duplicate',
       ],
     },
   },
@@ -1087,31 +1083,37 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
     transition: opacity var(--motion-base) var(--motion-ease-out);
   }
 
-  /* "Before" — deliberately suffocating spreadsheet: dense grid of tiny cells
-     that fills the available width (9 columns × 7 rows). */
+  /* "Before" — deliberately imperfect spreadsheet, but readable enough that
+     the problem is understood in seconds rather than becoming visual noise. */
   .showcase__excel {
     display: grid;
-    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-columns: minmax(8rem, 1.5fr) minmax(6.5rem, 1.2fr) minmax(3.25rem, 0.6fr) minmax(4.5rem, 0.75fr) minmax(5.5rem, 1fr);
     width: 100%;
-    overflow: hidden;
+    overflow: clip;
     background: color-mix(in oklch, var(--bg-0) 64%, transparent);
     border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
     border-radius: var(--radius-md);
   }
 
   .showcase__excel span {
-    padding: 5px 6px;
+    padding: 0.625rem 0.75rem;
     overflow: hidden;
     color: var(--text-3);
     border-right: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
     border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
     font-family: var(--font-mono);
-    font-size: 0.6875rem; /* ~11px — readable but intentionally cramped */
-    line-height: 1.5;
+    font-size: 0.75rem;
+    line-height: 1.35;
     white-space: nowrap;
   }
 
-  .showcase__excel span:nth-child(9n) {
+  .showcase__excel span:nth-child(-n + 5) {
+    color: var(--text-1);
+    background: color-mix(in oklch, var(--accent-400) 8%, transparent);
+    font-weight: 600;
+  }
+
+  .showcase__excel span:nth-child(5n) {
     border-right: 0;
   }
 
