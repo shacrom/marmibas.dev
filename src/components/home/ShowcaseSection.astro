@@ -52,7 +52,8 @@ const { lang } = Astro.props;
 const locale = lang === 'es' ? 'es-ES' : 'en-US';
 const nf = new Intl.NumberFormat(locale);
 const fmtMeters = (n: number): string => `${nf.format(n)} m`;
-const fmtCurrency = (n: number): string => (lang === 'es' ? `${nf.format(n)} €` : `€${nf.format(n)}`);
+const fmtCurrency = (n: number): string =>
+  lang === 'es' ? `${nf.format(n)} €` : `€${nf.format(n)}`;
 
 /** Normalize for accent/case-insensitive search (same logic as the client script). */
 const normalize = (s: string): string =>
@@ -109,23 +110,86 @@ const copy = {
       viewAfter: 'Ahora · App',
       searchLabel: 'Buscar cliente o producto',
       searchPlaceholder: 'Cliente · Producto…',
+      dateFilterLabel: 'Filtrar por fecha',
+      dateFilterAll: 'Todas las fechas',
+      sortLabel: 'Ordenar',
+      sortHighToLow: 'Importe mayor a menor',
+      sortLowToHigh: 'Importe menor a mayor',
       noResults: 'Sin resultados',
-      headers: ['Cliente', 'Producto', 'Ajuste'],
-      rows: [
-        ['Ferretería Solá', 'Tornillería M6', '+2,5%'],
-        ['Mueblex S.L.', 'Bisagra reforzada', '0%'],
-        ['Distribuciones Rus', 'Perfil aluminio', '-1,2%'],
-        ['Talleres Camps', 'Chapa galvanizada', '+0,8%'],
-        ['Grupo Ánfora', 'Tornillería M8', '+1,4%'],
+      statsLabel: 'Resumen del tablero',
+      stats: [
+        { label: 'Ventas mes', value: '8.240 €' },
+        { label: 'Pedidos abiertos', value: '14' },
+        { label: 'Errores evitados', value: '7' },
       ],
+      chartTitle: 'Ventas por semana',
+      headers: ['Cliente', 'Producto', 'Fecha', 'Total', 'Estado'],
+      rows: [
+        {
+          client: 'Ferretería Solá',
+          product: 'Tornillería M6',
+          date: 'Hoy',
+          amount: 1240,
+          status: 'Listo',
+        },
+        {
+          client: 'Grupo Ánfora',
+          product: 'Tornillería M8',
+          date: 'Semana',
+          amount: 1180,
+          status: 'Listo',
+        },
+        {
+          client: 'Mueblex S.L.',
+          product: 'Bisagra reforzada',
+          date: 'Hoy',
+          amount: 860,
+          status: 'Pendiente',
+        },
+        {
+          client: 'Distribuciones Rus',
+          product: 'Perfil aluminio',
+          date: 'Ayer',
+          amount: 650,
+          status: 'Listo',
+        },
+        {
+          client: 'Talleres Camps',
+          product: 'Chapa galvanizada',
+          date: 'Ayer',
+          amount: 420,
+          status: 'Revisar',
+        },
+      ],
+      chart: [42, 66, 54, 86],
       // Deliberately simple spreadsheet with obvious problems — 5 columns × 5 rows, flat list.
       // Cells starting with '#' render as broken-formula error cells.
       excel: [
-        'Cliente', 'Producto', 'Cant.', 'Precio', 'Estado',
-        'Ferretería Solá', 'Tornillos', '120', '54 €', 'Pendiente',
-        'Mueblex', 'Bisagras', '80', '#ERROR', 'Revisar',
-        'Talleres Camps', 'Chapa', '25', '310 €', 'OK',
-        'Grupo Ánfora', 'Tornillos', '140', 'Duplicado', 'Duplicado',
+        'Cliente',
+        'Producto',
+        'Cant.',
+        'Precio',
+        'Estado',
+        'Ferretería Solá',
+        'Tornillos',
+        '120',
+        '54 €',
+        'Pendiente',
+        'Mueblex',
+        'Bisagras',
+        '80',
+        '#ERROR',
+        'Revisar',
+        'Talleres Camps',
+        'Chapa',
+        '25',
+        '310 €',
+        'OK',
+        'Grupo Ánfora',
+        'Tornillos',
+        '140',
+        'Duplicado',
+        'Duplicado',
       ],
     },
   },
@@ -176,21 +240,84 @@ const copy = {
       viewAfter: 'Now · App',
       searchLabel: 'Search customer or product',
       searchPlaceholder: 'Customer · Product…',
+      dateFilterLabel: 'Filter by date',
+      dateFilterAll: 'All dates',
+      sortLabel: 'Sort',
+      sortHighToLow: 'Amount high to low',
+      sortLowToHigh: 'Amount low to high',
       noResults: 'No results',
-      headers: ['Customer', 'Product', 'Adjustment'],
-      rows: [
-        ['Ferretería Solá', 'M6 screws', '+2.5%'],
-        ['Mueblex S.L.', 'Reinforced hinge', '0%'],
-        ['Distribuciones Rus', 'Aluminium profile', '-1.2%'],
-        ['Talleres Camps', 'Galvanized sheet', '+0.8%'],
-        ['Grupo Ánfora', 'M8 screws', '+1.4%'],
+      statsLabel: 'Dashboard summary',
+      stats: [
+        { label: 'Monthly sales', value: '€8,240' },
+        { label: 'Open orders', value: '14' },
+        { label: 'Errors avoided', value: '7' },
       ],
+      chartTitle: 'Sales by week',
+      headers: ['Customer', 'Product', 'Date', 'Total', 'Status'],
+      rows: [
+        {
+          client: 'Ferretería Solá',
+          product: 'M6 screws',
+          date: 'Today',
+          amount: 1240,
+          status: 'Ready',
+        },
+        {
+          client: 'Grupo Ánfora',
+          product: 'M8 screws',
+          date: 'Week',
+          amount: 1180,
+          status: 'Ready',
+        },
+        {
+          client: 'Mueblex S.L.',
+          product: 'Reinforced hinge',
+          date: 'Today',
+          amount: 860,
+          status: 'Pending',
+        },
+        {
+          client: 'Distribuciones Rus',
+          product: 'Aluminium profile',
+          date: 'Yesterday',
+          amount: 650,
+          status: 'Ready',
+        },
+        {
+          client: 'Talleres Camps',
+          product: 'Galvanized sheet',
+          date: 'Yesterday',
+          amount: 420,
+          status: 'Review',
+        },
+      ],
+      chart: [42, 66, 54, 86],
       excel: [
-        'Customer', 'Product', 'Qty', 'Price', 'Status',
-        'Ferretería Solá', 'Screws', '120', '€54', 'Pending',
-        'Mueblex', 'Hinges', '80', '#ERROR', 'Review',
-        'Talleres Camps', 'Sheet', '25', '€310', 'OK',
-        'Grupo Ánfora', 'Screws', '140', 'Duplicate', 'Duplicate',
+        'Customer',
+        'Product',
+        'Qty',
+        'Price',
+        'Status',
+        'Ferretería Solá',
+        'Screws',
+        '120',
+        '€54',
+        'Pending',
+        'Mueblex',
+        'Hinges',
+        '80',
+        '#ERROR',
+        'Review',
+        'Talleres Camps',
+        'Sheet',
+        '25',
+        '€310',
+        'OK',
+        'Grupo Ánfora',
+        'Screws',
+        '140',
+        'Duplicate',
+        'Duplicate',
       ],
     },
   },
@@ -214,6 +341,7 @@ const initialProduction =
 const initialStops = BASE_STOPS + MACHINE_RUNNING.filter((r) => !r).length;
 
 const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount, 0);
+const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.date)));
 ---
 
 <Reveal
@@ -234,7 +362,12 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
 
     <div class="showcase__grid">
       {/* Panel 1 — machines */}
-      <Reveal as="article" class="showcase__panel" delay={0} aria-labelledby="showcase-machines-title">
+      <Reveal
+        as="article"
+        class="showcase__panel"
+        delay={0}
+        aria-labelledby="showcase-machines-title"
+      >
         <div class="showcase__window">
           <div class="showcase__topbar" aria-hidden="true">
             <span></span>
@@ -295,7 +428,12 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
       </Reveal>
 
       {/* Panel 2 — document management */}
-      <Reveal as="article" class="showcase__panel" delay={80} aria-labelledby="showcase-management-title">
+      <Reveal
+        as="article"
+        class="showcase__panel"
+        delay={80}
+        aria-labelledby="showcase-management-title"
+      >
         <div class="showcase__window">
           <div class="showcase__topbar" aria-hidden="true">
             <span></span>
@@ -311,7 +449,11 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
               {
                 content.management.lines.map((line) => (
                   <li>
-                    <label class="showcase__doc-line" data-doc-line data-amount={String(line.amount)}>
+                    <label
+                      class="showcase__doc-line"
+                      data-doc-line
+                      data-amount={String(line.amount)}
+                    >
                       <input
                         type="checkbox"
                         checked
@@ -350,8 +492,10 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
         </div>
       </Reveal>
 
-      {/* Panel 3 — from spreadsheet to app. Full-width bento row on desktop:
-          simulator window left (~60%), title + description right, centered. */}
+      {
+        /* Panel 3 — from spreadsheet to app. Full-width bento row on desktop:
+          simulator window left (~60%), title + description right, centered. */
+      }
       <Reveal
         as="article"
         class="showcase__panel showcase__panel--wide"
@@ -375,8 +519,10 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
             </div>
 
             <div class="showcase__views">
-              {/* "Before" — deliberately cramped spreadsheet mock. Purely
-                  illustrative (conveys chaos, not data) → stays aria-hidden. */}
+              {
+                /* "Before" — deliberately cramped spreadsheet mock. Purely
+                  illustrative (conveys chaos, not data) → stays aria-hidden. */
+              }
               <div class="showcase__view" data-view="before" aria-hidden="true">
                 <div class="showcase__excel">
                   {
@@ -387,44 +533,92 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
                 </div>
               </div>
 
-              {/* "Now" — searchable clean table. Real controls, real content. */}
-              <div class="showcase__view is-active" data-view="after">
-                <label class="showcase__sr-only" for="showcase-table-search">
-                  {content.data.searchLabel}
-                </label>
-                <input
-                  id="showcase-table-search"
-                  class="showcase__search"
-                  type="search"
-                  autocomplete="off"
-                  placeholder={content.data.searchPlaceholder}
-                  data-table-search
-                />
-                <table class="showcase__table" data-demo-table>
-                  <thead>
-                    <tr>
-                      {content.data.headers.map((h) => <th>{h}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
+              {/* "Now" — searchable dashboard. Real controls, real content. */}
+              <div class="showcase__view is-active" data-view="after" aria-hidden="false">
+                <div class="showcase__dashboard">
+                  <div class="showcase__controls">
+                    <label class="showcase__control">
+                      <span>{content.data.searchLabel}</span>
+                      <input
+                        class="showcase__input"
+                        type="search"
+                        autocomplete="off"
+                        placeholder={content.data.searchPlaceholder}
+                        data-table-search
+                      />
+                    </label>
+                    <label class="showcase__control">
+                      <span>{content.data.dateFilterLabel}</span>
+                      <select class="showcase__input" data-date-filter>
+                        <option value="">{content.data.dateFilterAll}</option>
+                        {dataDateOptions.map((date) => <option value={date}>{date}</option>)}
+                      </select>
+                    </label>
+                    <label class="showcase__control">
+                      <span>{content.data.sortLabel}</span>
+                      <select class="showcase__input" data-sort-amount>
+                        <option value="desc">{content.data.sortHighToLow}</option>
+                        <option value="asc">{content.data.sortLowToHigh}</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div class="showcase__stats" role="list" aria-label={content.data.statsLabel}>
                     {
-                      content.data.rows.map((row, i) => (
-                        <tr
-                          class={i === 0 ? 'is-highlighted' : undefined}
-                          data-table-row
-                          data-search={normalize(`${row[0]} ${row[1]}`)}
-                        >
-                          {row.map((cell) => (
-                            <td>{cell}</td>
-                          ))}
-                        </tr>
+                      content.data.stats.map((stat) => (
+                        <div class="showcase__stat" role="listitem">
+                          <span>{stat.label}</span>
+                          <strong>{stat.value}</strong>
+                        </div>
                       ))
                     }
-                    <tr class="showcase__table-empty" data-table-empty hidden>
-                      <td colspan="3">{content.data.noResults}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                  </div>
+
+                  <div class="showcase__chart">
+                    <p class="showcase__chart-title">{content.data.chartTitle}</p>
+                    <div class="showcase__bars">
+                      {
+                        content.data.chart.map((value, i) => (
+                          <span style={`--bar-value: ${value}%`}>
+                            <span class="showcase__sr-only">{`${content.data.chartTitle} ${i + 1}: ${value}%`}</span>
+                          </span>
+                        ))
+                      }
+                    </div>
+                  </div>
+
+                  <table class="showcase__table" data-demo-table>
+                    <thead>
+                      <tr>
+                        {content.data.headers.map((h) => <th>{h}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody data-table-body>
+                      {
+                        content.data.rows.map((row, i) => (
+                          <tr
+                            class={i === 0 ? 'is-highlighted' : undefined}
+                            data-table-row
+                            data-search={normalize(`${row.client} ${row.product}`)}
+                            data-date={row.date}
+                            data-amount={String(row.amount)}
+                          >
+                            <td data-label={content.data.headers[0]}>{row.client}</td>
+                            <td data-label={content.data.headers[1]}>{row.product}</td>
+                            <td data-label={content.data.headers[2]}>{row.date}</td>
+                            <td data-label={content.data.headers[3]}>{fmtCurrency(row.amount)}</td>
+                            <td data-label={content.data.headers[4]}>
+                              <span class="showcase__status">{row.status}</span>
+                            </td>
+                          </tr>
+                        ))
+                      }
+                      <tr class="showcase__table-empty" data-table-empty hidden>
+                        <td colspan="5">{content.data.noResults}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -538,7 +732,7 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
       /* Panel 3 — before/after views + live table filter                    */
       /* ------------------------------------------------------------------ */
       const viewToggles = Array.from(
-        section.querySelectorAll<HTMLButtonElement>('[data-view-toggle]'),
+        section.querySelectorAll<HTMLButtonElement>('[data-view-toggle]')
       );
       const views = Array.from(section.querySelectorAll<HTMLElement>('[data-view]'));
 
@@ -549,7 +743,9 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
             other.setAttribute('aria-pressed', String(other === toggle));
           }
           for (const view of views) {
-            view.classList.toggle('is-active', view.dataset.view === target);
+            const isActive = view.dataset.view === target;
+            view.classList.toggle('is-active', isActive);
+            view.setAttribute('aria-hidden', String(!isActive));
           }
         });
       }
@@ -561,22 +757,43 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
           .toLowerCase();
 
       const searchInput = section.querySelector<HTMLInputElement>('[data-table-search]');
+      const dateFilter = section.querySelector<HTMLSelectElement>('[data-date-filter]');
+      const amountSort = section.querySelector<HTMLSelectElement>('[data-sort-amount]');
       const table = section.querySelector<HTMLElement>('[data-demo-table]');
+      const tableBody = section.querySelector<HTMLElement>('[data-table-body]');
       const rows = Array.from(section.querySelectorAll<HTMLElement>('[data-table-row]'));
       const emptyRow = section.querySelector<HTMLElement>('[data-table-empty]');
 
-      searchInput?.addEventListener('input', () => {
-        const query = normalize(searchInput.value.trim());
+      function updateDashboardTable() {
+        const query = normalize(searchInput?.value.trim() ?? '');
+        const selectedDate = dateFilter?.value ?? '';
+        const sortDirection = amountSort?.value === 'asc' ? 'asc' : 'desc';
+        const sortedRows = [...rows].sort((a, b) => {
+          const amountA = Number(a.dataset.amount) || 0;
+          const amountB = Number(b.dataset.amount) || 0;
+          return sortDirection === 'asc' ? amountA - amountB : amountB - amountA;
+        });
         let visible = 0;
-        for (const row of rows) {
-          const match = query === '' || (row.dataset.search ?? '').includes(query);
+        for (const row of sortedRows) {
+          tableBody?.insertBefore(row, emptyRow ?? null);
+          const matchesSearch = query === '' || (row.dataset.search ?? '').includes(query);
+          const matchesDate = selectedDate === '' || row.dataset.date === selectedDate;
+          const match = matchesSearch && matchesDate;
           row.hidden = !match;
           if (match) visible += 1;
         }
         if (emptyRow) emptyRow.hidden = visible > 0;
-        // The accent-highlighted row only stands out when no filter is active.
-        table?.classList.toggle('is-filtering', query !== '');
-      });
+        // The accent-highlighted row only stands out when no filter/sort is active.
+        table?.classList.toggle(
+          'is-filtering',
+          query !== '' || selectedDate !== '' || sortDirection !== 'desc'
+        );
+      }
+
+      searchInput?.addEventListener('input', updateDashboardTable);
+      dateFilter?.addEventListener('change', updateDashboardTable);
+      amountSort?.addEventListener('change', updateDashboardTable);
+      updateDashboardTable();
     });
   }
 
@@ -1087,7 +1304,10 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
      the problem is understood in seconds rather than becoming visual noise. */
   .showcase__excel {
     display: grid;
-    grid-template-columns: minmax(8rem, 1.5fr) minmax(6.5rem, 1.2fr) minmax(3.25rem, 0.6fr) minmax(4.5rem, 0.75fr) minmax(5.5rem, 1fr);
+    grid-template-columns: minmax(8rem, 1.5fr) minmax(6.5rem, 1.2fr) minmax(3.25rem, 0.6fr) minmax(
+        4.5rem,
+        0.75fr
+      ) minmax(5.5rem, 1fr);
     width: 100%;
     overflow: clip;
     background: color-mix(in oklch, var(--bg-0) 64%, transparent);
@@ -1124,8 +1344,37 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
     color: color-mix(in oklch, var(--color-status-progress) 85%, var(--text-0));
   }
 
-  /* "Now" — real search input filtering the table. */
-  .showcase__search {
+  /* "Now" — compact app dashboard with real native controls. */
+  .showcase__dashboard {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .showcase__controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .showcase__controls {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .showcase__control {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+  }
+
+  .showcase__input {
+    width: 100%;
+    min-width: 0;
     padding: 0.5rem 0.75rem;
     color: var(--text-1);
     background: color-mix(in oklch, var(--bg-0) 64%, transparent);
@@ -1135,17 +1384,84 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
     transition: border-color var(--motion-fast) var(--motion-ease-out);
   }
 
-  .showcase__search::placeholder {
+  .showcase__input::placeholder {
     color: var(--text-3);
   }
 
-  .showcase__search:hover,
-  .showcase__search:focus {
+  .showcase__input:hover,
+  .showcase__input:focus {
     border-color: color-mix(in oklch, var(--accent-400) 40%, var(--border));
+  }
+
+  .showcase__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .showcase__stat {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.625rem;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .showcase__stat span {
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .showcase__stat strong {
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .showcase__chart {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: var(--radius-md);
+  }
+
+  .showcase__chart-title {
+    margin: 0;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .showcase__bars {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+    gap: 0.5rem;
+    min-height: 4.5rem;
+  }
+
+  .showcase__bars > span {
+    display: block;
+    height: var(--bar-value);
+    min-height: 1.25rem;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: linear-gradient(180deg, var(--accent-300), var(--accent-600));
+    box-shadow: 0 0 24px color-mix(in oklch, var(--accent-400) 20%, transparent);
   }
 
   .showcase__table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     overflow: hidden;
     border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
@@ -1156,7 +1472,10 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
   .showcase__table th,
   .showcase__table td {
     padding: 0.5rem 0.625rem;
+    overflow: hidden;
     text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Quieter header: no uppercase shout, muted mono, hairline separator. */
@@ -1182,6 +1501,20 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
     border-left: 2px solid var(--accent-400);
   }
 
+  .showcase__status {
+    display: inline-flex;
+    max-width: 100%;
+    padding: 2px 7px;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--accent-400) 10%, transparent);
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   /* While filtering, the accent highlight would be misleading — mute it. */
   .showcase__table.is-filtering tbody tr.is-highlighted td {
     color: var(--text-2);
@@ -1191,5 +1524,68 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
   .showcase__table-empty td {
     color: var(--text-3);
     font-style: italic;
+  }
+
+  @media (max-width: 639px) {
+    .showcase__stats {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase__table,
+    .showcase__table thead,
+    .showcase__table tbody,
+    .showcase__table tr,
+    .showcase__table td {
+      display: block;
+    }
+
+    .showcase__table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    .showcase__table tbody tr {
+      padding: 0.5rem 0;
+      border-top: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    }
+
+    .showcase__table tbody tr:first-of-type {
+      border-top: 0;
+    }
+
+    .showcase__table tbody tr.is-highlighted {
+      border-left: 2px solid var(--accent-400);
+    }
+
+    .showcase__table tbody tr.is-highlighted td,
+    .showcase__table.is-filtering tbody tr.is-highlighted td {
+      border-left: 0;
+    }
+
+    .showcase__table td {
+      display: grid;
+      grid-template-columns: minmax(5rem, 0.42fr) minmax(0, 1fr);
+      gap: 0.75rem;
+      border-top: 0;
+      white-space: normal;
+    }
+
+    .showcase__table td::before {
+      content: attr(data-label);
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+    }
+
+    .showcase__table-empty td {
+      display: block;
+    }
+
+    .showcase__table-empty td::before {
+      content: none;
+    }
   }
 </style>

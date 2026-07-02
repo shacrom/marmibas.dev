@@ -93,6 +93,8 @@ const featuredCases = [
         ? ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos']
         : ['Quotes', 'Invoices', 'Client management', 'Automated emails'],
     href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
+    externalUrl: 'https://voxye.com',
+    externalLabel: lang === 'es' ? 'Ir al proyecto' : 'Open project',
   },
   {
     slug: 'recetas-novatex',
@@ -152,6 +154,17 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
               href={caseStudy.href}
               featured={true}
             />
+            {'externalUrl' in caseStudy && caseStudy.externalUrl && (
+              <a
+                class="featured-projects__external"
+                href={caseStudy.externalUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {caseStudy.externalLabel}
+                <span aria-hidden="true">↗</span>
+              </a>
+            )}
           </li>
         ))
       }
@@ -294,13 +307,45 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
   }
 
   .featured-projects__item {
-    display: flex;
-    /* CaseStudyCard se estira al alto del item — flex hace match de altura
-       entre cards en la misma fila. */
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    /* Keeps any external project CTA outside the wrapping CaseStudyCard anchor. */
   }
 
   .featured-projects__item :global(.case-study-card) {
     width: 100%;
+  }
+
+  .featured-projects__external {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0.55rem 0.85rem;
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 34%, transparent);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .featured-projects__external:hover,
+  .featured-projects__external:focus-visible {
+    color: var(--accent-100);
+    background: color-mix(in oklch, var(--accent-400) 18%, transparent);
+    border-color: color-mix(in oklch, var(--accent-400) 58%, transparent);
+    transform: translateY(-1px);
   }
 
   /* ---------------------------------------------------------------------- */
