@@ -7,6 +7,7 @@ featured: false
 order: 1
 company: "Devoltec"
 logo: "/logos/devoltec.png"
+companyUrl: "https://devoltec.com/"
 role: "Software Engineer · MES"
 period: "Jul 2024 — Mar 2026"
 startDate: "2024-07-01"

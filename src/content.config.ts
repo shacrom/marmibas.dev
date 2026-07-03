@@ -123,6 +123,8 @@ const experience = defineCollection({
       company: z.string(),
       // Public path to the company logo (e.g. "/logos/capgemini.png").
       logo: z.string().optional(),
+      // Official company website. Experience cards use it as their external link.
+      companyUrl: z.string().url(),
       role: z.string(),
       period: z.string(),
       startDate: z.coerce.date(),

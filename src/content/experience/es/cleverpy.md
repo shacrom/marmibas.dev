@@ -7,6 +7,7 @@ featured: false
 order: 3
 company: "Cleverpy Machine Learning"
 logo: "/logos/cleverpy.png"
+companyUrl: "https://cleverpy.com/"
 role: "Desarrollador Full Stack"
 period: "Sept 2021 — May 2022"
 startDate: "2021-09-01"

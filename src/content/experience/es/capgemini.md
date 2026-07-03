@@ -7,6 +7,7 @@ featured: false
 order: 2
 company: "Capgemini"
 logo: "/logos/capgemini.png"
+companyUrl: "https://www.capgemini.com/es-es/"
 role: "Desarrollador Full Stack"
 period: "Nov 2022 — Jul 2024"
 startDate: "2022-11-01"
