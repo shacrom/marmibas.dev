@@ -1285,6 +1285,11 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    /* Collapse the inactive view so the shared grid cell tracks the ACTIVE
+       view's height — otherwise the taller dashboard keeps sizing the cell
+       and the shorter Excel view leaves a large empty gap below. */
+    height: 0;
+    overflow: hidden;
     transition:
       opacity var(--motion-base) var(--motion-ease-out),
       visibility 0s linear var(--motion-base);
@@ -1294,6 +1299,8 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    height: auto;
+    overflow: visible;
     transition: opacity var(--motion-base) var(--motion-ease-out);
   }
 
@@ -1306,7 +1313,11 @@ const dataDateOptions = Array.from(new Set(content.data.rows.map((row) => row.da
         0.75fr
       ) minmax(5.5rem, 1fr);
     width: 100%;
-    overflow: clip;
+    /* Columns have fixed minimums (~28rem total). On narrow screens let the
+       mock scroll horizontally instead of clipping cells mid-word — the
+       awkward sideways scrolling is part of the "spreadsheet pain" story. */
+    overflow-x: auto;
+    overflow-y: clip;
     background: color-mix(in oklch, var(--bg-0) 64%, transparent);
     border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
     border-radius: var(--radius-md);
