@@ -1,0 +1,202 @@
+---
+/**
+ * Fondo animado de circuitos (paquete externo, diseño 3a — adaptado).
+ * Colócalo dentro de un contenedor con `position: relative`;
+ * el canvas llena todo el contenedor y queda detrás del contenido.
+ *
+ * Integración local: usado por el tema `pulsos` de la exploración A/B de
+ * temas (ver src/styles/themes.css) — se monta en el hero de la home y solo
+ * se muestra cuando ese tema está activo. Cambios respecto al original:
+ * tipos TS en el script y guard de getContext (convención del repo); la
+ * lógica es idéntica al paquete recibido.
+ *
+ * Uso:
+ *   <section class="hero" style="position:relative">
+ *     <CircuitBackground />
+ *     <div style="position:relative">...contenido del hero...</div>
+ *   </section>
+ */
+interface Props {
+  /** Color de los pulsos (hex). Por defecto violeta #8b5cf6 */
+  color?: string;
+  /** Tamaño de la rejilla en px */
+  gridSize?: number;
+  /** Número de pulsos simultáneos */
+  pulses?: number;
+  class?: string;
+}
+const { color = '#8b5cf6', gridSize = 60, pulses = 7, class: className = '' } = Astro.props;
+---
+
+<canvas
+  class:list={['circuit-bg', className]}
+  data-color={color}
+  data-grid={gridSize}
+  data-pulses={pulses}
+  aria-hidden="true"></canvas>
+
+<style>
+  .circuit-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  interface Pulse {
+    horizontal: boolean;
+    line: number;
+    pos: number;
+    speed: number;
+    len: number;
+    life: number;
+    maxLife: number;
+  }
+
+  type CircuitBackgroundWindow = Window & {
+    __marmibasCircuitBackgroundBound?: boolean;
+  };
+
+  function initCircuit(canvas: HTMLCanvasElement) {
+    if (canvas.dataset.init) return;
+    canvas.dataset.init = '1';
+
+    const hex = (canvas.dataset.color || '#8b5cf6').replace('#', '');
+    const R = parseInt(hex.slice(0, 2), 16);
+    const G = parseInt(hex.slice(2, 4), 16);
+    const B = parseInt(hex.slice(4, 6), 16);
+    const GRID = parseInt(canvas.dataset.grid || '60', 10);
+    const N = parseInt(canvas.dataset.pulses || '7', 10);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let w = 0,
+      h = 0,
+      raf = 0,
+      running = false;
+    let pulses: Pulse[] = [];
+
+    function newPulse(): Pulse {
+      const horizontal = Math.random() < 0.5;
+      return {
+        horizontal,
+        line: Math.floor(Math.random() * ((horizontal ? h : w) / GRID)) * GRID,
+        pos: Math.random() * (horizontal ? w : h),
+        speed: (0.6 + Math.random() * 1.4) * (Math.random() < 0.5 ? 1 : -1),
+        len: 60 + Math.random() * 120,
+        life: 0,
+        maxLife: 300 + Math.random() * 400,
+      };
+    }
+
+    function drawFrame() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, w, h);
+      // Rejilla sutil
+      ctx.strokeStyle = 'rgba(150,160,190,0.055)';
+      ctx.lineWidth = 1;
+      for (let x = GRID; x < w; x += GRID) {
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, 0);
+        ctx.lineTo(x + 0.5, h);
+        ctx.stroke();
+      }
+      for (let y = GRID; y < h; y += GRID) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(w, y + 0.5);
+        ctx.stroke();
+      }
+      if (reduced) return; // sin pulsos si el usuario prefiere menos movimiento
+      // Pulsos
+      for (let i = 0; i < pulses.length; i++) {
+        const p = pulses[i];
+        if (!p) continue;
+        p.pos += p.speed;
+        p.life += 1;
+        const max = p.horizontal ? w : h;
+        if (p.life > p.maxLife || p.pos < -p.len - 20 || p.pos > max + p.len + 20) {
+          pulses[i] = newPulse();
+          continue;
+        }
+        const fade = Math.min(1, p.life / 60, (p.maxLife - p.life) / 60);
+        const x0 = p.horizontal ? p.pos : p.line + 0.5;
+        const y0 = p.horizontal ? p.line + 0.5 : p.pos;
+        const x1 = p.horizontal ? p.pos - p.len * Math.sign(p.speed) : x0;
+        const y1 = p.horizontal ? y0 : p.pos - p.len * Math.sign(p.speed);
+        const lg = ctx.createLinearGradient(x0, y0, x1, y1);
+        lg.addColorStop(0, `rgba(${R},${G},${B},${0.75 * fade})`);
+        lg.addColorStop(1, `rgba(${R},${G},${B},0)`);
+        ctx.strokeStyle = lg;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${R},${G},${B},${0.9 * fade})`;
+        ctx.beginPath();
+        ctx.arc(x0, y0, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function loop() {
+      if (!running) return;
+      drawFrame();
+      raf = requestAnimationFrame(loop);
+    }
+
+    function resize() {
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      w = rect.width;
+      h = rect.height;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      pulses = Array.from({ length: N }, newPulse);
+      if (reduced) drawFrame(); // rejilla estática
+    }
+
+    new ResizeObserver(resize).observe(canvas);
+    resize();
+
+    if (!reduced) {
+      // Solo anima cuando el canvas está en pantalla (ahorra batería).
+      // Nota: esto también cubre el ocultado por tema (display:none en el
+      // wrapper → el canvas no interseca → el loop se detiene), y el
+      // ResizeObserver regenera la escena al volver a mostrarse.
+      const io = new IntersectionObserver((entries) => {
+        const visible = entries[0]?.isIntersecting ?? false;
+        if (visible && !running) {
+          running = true;
+          loop();
+        }
+        if (!visible && running) {
+          running = false;
+          cancelAnimationFrame(raf);
+        }
+      });
+      io.observe(canvas);
+    }
+  }
+
+  function initAll() {
+    document
+      .querySelectorAll<HTMLCanvasElement>('canvas.circuit-bg')
+      .forEach(initCircuit);
+  }
+  initAll();
+  // Compatible con las View Transitions de Astro
+  if (!(window as CircuitBackgroundWindow).__marmibasCircuitBackgroundBound) {
+    (window as CircuitBackgroundWindow).__marmibasCircuitBackgroundBound = true;
+    document.addEventListener('astro:page-load', initAll);
+  }
+</script>

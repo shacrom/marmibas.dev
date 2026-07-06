@@ -1,0 +1,50 @@
+---
+/**
+ * Logo de Marmibas con brillo metalizado sutil (como la tarjeta de visita).
+ * Usa el logo como máscara y anima un degradado plata por detrás.
+ *
+ * Uso:
+ *   <MetallicLogo src="/marmibas-logo.png" width="165px" height="27px" />
+ *
+ * `src` debe ser un PNG/SVG del logo SIN margen transparente alrededor
+ * (usa public/marmibas-logo.png incluido en este paquete, ya recortado).
+ */
+interface Props {
+  src: string;
+  width: string;
+  height: string;
+  label?: string;
+}
+const { src, width, height, label = 'Marmibas' } = Astro.props;
+---
+
+<span
+  class="metallic-logo"
+  role="img"
+  aria-label={label}
+  style={`--logo:url('${src}'); width:${width}; height:${height};`}></span>
+
+<style>
+  .metallic-logo {
+    display: inline-block;
+    -webkit-mask: var(--logo) left center / contain no-repeat;
+    mask: var(--logo) left center / contain no-repeat;
+    background: linear-gradient(
+      110deg,
+      #c3c8d4 30%,
+      #e9ecf1 45%,
+      #adb3c2 52%,
+      #e9ecf1 59%,
+      #c3c8d4 74%
+    );
+    background-size: 300% 100%;
+    animation: metal-sheen 14s linear infinite;
+  }
+  @keyframes metal-sheen {
+    from { background-position: 220% 0; }
+    to   { background-position: -220% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .metallic-logo { animation: none; }
+  }
+</style>

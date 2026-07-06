@@ -30,6 +30,7 @@
  * Spec: TASKS.md T-17 + DESIGN.md §1 (tech minimal oscuro), §4
  * (tipografías), §6 (motion tokens), §8 ("Lang switcher").
  */
+import MetallicLogo from './MetallicLogo.astro';
 import { useTranslations, getRoutePath, isCurrentRoute } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 import type { RouteKey } from '../../i18n/routes';
@@ -46,6 +47,22 @@ const t = useTranslations(currentLang);
 const homeHref = getRoutePath('home', currentLang);
 const contactHref = getRoutePath('contact', currentLang);
 const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
+const themeSwitcherLabel = currentLang === 'es' ? 'Tema' : 'Theme';
+
+/**
+ * Selector de tema (temporal, A/B — ver src/styles/themes.css). Las opciones
+ * son nombres propios (no requieren traducción); el value coincide con el
+ * `data-theme` que consume themes.css.
+ */
+const themeOptions = [
+  { value: 'violeta', label: 'Violeta' },
+  { value: 'grafito', label: 'Grafito' },
+  { value: 'medianoche', label: 'Medianoche' },
+  { value: 'calido', label: 'Cálido' },
+  { value: 'constelacion', label: 'Constelación' },
+  { value: 'circuito', label: 'Circuito' },
+  { value: 'pulsos', label: 'Pulsos' },
+];
 
 interface NavItem {
   key: RouteKey;
@@ -75,7 +92,12 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
 
 <header class="site-header" data-current-lang={currentLang}>
   <div class="site-header__inner">
-    <a class="site-header__brand" href={homeHref} aria-label="Marmibas — home"> Marmibas </a>
+    {/* Brand: logo metalizado (paquete externo) en vez del wordmark de texto.
+        El aria-label y el focus ring viven en el link; el span del logo
+        aporta su propio role="img" con label por defecto. */}
+    <a class="site-header__brand" href={homeHref} aria-label="Marmibas — home">
+      <MetallicLogo src="/marmibas-logo.png" width="165px" height="27px" />
+    </a>
 
     <nav class="site-header__nav" aria-label={navAriaLabel}>
       <ul class="site-header__list" role="list">
@@ -95,11 +117,103 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
       </ul>
     </nav>
 
+    <label class="site-header__theme-switcher">
+      <span class="sr-only">{themeSwitcherLabel}</span>
+      <select
+        id="theme-switcher"
+        class="site-header__theme-select"
+        aria-label={themeSwitcherLabel}
+      >
+        {themeOptions.map((option) => (
+          <option value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </label>
+
     <a class="site-header__cta" href={contactHref}>
       {t('cta.contact')}
     </a>
   </div>
 </header>
+
+<script>
+  /**
+   * Theme switcher (temporal A/B — see src/styles/themes.css). Syncs the
+   * select with the active `data-theme`, persists when storage is available,
+   * and re-runs after Astro View Transition page loads. Storage calls are
+   * guarded because restricted browser contexts can throw on localStorage.
+   */
+  const STORAGE_KEY = 'theme';
+  const VALID_THEMES = [
+    'grafito',
+    'medianoche',
+    'calido',
+    'constelacion',
+    'circuito',
+    'pulsos',
+  ];
+
+  type ThemeSwitcherWindow = Window & {
+    __marmibasThemeSwitcherBound?: boolean;
+  };
+
+  function safeSetTheme(value: string) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // Theme still applies for the current page when persistence is blocked.
+    }
+  }
+
+  function safeRemoveTheme() {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // No-op: storage may be unavailable in restricted contexts.
+    }
+  }
+
+  function syncSelectValue(select: HTMLSelectElement) {
+    const active = document.documentElement.dataset.theme;
+    select.value = active && VALID_THEMES.includes(active) ? active : 'violeta';
+  }
+
+  function handleChange(event: Event) {
+    const select = event.currentTarget as HTMLSelectElement;
+    const value = select.value;
+
+    if (value === 'violeta' || !VALID_THEMES.includes(value)) {
+      delete document.documentElement.dataset.theme;
+      safeRemoveTheme();
+    } else {
+      document.documentElement.dataset.theme = value;
+      safeSetTheme(value);
+    }
+
+    // Notificar el cambio a quien lo necesite (p.ej. el loader lazy de los
+    // fondos canvas en ThemeBackground) sin acoplar componentes entre sí.
+    document.dispatchEvent(
+      new CustomEvent('theme-change', { detail: { theme: value } })
+    );
+  }
+
+  function initThemeSwitcher() {
+    const select = document.getElementById('theme-switcher') as HTMLSelectElement | null;
+    if (!select) return;
+
+    syncSelectValue(select);
+    if (select.dataset.themeSwitcherBound === 'true') return;
+
+    select.dataset.themeSwitcherBound = 'true';
+    select.addEventListener('change', handleChange);
+  }
+
+  initThemeSwitcher();
+  if (!(window as ThemeSwitcherWindow).__marmibasThemeSwitcherBound) {
+    (window as ThemeSwitcherWindow).__marmibasThemeSwitcherBound = true;
+    document.addEventListener('astro:page-load', initThemeSwitcher);
+  }
+</script>
 
 <style>
   /* --------------------------------------------------------------------- */
@@ -143,6 +257,8 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
   /* --------------------------------------------------------------------- */
   .site-header__brand {
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-xl, 1.25rem);
@@ -244,6 +360,61 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
     transform: translateX(-50%);
   }
 
+  /* --------------------------------------------------------------------- */
+  /* Selector de tema (temporal, A/B — ver src/styles/themes.css). Select   */
+  /* nativo minimalista que se funde con el header usando los tokens        */
+  /* existentes (bg-1, border, text-2). Visible también en mobile, a       */
+  /* diferencia de la CTA que se oculta ahí.                                */
+  /* --------------------------------------------------------------------- */
+  .site-header__theme-switcher {
+    flex-shrink: 0;
+    display: inline-flex;
+  }
+
+  .site-header__theme-select {
+    appearance: none;
+    padding: 0.375rem 1.75rem 0.375rem 0.625rem;
+    background-color: var(--bg-1);
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%),
+      linear-gradient(135deg, var(--text-2) 50%, transparent 50%);
+    background-position:
+      calc(100% - 0.9rem) center,
+      calc(100% - 0.65rem) center;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 8px);
+    color: var(--text-2);
+    font-size: var(--text-xs, 0.75rem);
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color var(--motion-fast, 150ms)
+      var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .site-header__theme-select:hover {
+    border-color: var(--accent-400);
+    color: var(--text-1);
+  }
+
+  .site-header__theme-select:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  /* Accesibilidad — visualmente oculto pero leído por screen readers. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .site-header__cta {
     flex-shrink: 0;
     display: inline-flex;
@@ -282,6 +453,14 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
 
     .site-header__brand {
       font-size: var(--text-lg, 1.125rem);
+    }
+
+    /* El logo metalizado lleva width/height inline (API del componente
+       externo), así que el escalado mobile necesita !important para
+       ganar al estilo inline — equivale al ajuste tipográfico anterior. */
+    .site-header__brand :global(.metallic-logo) {
+      width: 135px !important;
+      height: 22px !important;
     }
 
     .site-header__list {

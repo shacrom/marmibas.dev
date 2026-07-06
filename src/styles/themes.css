@@ -1,0 +1,144 @@
+/**
+ * themes.css — exploración temporal A/B de paletas (temas seleccionables).
+ *
+ * Contexto: el violeta actual (tema por defecto, `violeta`) resulta demasiado
+ * saturado/agresivo para el usuario. Se añaden variantes alternativas para
+ * comparar en vivo mediante el selector del Header (persistido en
+ * localStorage). Este archivo es DESCARTABLE: una vez elegido el tema
+ * definitivo, los bloques perdedores (y este mecanismo de selección) se
+ * eliminan y la paleta ganadora se vuelca directamente en `global.css`.
+ *
+ * Mecanismo: cada bloque `html[data-theme="x"]` sobreescribe los tokens
+ * `--color-*` definidos en el `@theme` de global.css. La especificidad de
+ * `html[data-theme]` (0,1,1) supera a `:root` (0,1,0), así que no hace falta
+ * `!important`. Los aliases cortos (`--accent-400`, `--bg-0`, etc.) en el
+ * bloque `:root` de global.css son referencias `var(--color-*)` que se
+ * resuelven en tiempo de uso (computed-value time), por lo que sobreescribir
+ * solo los `--color-*` es suficiente — no hace falta duplicar los aliases.
+ *
+ * Temas y paletas:
+ *   - violeta (default, sin data-theme): paleta original del @theme.
+ *   - grafito / circuito: paleta casi monocromática (bloque compartido).
+ *   - medianoche / constelacion: paleta navy + sky (bloque compartido).
+ *   - calido: carbón cálido + dorado.
+ *   - pulsos: reutiliza la paleta default de violeta (sin bloque propio);
+ *     su diferencia es el fondo de circuitos del hero (CircuitBackground).
+ *
+ * Fondos animados: cada tema tiene además su propio fondo (ver
+ * src/components/ui/ThemeBackground.astro y, para `pulsos`,
+ * src/components/ui/CircuitBackground.astro montado en el hero de la home).
+ * En los temas alternativos ese fondo ES la atmósfera de la página, así que
+ * el aurora full-page del body (`body.is-home` en BaseLayout) se desactiva
+ * aquí para evitar la colisión visual. Violeta conserva su aurora intacta.
+ */
+
+/* El fondo del tema sustituye al aurora del body en los temas alternativos.
+ * Los ambient locales de sección (services, 404, case studies) se mantienen:
+ * ya quedan suavizados por los overrides de --gradient-hero-ambient.
+ * `pulsos` también lo desactiva: el efecto de circuitos debe ser el dueño
+ * de la atmósfera del hero. */
+html[data-theme='grafito'] body.is-home,
+html[data-theme='medianoche'] body.is-home,
+html[data-theme='calido'] body.is-home,
+html[data-theme='constelacion'] body.is-home,
+html[data-theme='circuito'] body.is-home,
+html[data-theme='pulsos'] body.is-home {
+  background-image: none;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Tema: grafito — casi monocromático, el más sobrio/profesional.            */
+/* `circuito` reutiliza esta misma paleta: solo cambia el fondo (canvas de   */
+/* grid parpadeante en vez del blueprint CSS — ver ThemeBackground.astro).   */
+/* ------------------------------------------------------------------------- */
+html[data-theme='grafito'],
+html[data-theme='circuito'] {
+  --color-bg-0: #0a0a0c;
+  --color-bg-1: #121216;
+  --color-bg-2: #1a1a20;
+  --color-border: #26262e;
+
+  --color-accent-100: #e6e9f2;
+  --color-accent-300: #b0bcd4;
+  --color-accent-400: #8fa0c0;
+  --color-accent-500: #6d80a8;
+  --color-accent-600: #55688f;
+  --color-accent-700: #445474;
+  --color-accent-glow: rgba(109, 128, 168, 0.12);
+
+  --color-accent-magenta: #9aa3b8;
+  --color-accent-pink: #c4cad8;
+
+  --color-status-success: #8fa0c0;
+
+  /* Aurora ambient mucho más sutil — mezcla bajada a ~30/20/15%. */
+  --gradient-hero-ambient:
+    radial-gradient(60% 55% at 18% 8%, color-mix(in oklch, var(--color-accent-700) 30%, transparent) 0%, transparent 70%),
+    radial-gradient(50% 45% at 82% 22%, color-mix(in oklch, var(--color-accent-500) 20%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in oklch, var(--color-accent-600) 15%, transparent) 0%, transparent 78%);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Tema: medianoche — navy profundo + acento sky, tech profesional.          */
+/* `constelacion` reutiliza esta misma paleta: solo cambia el fondo (canvas  */
+/* de red de nodos en vez del starfield CSS — ver ThemeBackground.astro).    */
+/* ------------------------------------------------------------------------- */
+html[data-theme='medianoche'],
+html[data-theme='constelacion'] {
+  --color-bg-0: #070d16;
+  --color-bg-1: #0d1522;
+  --color-bg-2: #142033;
+  --color-border: #1e2c42;
+
+  --color-accent-100: #e0f2fe;
+  --color-accent-300: #7dd3fc;
+  --color-accent-400: #38bdf8;
+  --color-accent-500: #0ea5e9;
+  --color-accent-600: #0284c7;
+  --color-accent-700: #0369a1;
+  --color-accent-glow: rgba(14, 165, 233, 0.12);
+
+  --color-accent-magenta: #2dd4bf;
+  --color-accent-pink: #99f6e4;
+
+  --color-status-success: #38bdf8;
+
+  /* Aurora ambient suavizada a ~45/30/20%. */
+  --gradient-hero-ambient:
+    radial-gradient(60% 55% at 18% 8%, color-mix(in oklch, var(--color-accent-700) 45%, transparent) 0%, transparent 70%),
+    radial-gradient(50% 45% at 82% 22%, color-mix(in oklch, var(--color-accent-500) 30%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in oklch, var(--color-accent-600) 20%, transparent) 0%, transparent 78%);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Tema: cálido — carbón cálido + dorado apagado, elegante.                  */
+/* ------------------------------------------------------------------------- */
+html[data-theme='calido'] {
+  --color-bg-0: #0f0d0a;
+  --color-bg-1: #171410;
+  --color-bg-2: #201c16;
+  --color-border: #2e2921;
+
+  --color-accent-100: #f5ead5;
+  --color-accent-300: #e8c988;
+  --color-accent-400: #d4a95c;
+  --color-accent-500: #b8873b;
+  --color-accent-600: #96682a;
+  --color-accent-700: #7a5322;
+  --color-accent-glow: rgba(212, 169, 92, 0.12);
+
+  --color-accent-magenta: #c98a6a;
+  --color-accent-pink: #e0b8a0;
+
+  --color-status-success: #d4a95c;
+
+  /* Aurora ambient suavizada a ~35/25/18%. */
+  --gradient-hero-ambient:
+    radial-gradient(60% 55% at 18% 8%, color-mix(in oklch, var(--color-accent-700) 35%, transparent) 0%, transparent 70%),
+    radial-gradient(50% 45% at 82% 22%, color-mix(in oklch, var(--color-accent-500) 25%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in oklch, var(--color-accent-600) 18%, transparent) 0%, transparent 78%);
+}
+
+/* `pulsos` no necesita bloque de tokens: hereda la paleta default (violeta)
+ * del @theme de global.css. Su identidad viene del CircuitBackground en el
+ * hero de la home (ver Hero.astro). */

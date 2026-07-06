@@ -48,6 +48,7 @@
  */
 
 import HeroIntro from './HeroIntro.astro';
+import CircuitBackground from '../ui/CircuitBackground.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 
@@ -115,6 +116,14 @@ const workHref = getRoutePath('work', lang);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
+  {/* Fondo de circuitos (paquete externo) — SOLO para el tema `pulsos` de la
+      exploración A/B de temas. Oculto vía display:none para el resto: el
+      IntersectionObserver del componente detiene el loop mientras no
+      interseca y su ResizeObserver regenera la escena al volver a mostrarse,
+      así que el ocultado por CSS es seguro sin re-inits manuales. */}
+  <div class="hero__circuit" aria-hidden="true">
+    <CircuitBackground color="#8b5cf6" />
+  </div>
   <div class="hero__stars" aria-hidden="true"></div>
 
   <div class="hero__content motion-scroll-hero-exit">
@@ -198,6 +207,24 @@ const workHref = getRoutePath('work', lang);
    * el contenido (z-index 1 implícito en .hero__content via .hero stacking
    * context) por encima.
    * ------------------------------------------------------------------------ */
+  /* --------------------------------------------------------------------------
+   * Wrapper del fondo de circuitos (tema `pulsos`, temporal). display:none
+   * por defecto; solo visible con html[data-theme='pulsos'] (:global porque
+   * data-theme vive en <html>, fuera del scope del componente). z-index 0 —
+   * el contenido (.hero__content, z-index 1) queda por encima.
+   * ------------------------------------------------------------------------ */
+  .hero__circuit {
+    display: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  :global(html[data-theme='pulsos']) .hero__circuit {
+    display: block;
+  }
+
   .hero__stars {
     position: absolute;
     inset: 0;

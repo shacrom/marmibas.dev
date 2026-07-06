@@ -1,0 +1,604 @@
+---
+/**
+ * ThemeBackground — fondos animados por tema (temporal, exploración A/B).
+ *
+ * Parte del sistema de temas seleccionables (ver src/styles/themes.css).
+ * Cada tema tiene su propio tratamiento de fondo a pantalla completa para
+ * que las variantes se sientan radicalmente distintas, no solo un cambio
+ * de paleta:
+ *
+ *   - violeta    → "Aurora": blobs radiales difuminados en violeta/magenta
+ *                  derivando lenta y orgánicamente. Identidad actual, bold.
+ *   - grafito    → "Blueprint": grid técnico fino + barrido de luz diagonal
+ *                  lento + viñeta. Mesa de ingeniería, sobrio.
+ *   - medianoche → "Starfield": capas de estrellas con drift parallax +
+ *                  twinkle + nebulosa azul tenue. Observatorio nocturno.
+ *   - calido     → "Ember": grano de película (SVG feTurbulence) + brillo
+ *                  cálido que "respira" desde abajo + viñeta cálida. Analógico.
+ *   - constelacion → "Constelación": canvas 2D con red de nodos conectados
+ *                  (paleta de medianoche). Runtime en src/lib/theme-canvas.ts.
+ *   - circuito   → "Circuito": canvas 2D con grid de cuadraditos que
+ *                  parpadean suavemente (paleta de grafito). Mismo runtime.
+ *   - pulsos     → paleta violeta default; su fondo (CircuitBackground) vive
+ *                  en el hero de la home, no aquí — este layer queda vacío.
+ *
+ * Arquitectura: todas las variantes CSS se renderizan siempre en el markup y
+ * solo la activa se muestra vía CSS (`html[data-theme="x"]`), así el cambio
+ * de tema es instantáneo sin re-render JS — el switcher existente no se toca.
+ * Los dos temas canvas comparten un único <canvas>; su runtime se carga
+ * lazy vía import() dinámico solo cuando uno de ellos está activo.
+ *
+ * Rendimiento: en las variantes CSS solo se animan transform y opacity
+ * (compositor-friendly); `will-change` únicamente en capas que animan de
+ * verdad; máx. 3 elementos grandes con blur por tema. Los temas canvas usan
+ * un único rAF loop que se pausa con la pestaña oculta.
+ *
+ * Accesibilidad: toda animación vive dentro de
+ * `@media (prefers-reduced-motion: no-preference)` — con reduced motion los
+ * fondos quedan estáticos. El contenedor es `aria-hidden` y no intercepta
+ * eventos.
+ *
+   * Stacking: `position: fixed; z-index: 0; pointer-events: none`. BaseLayout
+   * lifts every other direct body child above it, so the background is visible
+   * above the body background without blocking interactions.
+ */
+
+/* Grano de película para el tema cálido: SVG feTurbulence embebido como
+ * data URI (sin requests externas, tile 160px repetible). */
+const grainSvg =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
+---
+
+<div class="theme-bg" aria-hidden="true">
+  {/* ---------------- violeta — "Aurora" ---------------- */}
+  <div class="theme-bg__variant theme-bg__variant--violeta">
+    <div class="theme-bg__aurora-blob theme-bg__aurora-blob--1"></div>
+    <div class="theme-bg__aurora-blob theme-bg__aurora-blob--2"></div>
+    <div class="theme-bg__aurora-blob theme-bg__aurora-blob--3"></div>
+  </div>
+
+  {/* ---------------- grafito — "Blueprint" ---------------- */}
+  <div class="theme-bg__variant theme-bg__variant--grafito">
+    <div class="theme-bg__blueprint-grid"></div>
+    <div class="theme-bg__blueprint-sweep"></div>
+    <div class="theme-bg__blueprint-vignette"></div>
+  </div>
+
+  {/* ---------------- medianoche — "Starfield" ---------------- */}
+  <div class="theme-bg__variant theme-bg__variant--medianoche">
+    <div class="theme-bg__stars theme-bg__stars--far"></div>
+    <div class="theme-bg__stars theme-bg__stars--mid"></div>
+    <div class="theme-bg__stars theme-bg__stars--near"></div>
+    <div class="theme-bg__twinkle theme-bg__twinkle--a"></div>
+    <div class="theme-bg__twinkle theme-bg__twinkle--b"></div>
+    <div class="theme-bg__nebula"></div>
+  </div>
+
+  {/* ---------------- calido — "Ember" ---------------- */}
+  <div class="theme-bg__variant theme-bg__variant--calido">
+    <div class="theme-bg__grain" style={`background-image: url("${grainSvg}")`}></div>
+    <div class="theme-bg__ember-glow"></div>
+    <div class="theme-bg__warm-vignette"></div>
+  </div>
+
+  {/* Canvas compartido por los temas programáticos (constelacion, circuito).
+      Oculto para el resto de temas; el runtime se carga lazy solo cuando
+      uno de estos temas está activo (ver <script> más abajo). */}
+  <canvas class="theme-bg__canvas"></canvas>
+</div>
+
+<script>
+  /**
+   * Loader lazy de los fondos canvas (temporal, exploración A/B de temas).
+   *
+   * El runtime (src/lib/theme-canvas.ts) se carga vía import() dinámico
+   * SOLO cuando el tema activo es 'constelacion' o 'circuito' — para el
+   * resto de temas nunca entra en el bundle inicial (Vite lo separa en su
+   * propio chunk). Una vez cargado se cachea a nivel de módulo y solo se
+   * arranca/detiene el rAF loop en cada cambio.
+   *
+   * Sincronización:
+   *   - carga inicial (el tema ya viene aplicado por el script inline de
+   *     BaseLayout antes del primer paint),
+   *   - evento custom 'theme-change' que emite el switcher del Header,
+   *   - 'astro:after-swap': las View Transitions reemplazan el <canvas>,
+   *     así que hay que re-vincular el elemento nuevo y re-arrancar.
+   */
+  const CANVAS_THEMES = ['constelacion', 'circuito'] as const;
+  type CanvasTheme = (typeof CANVAS_THEMES)[number];
+
+  type ThemeBackgroundWindow = Window & {
+    __marmibasThemeBackgroundBound?: boolean;
+  };
+
+  let runtime: typeof import('../../lib/theme-canvas') | null = null;
+
+  function isCanvasTheme(value: string | undefined): value is CanvasTheme {
+    return !!value && (CANVAS_THEMES as readonly string[]).includes(value);
+  }
+
+  async function syncCanvas() {
+    const theme = document.documentElement.dataset.theme;
+    const canvas = document.querySelector<HTMLCanvasElement>('.theme-bg__canvas');
+
+    if (isCanvasTheme(theme) && canvas) {
+      runtime ??= await import('../../lib/theme-canvas');
+      // Re-chequear tras el await: el usuario pudo cambiar de tema mientras
+      // el chunk se descargaba.
+      const current = document.documentElement.dataset.theme;
+      if (isCanvasTheme(current)) {
+        runtime.start(canvas, current);
+      } else {
+        runtime.stop();
+      }
+    } else if (runtime) {
+      runtime.stop();
+    }
+  }
+
+  syncCanvas();
+  if (!(window as ThemeBackgroundWindow).__marmibasThemeBackgroundBound) {
+    (window as ThemeBackgroundWindow).__marmibasThemeBackgroundBound = true;
+    document.addEventListener('theme-change', syncCanvas);
+    document.addEventListener('astro:page-load', syncCanvas);
+  }
+</script>
+
+<style is:global>
+  /* Global (no scoped) porque los selectores dependen de html[data-theme],
+     que vive fuera del árbol de este componente. */
+
+  .theme-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    contain: strict;
+  }
+
+  /* Solo la variante del tema activo es visible. Violeta es el default
+     (sin data-theme o data-theme="violeta"). */
+  .theme-bg__variant {
+    display: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  html:not([data-theme]) .theme-bg__variant--violeta,
+  html[data-theme='violeta'] .theme-bg__variant--violeta {
+    display: block;
+  }
+
+  html[data-theme='grafito'] .theme-bg__variant--grafito {
+    display: block;
+  }
+
+  html[data-theme='medianoche'] .theme-bg__variant--medianoche {
+    display: block;
+  }
+
+  html[data-theme='calido'] .theme-bg__variant--calido {
+    display: block;
+  }
+
+  /* Canvas compartido de los temas programáticos. Oculto por defecto;
+     la opacidad global mantiene el efecto sutil, detrás del contenido. */
+  .theme-bg__canvas {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  html[data-theme='constelacion'] .theme-bg__canvas {
+    display: block;
+    opacity: 0.55;
+  }
+
+  html[data-theme='circuito'] .theme-bg__canvas {
+    display: block;
+    opacity: 0.6;
+  }
+
+  /* ======================================================================= */
+  /* violeta — "Aurora": blobs difuminados derivando orgánicamente.          */
+  /* ======================================================================= */
+  .theme-bg__aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+  }
+
+  .theme-bg__aurora-blob--1 {
+    width: 55vw;
+    height: 55vw;
+    top: -18%;
+    left: -12%;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--color-accent-600) 55%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  .theme-bg__aurora-blob--2 {
+    width: 45vw;
+    height: 45vw;
+    top: 10%;
+    right: -15%;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--color-accent-magenta) 40%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  .theme-bg__aurora-blob--3 {
+    width: 60vw;
+    height: 60vw;
+    bottom: -30%;
+    left: 20%;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--color-accent-500) 42%, transparent) 0%,
+      transparent 72%
+    );
+  }
+
+  /* ======================================================================= */
+  /* grafito — "Blueprint": grid técnico + barrido diagonal + viñeta.        */
+  /* ======================================================================= */
+  .theme-bg__blueprint-grid {
+    position: absolute;
+    inset: 0;
+    /* Grid fino de 1px, contraste muy bajo contra bg-0. Doble capa:
+       retícula fina cada 24px + línea maestra cada 120px. */
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        rgba(160, 172, 200, 0.045) 0 1px,
+        transparent 1px 24px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(160, 172, 200, 0.045) 0 1px,
+        transparent 1px 24px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(160, 172, 200, 0.07) 0 1px,
+        transparent 1px 120px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(160, 172, 200, 0.07) 0 1px,
+        transparent 1px 120px
+      );
+  }
+
+  .theme-bg__blueprint-sweep {
+    position: absolute;
+    top: -50%;
+    left: 0;
+    width: 45vw;
+    height: 200%;
+    /* Banda de luz rotada que cruza el viewport en diagonal. */
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(176, 188, 212, 0.05) 45%,
+      rgba(176, 188, 212, 0.08) 50%,
+      rgba(176, 188, 212, 0.05) 55%,
+      transparent 100%
+    );
+    transform: translateX(-60vw) rotate(18deg);
+  }
+
+  .theme-bg__blueprint-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      120% 100% at 50% 45%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
+  }
+
+  /* ======================================================================= */
+  /* medianoche — "Starfield": capas parallax + twinkle + nebulosa.          */
+  /*                                                                         */
+  /* Truco de loop seamless: cada capa se extiende exactamente un tile       */
+  /* (background-size) más allá del viewport por derecha y abajo, y la       */
+  /* keyframe la traslada exactamente -1 tile en diagonal. Como el patrón    */
+  /* se repite cada tile, el frame final es idéntico al inicial.             */
+  /* ======================================================================= */
+  .theme-bg__stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-repeat: repeat;
+  }
+
+  .theme-bg__stars--far {
+    width: calc(100% + 640px);
+    height: calc(100% + 640px);
+    background-size: 640px 640px;
+    background-image:
+      radial-gradient(1px 1px at 47px 113px, rgba(224, 242, 254, 0.5), transparent),
+      radial-gradient(1px 1px at 189px 289px, rgba(224, 242, 254, 0.4), transparent),
+      radial-gradient(1px 1px at 341px 67px, rgba(224, 242, 254, 0.45), transparent),
+      radial-gradient(1px 1px at 512px 431px, rgba(224, 242, 254, 0.4), transparent),
+      radial-gradient(1px 1px at 97px 521px, rgba(224, 242, 254, 0.5), transparent),
+      radial-gradient(1px 1px at 601px 203px, rgba(224, 242, 254, 0.35), transparent),
+      radial-gradient(1px 1px at 277px 577px, rgba(224, 242, 254, 0.45), transparent);
+  }
+
+  .theme-bg__stars--mid {
+    width: calc(100% + 520px);
+    height: calc(100% + 520px);
+    background-size: 520px 520px;
+    background-image:
+      radial-gradient(1.5px 1.5px at 71px 199px, rgba(224, 242, 254, 0.6), transparent),
+      radial-gradient(1.5px 1.5px at 303px 89px, rgba(224, 242, 254, 0.5), transparent),
+      radial-gradient(1.5px 1.5px at 441px 347px, rgba(224, 242, 254, 0.55), transparent),
+      radial-gradient(1.5px 1.5px at 157px 449px, rgba(224, 242, 254, 0.5), transparent),
+      radial-gradient(1.5px 1.5px at 389px 501px, rgba(125, 211, 252, 0.5), transparent);
+  }
+
+  .theme-bg__stars--near {
+    width: calc(100% + 440px);
+    height: calc(100% + 440px);
+    background-size: 440px 440px;
+    background-image:
+      radial-gradient(2px 2px at 109px 61px, rgba(224, 242, 254, 0.75), transparent),
+      radial-gradient(2px 2px at 311px 251px, rgba(125, 211, 252, 0.65), transparent),
+      radial-gradient(2px 2px at 197px 383px, rgba(224, 242, 254, 0.7), transparent);
+  }
+
+  /* Estrellas que titilan — solo opacity, delays escalonados. */
+  .theme-bg__twinkle {
+    position: absolute;
+    inset: 0;
+    opacity: 0.4;
+  }
+
+  .theme-bg__twinkle--a {
+    background-image:
+      radial-gradient(2px 2px at 22% 28%, rgba(224, 242, 254, 0.9), transparent),
+      radial-gradient(1.5px 1.5px at 68% 14%, rgba(125, 211, 252, 0.8), transparent),
+      radial-gradient(2px 2px at 84% 62%, rgba(224, 242, 254, 0.85), transparent);
+  }
+
+  .theme-bg__twinkle--b {
+    background-image:
+      radial-gradient(1.5px 1.5px at 38% 74%, rgba(224, 242, 254, 0.85), transparent),
+      radial-gradient(2px 2px at 12% 52%, rgba(125, 211, 252, 0.8), transparent),
+      radial-gradient(1.5px 1.5px at 56% 42%, rgba(224, 242, 254, 0.8), transparent);
+  }
+
+  .theme-bg__nebula {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      45% 40% at 85% 12%,
+      color-mix(in oklch, var(--color-accent-700) 35%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  /* ======================================================================= */
+  /* calido — "Ember": grano + brillo que respira + viñeta cálida.           */
+  /* ======================================================================= */
+  .theme-bg__grain {
+    /* Sobredimensionada para poder desplazarla en pequeños saltos (steps)
+       sin exponer bordes — el shift simula el gate weave de proyección. */
+    position: absolute;
+    top: -160px;
+    left: -160px;
+    width: calc(100% + 320px);
+    height: calc(100% + 320px);
+    background-repeat: repeat;
+    opacity: 0.05;
+  }
+
+  .theme-bg__ember-glow {
+    position: absolute;
+    left: 50%;
+    bottom: -35vh;
+    width: 90vw;
+    height: 70vh;
+    transform: translateX(-50%);
+    filter: blur(80px);
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      color-mix(in oklch, var(--color-accent-500) 40%, transparent) 0%,
+      color-mix(in oklch, var(--color-accent-700) 22%, transparent) 45%,
+      transparent 75%
+    );
+    opacity: 0.75;
+  }
+
+  .theme-bg__warm-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      115% 95% at 50% 42%,
+      transparent 48%,
+      rgba(20, 12, 4, 0.4) 100%
+    );
+  }
+
+  /* ======================================================================= */
+  /* Animaciones — SOLO transform y opacity, y SOLO sin reduced-motion.      */
+  /* ======================================================================= */
+  @media (prefers-reduced-motion: no-preference) {
+    /* --- Aurora: cada blob con duración distinta para que el conjunto
+           nunca repita de forma visible. --- */
+    .theme-bg__variant--violeta .theme-bg__aurora-blob {
+      will-change: transform;
+    }
+
+    .theme-bg__aurora-blob--1 {
+      animation: theme-bg-drift-1 32s ease-in-out infinite;
+    }
+
+    .theme-bg__aurora-blob--2 {
+      animation: theme-bg-drift-2 26s ease-in-out infinite;
+    }
+
+    .theme-bg__aurora-blob--3 {
+      animation: theme-bg-drift-3 40s ease-in-out infinite;
+    }
+
+    @keyframes theme-bg-drift-1 {
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(8vw, 6vh) scale(1.15);
+      }
+      66% {
+        transform: translate(-4vw, 10vh) scale(0.92);
+      }
+    }
+
+    @keyframes theme-bg-drift-2 {
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+      40% {
+        transform: translate(-10vw, 8vh) scale(1.1);
+      }
+      70% {
+        transform: translate(-3vw, -6vh) scale(0.95);
+      }
+    }
+
+    @keyframes theme-bg-drift-3 {
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+      30% {
+        transform: translate(-8vw, -8vh) scale(1.08);
+      }
+      65% {
+        transform: translate(6vw, -3vh) scale(0.9);
+      }
+    }
+
+    /* --- Blueprint: barrido de luz cruzando el viewport cada ~20s. --- */
+    .theme-bg__variant--grafito .theme-bg__blueprint-sweep {
+      will-change: transform;
+      animation: theme-bg-sweep 20s linear infinite;
+    }
+
+    @keyframes theme-bg-sweep {
+      from {
+        transform: translateX(-70vw) rotate(18deg);
+      }
+      to {
+        transform: translateX(170vw) rotate(18deg);
+      }
+    }
+
+    /* --- Starfield: drift diagonal a 3 velocidades (parallax). El
+           desplazamiento es exactamente -1 tile por loop → seamless. --- */
+    .theme-bg__variant--medianoche .theme-bg__stars {
+      will-change: transform;
+    }
+
+    .theme-bg__stars--far {
+      animation: theme-bg-star-drift-far 240s linear infinite;
+    }
+
+    .theme-bg__stars--mid {
+      animation: theme-bg-star-drift-mid 150s linear infinite;
+    }
+
+    .theme-bg__stars--near {
+      animation: theme-bg-star-drift-near 90s linear infinite;
+    }
+
+    @keyframes theme-bg-star-drift-far {
+      from {
+        transform: translate(0, 0);
+      }
+      to {
+        transform: translate(-640px, -640px);
+      }
+    }
+
+    @keyframes theme-bg-star-drift-mid {
+      from {
+        transform: translate(0, 0);
+      }
+      to {
+        transform: translate(-520px, -520px);
+      }
+    }
+
+    @keyframes theme-bg-star-drift-near {
+      from {
+        transform: translate(0, 0);
+      }
+      to {
+        transform: translate(-440px, -440px);
+      }
+    }
+
+    .theme-bg__twinkle--a {
+      animation: theme-bg-twinkle 7s ease-in-out infinite;
+    }
+
+    .theme-bg__twinkle--b {
+      animation: theme-bg-twinkle 9s ease-in-out infinite;
+      animation-delay: -3.5s;
+    }
+
+    @keyframes theme-bg-twinkle {
+      0%,
+      100% {
+        opacity: 0.15;
+      }
+      50% {
+        opacity: 0.9;
+      }
+    }
+
+    /* --- Ember: brillo que respira + gate weave del grano. --- */
+    .theme-bg__variant--calido .theme-bg__ember-glow {
+      will-change: transform, opacity;
+      animation: theme-bg-ember 10s ease-in-out infinite;
+    }
+
+    @keyframes theme-bg-ember {
+      0%,
+      100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.6;
+      }
+      50% {
+        transform: translateX(-50%) scale(1.12);
+        opacity: 0.9;
+      }
+    }
+
+    .theme-bg__variant--calido .theme-bg__grain {
+      animation: theme-bg-grain-shift 1.2s steps(4) infinite;
+    }
+
+    @keyframes theme-bg-grain-shift {
+      from {
+        transform: translate(0, 0);
+      }
+      to {
+        transform: translate(-160px, -80px);
+      }
+    }
+  }
+</style>
