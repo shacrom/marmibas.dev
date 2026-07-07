@@ -4,9 +4,8 @@
  *
  * Compose the home hero anchor: HeroIntro cascade + supporting tagline +
  * dual CTAs. This is the visual anchor described in DESIGN.md §8 ("Hero").
- * The radial-gradient aurora ambient is painted at page level by
- * BaseLayout when `body.is-home` is active (covers the whole viewport,
- * not just this section).
+ * The hero atmosphere is the animated circuit background (CircuitBackground,
+ * subtle grid + violet light pulses) rendered behind the content.
  *
  * Layout (top → bottom):
  *   1. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
@@ -116,11 +115,9 @@ const workHref = getRoutePath('work', lang);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
-  {/* Fondo de circuitos (paquete externo) — SOLO para el tema `pulsos` de la
-      exploración A/B de temas. Oculto vía display:none para el resto: el
-      IntersectionObserver del componente detiene el loop mientras no
-      interseca y su ResizeObserver regenera la escena al volver a mostrarse,
-      así que el ocultado por CSS es seguro sin re-inits manuales. */}
+  {/* Fondo de circuitos — diseño definitivo del hero. El componente pausa
+      su loop con IntersectionObserver cuando sale de pantalla y regenera la
+      escena con ResizeObserver, así que no requiere gestión externa. */}
   <div class="hero__circuit" aria-hidden="true">
     <CircuitBackground color="#8b5cf6" />
   </div>
@@ -208,21 +205,14 @@ const workHref = getRoutePath('work', lang);
    * context) por encima.
    * ------------------------------------------------------------------------ */
   /* --------------------------------------------------------------------------
-   * Wrapper del fondo de circuitos (tema `pulsos`, temporal). display:none
-   * por defecto; solo visible con html[data-theme='pulsos'] (:global porque
-   * data-theme vive en <html>, fuera del scope del componente). z-index 0 —
-   * el contenido (.hero__content, z-index 1) queda por encima.
+   * Wrapper del fondo de circuitos (diseño definitivo). z-index 0 — el
+   * contenido (.hero__content, z-index 1) queda por encima.
    * ------------------------------------------------------------------------ */
   .hero__circuit {
-    display: none;
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 0;
-  }
-
-  :global(html[data-theme='pulsos']) .hero__circuit {
-    display: block;
   }
 
   .hero__stars {
@@ -248,8 +238,7 @@ const workHref = getRoutePath('work', lang);
    * the CTAs sit on a horizontal row at the bottom.
    *
    * `position: relative; z-index: 1` keeps the content above .hero__stars
-   * (z-index 0). The aurora ambient lives at page level (body.is-home in
-   * BaseLayout), so no local stacking against it is needed here.
+   * and .hero__circuit (both z-index 0).
    * ------------------------------------------------------------------------ */
   .hero__content {
     position: relative;

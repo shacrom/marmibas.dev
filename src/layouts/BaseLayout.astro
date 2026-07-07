@@ -30,7 +30,6 @@ import SeoHead from '../components/ui/SeoHead.astro';
 import SkipLink from '../components/ui/SkipLink.astro';
 import Header from '../components/ui/Header.astro';
 import Footer from '../components/ui/Footer.astro';
-import ThemeBackground from '../components/ui/ThemeBackground.astro';
 
 import { getLangFromUrl } from '../i18n/helpers';
 
@@ -74,12 +73,6 @@ const lang = getLangFromUrl(Astro.url);
 // engines that discover them via external links do not index them. Explicit
 // `noindex` prop still wins (always-noindex pages stay noindex regardless).
 const effectiveNoindex = noindex || lang === 'en';
-
-// Home pages opt into a full-viewport aurora ambient via `body.is-home`.
-// The token --gradient-hero-ambient is painted as a fixed background on the
-// body so the aurora persists across scroll and covers the whole page.
-const path = Astro.url.pathname;
-const isHome = path === '/' || path === '/en' || path === '/en/';
 ---
 
 <!doctype html>
@@ -99,52 +92,8 @@ const isHome = path === '/' || path === '/en' || path === '/en/';
     {/* Astro 6 View Transitions. Lives in <head> so the script registers
         before the first paint and intercepts in-page navigation. */}
     <ClientRouter />
-
-    {/* Theme switcher (temporal, A/B): applies the persisted theme before the
-        first paint to avoid FOUC. All storage access is guarded because
-        private/restricted browser contexts can throw on localStorage reads. */}
-    <script is:inline>
-      (function () {
-        const STORAGE_KEY = 'theme';
-        const VALID_THEMES = [
-          'grafito',
-          'medianoche',
-          'calido',
-          'constelacion',
-          'circuito',
-          'pulsos',
-        ];
-
-        function readStoredTheme() {
-          try {
-            return window.localStorage.getItem(STORAGE_KEY);
-          } catch (_) {
-            return null;
-          }
-        }
-
-        function applyStoredTheme() {
-          const stored = readStoredTheme();
-          if (stored && VALID_THEMES.indexOf(stored) !== -1) {
-            document.documentElement.dataset.theme = stored;
-          } else {
-            delete document.documentElement.dataset.theme;
-          }
-        }
-
-        applyStoredTheme();
-        if (!window.__marmibasThemePersistenceBound) {
-          window.__marmibasThemePersistenceBound = true;
-          document.addEventListener('astro:after-swap', applyStoredTheme);
-        }
-      })();
-    </script>
   </head>
-  <body class:list={['layout-body', isHome && 'is-home']}>
-    {/* Animated theme background (temporal A/B exploration — see themes.css).
-        It is fixed and pointer-events:none; layout stacking keeps it behind
-        all interactive content without relying on negative z-index. */}
-    <ThemeBackground />
+  <body class="layout-body">
     <SkipLink lang={lang} />
     <Header currentLang={lang} currentUrl={Astro.url} />
 
@@ -172,11 +121,6 @@ const isHome = path === '/' || path === '/en' || path === '/en/';
     min-height: 100dvh;
   }
 
-  .layout-body > :not(.theme-bg) {
-    position: relative;
-    z-index: 1;
-  }
-
   .layout-main {
     /* Take all the remaining vertical space; flush the footer down. */
     flex: 1 0 auto;
@@ -191,19 +135,9 @@ const isHome = path === '/' || path === '/en' || path === '/en/';
     outline: none;
   }
 
-  /* --------------------------------------------------------------------------
-   * Aurora ambient — home only. Paints the radial-gradient mesh from
-   * --gradient-hero-ambient as a fixed background on the body so the aurora
-   * spans the whole page and stays anchored to the viewport while scrolling.
-   * The base --color-bg-0 is preserved as the background-color underlay so
-   * the gradient blends over the dark base.
-   * ------------------------------------------------------------------------ */
-  body.is-home {
-    background-color: var(--color-bg-0);
-    background-image: var(--gradient-hero-ambient);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-size: 100vw 100vh;
-    background-position: center center;
-  }
+  /* Nota: el aurora full-page de la home (body.is-home) se retiró al adoptar
+   * el diseño definitivo — el fondo de circuitos del hero (CircuitBackground
+   * en Hero.astro) es ahora el dueño de la atmósfera de la home. El token
+   * --gradient-hero-ambient sigue vivo para los ambient locales de sección
+   * (services, 404, case studies). */
 </style>
