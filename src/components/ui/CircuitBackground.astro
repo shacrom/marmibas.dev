@@ -70,6 +70,8 @@ const { color = '#8b5cf6', gridSize = 60, pulses = 7, class: className = '' } = 
     const GRID = parseInt(canvas.dataset.grid || '60', 10);
     const N = parseInt(canvas.dataset.pulses || '7', 10);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // pulses=0 renders the static grid only — same path as reduced motion.
+    const animate = !reduced && N > 0;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -111,7 +113,7 @@ const { color = '#8b5cf6', gridSize = 60, pulses = 7, class: className = '' } = 
         ctx.lineTo(w, y + 0.5);
         ctx.stroke();
       }
-      if (reduced) return; // sin pulsos si el usuario prefiere menos movimiento
+      if (!animate) return; // sin pulsos si el usuario prefiere menos movimiento
       // Pulsos
       for (let i = 0; i < pulses.length; i++) {
         const p = pulses[i];
@@ -160,13 +162,13 @@ const { color = '#8b5cf6', gridSize = 60, pulses = 7, class: className = '' } = 
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       pulses = Array.from({ length: N }, newPulse);
-      if (reduced) drawFrame(); // rejilla estática
+      if (!animate) drawFrame(); // rejilla estática
     }
 
     new ResizeObserver(resize).observe(canvas);
     resize();
 
-    if (!reduced) {
+    if (animate) {
       // Solo anima cuando el canvas está en pantalla (ahorra batería).
       // Nota: esto también cubre el ocultado por tema (display:none en el
       // wrapper → el canvas no interseca → el loop se detiene), y el
