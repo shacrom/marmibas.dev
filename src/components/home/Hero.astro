@@ -72,11 +72,6 @@ const tagline: Record<Language, string> = {
   en: 'I design and build websites, apps and internal systems to win clients, save hours and organize daily work. No technical jargon: clear problem, solution and next steps.',
 };
 
-const eyebrow: Record<Language, string> = {
-  es: 'marmibas · software a medida',
-  en: 'marmibas · custom software',
-};
-
 const proofPoints = [
   {
     value: lang === 'es' ? '5+ años' : '5+ years',
@@ -118,7 +113,7 @@ const workHref = getRoutePath('work', lang);
 
   <div class="hero__content motion-scroll-hero-exit">
     <div class="hero__copy">
-      <HeroIntro eyebrow={eyebrow[lang]} lines={lines} />
+      <HeroIntro lines={lines} />
 
       <p class="hero__tagline motion-reveal-on-scroll is-visible">
         {subhead}
@@ -183,7 +178,8 @@ const workHref = getRoutePath('work', lang);
     max-width: 1080px;
     margin-inline: auto;
     padding-block: clamp(64px, 10vw, 118px) clamp(64px, 8vw, 88px);
-    padding-inline: clamp(20px, 5vw, 48px);
+    /* Match the header container so the copy aligns with the Marmibas logo. */
+    padding-inline: clamp(16px, 4vw, 32px);
     z-index: 1;
     isolation: isolate;
   }
