@@ -77,10 +77,6 @@ const proofPoints = [
     value: lang === 'es' ? '5+ años' : '5+ years',
     label: lang === 'es' ? 'creando productos reales' : 'building real products',
   },
-  {
-    value: '2+',
-    label: lang === 'es' ? 'soluciones en producción' : 'live production systems',
-  },
 ] as const;
 
 const diagnosis = {
@@ -277,8 +273,8 @@ const workHref = getRoutePath('work', lang);
   }
 
   .hero__proof {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     max-width: 680px;
     margin: 36px 0 0;
@@ -289,23 +285,24 @@ const workHref = getRoutePath('work', lang);
   .hero__proof-item {
     display: grid;
     gap: 4px;
-    padding: 14px 16px;
-    background: color-mix(in oklch, var(--color-bg-1) 58%, transparent);
-    border: 1px solid color-mix(in oklch, var(--border) 78%, transparent);
+    width: fit-content;
+    padding: 14px 18px;
+    background: var(--color-bg-1);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
   }
 
   .hero__proof-item strong {
     color: var(--text-0);
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    font-weight: 500;
+    font-size: var(--text-base);
+    font-weight: 600;
     line-height: 1;
   }
 
   .hero__proof-item span {
-    color: var(--text-3);
-    font-size: var(--text-xs);
+    color: var(--text-2);
+    font-size: var(--text-sm);
     line-height: 1.35;
   }
 
@@ -509,7 +506,6 @@ const workHref = getRoutePath('work', lang);
       flex: 1 1 auto;
     }
     .hero__proof {
-      grid-template-columns: 1fr;
       margin-top: 28px;
     }
   }

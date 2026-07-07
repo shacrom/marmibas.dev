@@ -116,7 +116,7 @@ export const ui = {
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Casos de éxito',
-    'featured.sub': 'Soluciones reales que están funcionando hoy en empresas de carne y hueso.',
+    'featured.sub': 'Soluciones reales que ya están en funcionamiento en empresas de distintos sectores.',
     'featured.viewAll': 'Ver todos los proyectos →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
@@ -131,11 +131,11 @@ export const ui = {
     'work.empty': 'Aún no hay proyectos en esta categoría.',
 
     // -- Home: About section (T-31) -------------------------------------------
-    'about.heading': 'Quién soy',
+    'about.heading': 'Quién está detrás de Marmibas',
     'about.bio.p1':
       'Soy Marcos. Soy ingeniero informático y llevo 5 años desarrollando software para empresas de todos los tamaños: startups, pymes y grandes compañías.',
     'about.bio.p2':
-      'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
+      'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Para proyectos industriales trabajo en alianza con Plazasys, mi socio tecnológico. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
     'about.bio.p3':
       'Trabajo desde España, en remoto, con clientes en cualquier ubicación. Si tienes una idea o un problema que quieres resolver, escríbeme — la primera conversación es gratis y sin compromiso.',
     'about.stats.years': 'Años de experiencia',
@@ -145,10 +145,10 @@ export const ui = {
     'about.cta.experience': 'Ver historia completa',
     'about.cta.contact': 'Hablemos',
 
-    // -- Home: Services section (Lo que hago) --------------------------------
-    'services.heading': 'Lo que hago',
+    // -- Home: Services section ----------------------------------------------
+    'services.heading': 'Herramientas que trabajan para tu negocio',
     'services.tagline':
-      'Soluciones de software a medida para hacer crecer tu negocio.',
+      'Webs, tiendas online y programas de gestión hechos a tu medida, pensados para vender más y ahorrar horas.',
     'services.shop.title': 'Tiendas online',
     'services.shop.description':
       'Vende tus productos por internet con un sistema fácil de gestionar. Pedidos, stock, pagos seguros y envíos integrados.',
@@ -285,7 +285,7 @@ export const ui = {
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Success stories',
-    'featured.sub': 'Real solutions that are working today in real businesses.',
+    'featured.sub': 'Real solutions already in daily use at businesses across different sectors.',
     'featured.viewAll': 'View all projects →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
@@ -300,11 +300,11 @@ export const ui = {
     'work.empty': 'No projects in this category yet.',
 
     // -- Home: About section (T-31) -------------------------------------------
-    'about.heading': 'About me',
+    'about.heading': 'Who is behind Marmibas',
     'about.bio.p1':
       "I'm marmibas. I'm a software engineer with 5 years of experience building software for companies of all sizes — from startups to large enterprises.",
     'about.bio.p2':
-      'Today I work independently, helping entrepreneurs, freelancers and small businesses digitize their day-to-day. If your business has repetitive tasks that consume your time, error-prone quotes, or information scattered between Excel and WhatsApp, I can help.',
+      'Today I work independently, helping entrepreneurs, freelancers and small businesses digitize their day-to-day. For industrial projects I work in partnership with Plazasys, my technology partner. If your business has repetitive tasks that consume your time, error-prone quotes, or information scattered between Excel and WhatsApp, I can help.',
     'about.bio.p3':
       'I work remotely from Spain, with clients anywhere. If you have an idea or a problem you want to solve, get in touch — the first conversation is free and no-strings-attached.',
     'about.stats.years': 'Years of experience',
@@ -314,9 +314,10 @@ export const ui = {
     'about.cta.experience': 'Read the full story',
     'about.cta.contact': "Let's talk",
 
-    // -- Home: Services section (What I do) ----------------------------------
-    'services.heading': 'What I do',
-    'services.tagline': 'Custom software solutions to grow your business.',
+    // -- Home: Services section ----------------------------------------------
+    'services.heading': 'Tools that work for your business',
+    'services.tagline':
+      'Websites, online stores and management tools made to measure, built to sell more and save hours.',
     'services.shop.title': 'Online stores',
     'services.shop.description':
       'Sell your products online with a system that is easy to manage. Orders, stock, secure payments and integrated shipping.',

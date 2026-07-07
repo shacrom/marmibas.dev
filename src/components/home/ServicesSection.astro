@@ -40,9 +40,15 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const promise: Record<Language, string> = {
-  es: 'Si hoy dependes de WhatsApp, hojas de cálculo o tareas manuales para vender y operar, aquí hay margen para ganar velocidad sin complicar el negocio.',
-  en: 'If today you depend on WhatsApp, spreadsheets or manual tasks to sell and operate, there is room to gain speed without making the business more complex.',
+const promise: Record<Language, { lead: string; highlight: string }> = {
+  es: {
+    lead: 'Si hoy dependes de WhatsApp, hojas de cálculo o tareas manuales para vender y operar,',
+    highlight: 'aquí hay margen para ganar velocidad sin complicar el negocio.',
+  },
+  en: {
+    lead: 'If today you depend on WhatsApp, spreadsheets or manual tasks to sell and operate,',
+    highlight: 'there is room to gain speed without making the business more complex.',
+  },
 };
 
 /**
@@ -99,7 +105,9 @@ const services = [
         </h2>
         <p class="services__sub">{t('services.tagline')}</p>
       </div>
-      <p class="services__promise">{promise[lang]}</p>
+      <p class="services__promise">
+        {promise[lang].lead} <strong>{promise[lang].highlight}</strong>
+      </p>
     </header>
 
     <ul class="services__grid" role="list">
@@ -287,13 +295,25 @@ const services = [
 
   .services__promise {
     margin: 0;
-    padding: 18px 20px;
-    color: var(--text-1);
-    background: color-mix(in oklch, var(--color-bg-1) 66%, transparent);
-    border: 1px solid color-mix(in oklch, var(--accent-400) 18%, var(--border));
+    padding: 20px 24px;
+    color: var(--text-2);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in oklch, var(--accent-400) 10%, transparent),
+        transparent 55%
+      ),
+      color-mix(in oklch, var(--color-bg-1) 82%, var(--color-bg-0));
+    border: 1px solid color-mix(in oklch, var(--accent-400) 26%, var(--border));
+    border-left: 3px solid var(--accent-400);
     border-radius: var(--radius-lg);
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
+  }
+
+  .services__promise strong {
+    color: var(--text-0);
+    font-weight: 600;
   }
 
   /* --------------------------------------------------------------------------
