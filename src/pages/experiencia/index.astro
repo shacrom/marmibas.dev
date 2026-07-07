@@ -98,21 +98,53 @@ const items = await Promise.all(
 
               <div class="timeline__head">
                 {entry.data.logo && (
-                  <img
-                    class="timeline__logo"
-                    src={entry.data.logo}
-                    alt={`Logo de ${entry.data.company}`}
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                  />
+                  <span class="timeline__logos">
+                    <img
+                      class:list={[
+                        'timeline__logo',
+                        // The Marmibas wordmark is near-white: it needs the dark
+                        // wide pill instead of the light square one.
+                        entry.data.logo === '/marmibas-logo.png' && 'timeline__logo--wordmark',
+                      ]}
+                      src={entry.data.logo}
+                      alt={`Logo de ${entry.data.company}`}
+                      width="48"
+                      height="48"
+                      loading="lazy"
+                    />
+                    {entry.data.partnerLogo && (
+                      <>
+                        <span class="timeline__logo-x" aria-hidden="true">
+                          ×
+                        </span>
+                        <img
+                          class="timeline__logo timeline__logo--wide"
+                          src={entry.data.partnerLogo}
+                          alt="Logo del socio tecnológico"
+                          width="48"
+                          height="48"
+                          loading="lazy"
+                        />
+                      </>
+                    )}
+                  </span>
                 )}
                 <div class="timeline__head-text">
                   <p class="timeline__period font-mono">{entry.data.period}</p>
 
                   <h2 class="timeline__heading font-display">
-                    <span class="timeline__company">{entry.data.company}</span>
-                    <span class="timeline__separator" aria-hidden="true">·</span>
+                    {
+                      /* The wordmark logo already reads "Marmibas" — repeating
+                         the company name next to it would be redundant. */
+                      entry.data.logo !== '/marmibas-logo.png' && (
+                        <>
+                          <span class="timeline__company">{entry.data.company}</span>
+                          <span class="timeline__separator" aria-hidden="true">
+                            ·
+                          </span>
+                        </>
+                      )
+                    }
                     <span class="timeline__role">{entry.data.role}</span>
                   </h2>
                 </div>
@@ -293,6 +325,34 @@ const items = await Promise.all(
     border-radius: var(--radius-sm);
     background: var(--text-0);
     border: 1px solid var(--color-border);
+  }
+
+  /* White wordmark (Marmibas): dark wide pill so it stays visible. */
+  .timeline__logo--wordmark {
+    width: auto;
+    max-width: 140px;
+    padding: 12px 14px;
+    background: var(--bg-0);
+  }
+
+  /* Wide partner wordmark on the standard light pill. */
+  .timeline__logo--wide {
+    width: auto;
+    max-width: 140px;
+    padding: 8px 12px;
+  }
+
+  .timeline__logos {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .timeline__logo-x {
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
   }
 
   .timeline__period {

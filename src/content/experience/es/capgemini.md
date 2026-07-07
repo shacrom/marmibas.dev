@@ -20,7 +20,6 @@ stack:
   - "Angular"
   - "Microservicios"
   - "PostgreSQL"
-  - "Tests unitarios"
 location: "España"
 ---
 

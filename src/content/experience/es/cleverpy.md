@@ -16,16 +16,10 @@ current: false
 summary: "Mi primer trabajo en software. Empecé construyendo la web de un cliente con trato directo y a los pocos meses pasé al equipo que se encarga de la lógica del servidor y la base de datos."
 stack:
   - "React"
-  - "Redux"
-  - "JWT"
-  - "Sass"
-  - "API REST"
   - "Java"
   - "Spring"
   - "Python"
   - "PostgreSQL"
-  - "Git"
-  - "GitFlow"
 location: "España"
 ---
 
