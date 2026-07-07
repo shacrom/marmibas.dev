@@ -5,71 +5,35 @@ lang: "es"
 draft: false
 featured: true
 order: 2
-tagline: "Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre."
-logo: "/logos/recetas-novatex.png"
-clientLogo: "/logos/novatex.jpg"
+tagline: "La libreta digital donde queda guardado el conocimiento de tus operarios."
+logo: "/logos/novatex.jpg"
 client: "Empresa textil — sector industrial"
-year: 2025
-role: "Diseño y desarrollo del producto"
+attribution: "Con Plazasys"
+year: 2026
+role: "Diseño y desarrollo del producto · en alianza con Plazasys"
 stack:
   - "Industria textil"
-  - "Móvil"
   - "Búsqueda rápida"
   - "Multi-empresa"
   - "Histórico de cambios"
 status: "success"
 ---
 
-import Callout from '@/components/ui/Callout.astro';
-import MetricsGrid from '@/components/ui/MetricsGrid.astro';
-
-## Contexto
-
-En una fábrica textil, las máquinas industriales no funcionan solas: necesitan que alguien les diga a qué temperatura trabajar, a qué velocidad pasar la tela y cómo configurarse para cada cliente y cada tipo de tejido. Cada producto pide unos ajustes distintos, y dar con los correctos es la diferencia entre una tela bien acabada y un lote echado a perder. Ese saber, durante décadas, ha vivido en la cabeza de los operarios con más años de oficio, los que conocen cada máquina y cada cliente como la palma de su mano.
+import BeforeAfter from '@/components/ui/BeforeAfter.astro';
 
 ## El problema
 
-Cada operario lleva su propia libreta. En ella apunta a mano los ajustes que necesita la máquina para cada cliente y cada tela: temperatura, velocidad, configuración. Es su herramienta de trabajo más valiosa, y también la más frágil. Se mancha, se moja, se pierde, se gasta. Y nadie más que él sabe interpretar lo que hay escrito dentro.
-
-El problema serio llega cuando un operario con treinta años de experiencia se jubila. Su libreta se va con él. La empresa pierde de golpe un conocimiento que tardó décadas en construirse, y los nuevos empleados tienen que empezar prácticamente de cero. Es una sangría silenciosa que muchas fábricas ni siquiera ven venir hasta que es tarde.
-
-Y luego está el día a día. En plena jornada de producción, parar una máquina para llamar al jefe y preguntar "qué temperatura le pongo a este pedido" es perder dinero. Cada minuto de máquina parada cuenta.
+En la fábrica, cada operario lleva su propia libreta con los ajustes que necesita cada máquina para cada cliente y cada tela: temperatura, velocidad, configuración. Es su herramienta más valiosa y la más frágil — se mancha, se pierde, y nadie más sabe interpretarla. Cuando un veterano se jubila, su libreta se va con él, y con ella décadas de conocimiento. Mientras tanto, parar una máquina para preguntar "¿qué temperatura le pongo?" es perder dinero.
 
 ## La solución
 
-Recetas Novatex es una aplicación móvil que cualquier operario puede usar desde su teléfono. Busca el cliente, busca el producto, y aparecen en pantalla los ajustes exactos que tiene que poner en la máquina. En segundos. Sin libretas, sin llamadas, sin esperar a que llegue alguien con más experiencia.
-
-Y cuando un operario quiere actualizar un ajuste —porque ha descubierto algo mejor, porque ha cambiado la materia prima o porque el cliente ha modificado sus exigencias— lo registra desde la propia app. Ese conocimiento ya no se pierde: queda guardado para siempre y al instante está disponible para todos sus compañeros, en todos los turnos.
-
-Otros [proyectos en producción](/trabajos) abordan problemas similares en sectores distintos.
-
-## Cómo funciona en el día a día
-
-**Buscar y aplicar.** El operario llega a la máquina, abre la app en el móvil, busca el cliente y el producto, y ve los ajustes en pantalla. Los introduce en la máquina y empieza a producir. Sin esperar, sin llamar, sin libretas.
-
-**Registrar y compartir.** Cuando alguien encuentra una mejora —un ajuste que da mejor calidad o ahorra tiempo—, la guarda en la app. Al instante, todo el equipo tiene acceso a esa mejora.
-
-**Conocimiento que no se pierde.** Cuando un operario se jubila, su cuaderno ya no se va con él. Todo lo que sabía está dentro de la aplicación, listo para que el siguiente lo aproveche desde el primer día.
-
-<MetricsGrid metrics={[
-  { label: "Acceso", value: "Móvil", sublabel: "desde cualquier máquina" },
-  { label: "Búsqueda", value: "Segundos", sublabel: "cliente + producto" },
-  { label: "Histórico", value: "Completo", sublabel: "cada cambio queda guardado" },
-  { label: "Equipos", value: "Conectados", sublabel: "todos al mismo conocimiento" },
-]} />
+Recetas Novatex es una aplicación web que funciona en cualquier dispositivo de la fábrica: el operario busca el cliente y el producto, y los ajustes exactos aparecen en pantalla en segundos. Cuando alguien descubre una mejora, la registra en la app y al instante está disponible para todos los turnos. El conocimiento deja de vivir en cuadernos y pasa a ser de la empresa.
 
 ## Resultados
 
-La fábrica deja de depender de cuadernos físicos y de la memoria individual de cada operario. El conocimiento que tardó años en construirse queda protegido y accesible para cualquier empleado autorizado, desde el móvil, en cualquier momento.
+<BeforeAfter rows={[
+  { label: "Consultar los ajustes de una máquina", before: "llamadas y esperas", after: "segundos", beforeValue: 900, afterValue: 15 },
+  { label: "Operario nuevo produciendo con seguridad", before: "~6 meses", after: "primer día", beforeValue: 180, afterValue: 1 },
+]} />
 
-Y los operarios nuevos se incorporan mucho más rápido. Ya no hacen falta seis meses de aprendizaje al lado de un veterano para empezar a producir con seguridad: la información está ahí, en la app, lista para consultar.
-
-<Callout type="tip" title="Para gerentes de producción">
-Si tu equipo aún apunta los ajustes de máquina en cuadernos, estás a un paso de perder ese conocimiento. Empezar a digitalizarlo hoy es proteger tu fábrica.
-</Callout>
-
-## Próximos pasos
-
-Próximamente, la aplicación incorporará alertas automáticas cuando un cliente cambie sus especificaciones, e informes mensuales que comparen producciones por cliente y producto. Más control, menos sorpresas.
-
-¿Tienes una fábrica o un negocio donde el conocimiento humano corre el riesgo de perderse? [Cuéntamelo](/contacto) y vemos cómo digitalizarlo.
+Proyecto desarrollado en alianza con [Plazasys](https://plazasys.com), mi socio tecnológico para proyectos industriales. Hay más [proyectos en producción](/trabajos) resolviendo problemas parecidos. ¿En tu negocio hay conocimiento que corre el riesgo de perderse? [Cuéntamelo](/contacto) y vemos cómo digitalizarlo.

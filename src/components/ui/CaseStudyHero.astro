@@ -36,7 +36,6 @@
 
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import Pill from './Pill.astro';
 import TechBadge from './TechBadge.astro';
 import { useTranslations } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
@@ -90,7 +89,6 @@ const classes = ['case-study-hero', className].filter(Boolean).join(' ');
 
   <div class="case-study-hero__inner">
     <div class="case-study-hero__eyebrow" style="--line-index: 0">
-      <Pill status="success" lang={lang} />
       <span class="case-study-hero__meta">{client} · {year}</span>
     </div>
 

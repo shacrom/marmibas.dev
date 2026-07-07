@@ -5,10 +5,11 @@ lang: "es"
 draft: false
 featured: true
 order: 1
-tagline: "La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas."
+tagline: "Presupuestos y facturas sin Word ni Excel, con la imagen de tu marca."
 logo: "/logos/voxye.svg"
 client: "Empresas de reformas"
-year: 2026
+attribution: "Producto propio"
+year: 2025
 role: "Diseño y desarrollo del producto"
 stack:
   - "Presupuestos"
@@ -18,76 +19,24 @@ stack:
   - "Multi-empresa"
   - "PDF con tu marca"
 status: "success"
-results:
-  - "Adiós a Word, Excel y carpetas con PDFs sueltos: presupuestos, contratos y facturas en un solo sitio."
-  - "Documentos profesionales con la marca de tu empresa generados en minutos, sin pelearte con plantillas."
-  - "Cálculos automáticos sin errores: nada de fórmulas rotas ni totales mal sumados."
-  - "Cualquier empleado genera el mismo PDF impecable, con la misma identidad visual."
-metrics:
-  - label: "Tiempo ahorrado"
-    value: "Horas"
-    sublabel: "por presupuesto"
-  - label: "Errores de cálculo"
-    value: "Cero"
-    sublabel: "fórmulas verificadas"
-  - label: "Documentos"
-    value: "8 tipos"
-    sublabel: "presupuestos, facturas, contratos…"
-  - label: "Diseño"
-    value: "Tu marca"
-    sublabel: "siempre coherente"
 ---
 
-import Callout from '@/components/ui/Callout.astro';
-import MetricsGrid from '@/components/ui/MetricsGrid.astro';
-
-## Contexto
-
-Las empresas de reformas en España son, en su gran mayoría, pequeñas: autónomos con un equipo de obreros, pymes familiares, pequeñas constructoras de barrio. El día a día se reparte entre la obra y la oficina: visitar al cliente para tomar medidas, pasar el presupuesto en Word, calcular partidas en Excel, imprimir el contrato, archivar la factura en una carpeta, llamar al proveedor para pedir material y, entre medio, atender los WhatsApps de los clientes que preguntan cómo va su reforma. Todo el papeleo gira alrededor de unas pocas herramientas que, al final, no fueron pensadas para esto.
+import BeforeAfter from '@/components/ui/BeforeAfter.astro';
 
 ## El problema
 
-El primer dolor de cabeza son los presupuestos. Una reforma se compone de partidas: mano de obra, materiales, capítulos por estancia, descuentos, IVA. Calcularlo todo en Excel funciona hasta que alguien arrastra mal una celda y el total se desvía 800 euros sin que nadie se dé cuenta. Cuando el cliente recibe ese PDF con un número equivocado o un formato descuidado, no piensa "se han equivocado", piensa "esta empresa no es seria". La imagen de marca se daña antes de que se haya hablado de precio.
-
-El segundo dolor es la dispersión. Cada documento vive en un sitio distinto: el presupuesto en Word, las facturas en Excel, los contratos firmados escaneados en otra carpeta, los pedidos al proveedor en un correo de Outlook que nadie sabe buscar y la comunicación con el cliente en WhatsApp. Cuando un cliente llama seis meses después preguntando por una garantía o por una factura, encontrar la información se convierte en una caza del tesoro. Y muchas veces, simplemente, no aparece.
-
-El tercero es la falta de coherencia. Cada empleado hace los presupuestos a su manera: uno usa una plantilla antigua, otro la copia de un trabajo anterior y le cambia los datos, otro empieza desde cero. Resultado: logos descentrados, fuentes que cambian a mitad de página, datos fiscales del año pasado, condiciones legales que ya no aplican. La empresa pierde profesionalidad ante el cliente sin saberlo.
+Las empresas de reformas hacen los presupuestos en Word, calculan en Excel y guardan cada documento en un sitio distinto. Una celda mal arrastrada descuadra un total sin que nadie lo vea, y encontrar una factura de hace seis meses es una búsqueda del tesoro. Cuando el cliente recibe un PDF con un error, no piensa "se han equivocado": piensa "esta empresa no es seria".
 
 ## La solución
 
-Voxye es una aplicación que reúne en un solo sitio todo el papeleo de una empresa de reformas: presupuestos, contratos, facturas, pedidos a proveedor, fichas de cliente, productos, subcontratas e incidencias en obra. Cualquier empleado puede generar un PDF profesional con la imagen de la empresa en un par de minutos, sin abrir Word ni tocar una sola fórmula de Excel.
-
-El uso es sencillo a propósito: introduces los datos del cliente y los conceptos de la reforma, y la aplicación se encarga del resto. Calcula totales, IVA y descuentos sin errores, genera el PDF con tu logo y tus colores, y lo envía al cliente por email automáticamente. Lo que antes requería abrir tres programas, copiar datos a mano y rezar para no equivocarse, ahora se hace en una sola pantalla.
-
-Si quieres ver el resto de proyectos en producción, mira [todos los trabajos](/trabajos).
-
-## Cómo funciona en el día a día
-
-**Presupuestos sin errores.** El primer dolor de cabeza desaparece. Introduces los conceptos, la cantidad y el precio unitario, y la aplicación calcula totales, IVA y descuentos por ti. Sin Excel rota, sin números mal sumados, sin presupuestos enviados con erratas que después hay que rectificar por teléfono.
-
-**Tu marca en cada PDF.** Subes una vez tu logo, tus datos fiscales y eliges tus colores. Todos los PDFs (presupuestos, contratos, facturas, pedidos a proveedor) salen con la misma identidad visual. Profesional, coherente, reconocible. El cliente ve siempre la misma empresa, no ocho versiones distintas según quién haya preparado el documento.
-
-**Todo conectado.** Un cliente acepta un presupuesto y, con un clic, se convierte en contrato. El contrato se firma y se genera la factura. La factura se cobra y todo queda registrado en el historial del cliente. Sin saltar entre Word, Excel y carpetas. Sin perder el rastro de qué se ha cobrado y qué no.
-
-<Callout type="tip" title="Para emprendedores">
-Si estás empezando con tu empresa de reformas, no necesitas inventarte plantillas en Word ni montar Excels desde cero. Voxye te da la estructura desde el primer presupuesto y crece contigo a medida que entran más clientes y más empleados.
-</Callout>
-
-<MetricsGrid metrics={[
-  { label: "Tiempo ahorrado", value: "Horas", sublabel: "por presupuesto" },
-  { label: "Errores de cálculo", value: "Cero", sublabel: "fórmulas verificadas" },
-  { label: "Documentos", value: "8 tipos", sublabel: "presupuestos, facturas, contratos…" },
-  { label: "Diseño", value: "Tu marca", sublabel: "siempre coherente" },
-]} />
+[Voxye](https://voxye.es) reúne todo el papeleo en un solo lugar: presupuestos, contratos, facturas, pedidos a proveedor y fichas de cliente. Introduces las partidas y la aplicación calcula los totales, genera el PDF con tu logo y tus colores, y se lo envía al cliente. Cualquier empleado produce el mismo documento impecable, sin abrir Word ni tocar una fórmula.
 
 ## Resultados
 
-Las empresas que usan Voxye dejan de perder tiempo en lo administrativo. Los presupuestos llegan al cliente más rápido, con mejor imagen y sin errores que después haya que corregir. Las facturas se emiten siempre con el mismo formato y la información se guarda de forma segura, así que nada se pierde por el camino.
+<BeforeAfter rows={[
+  { label: "Hacer y enviar un presupuesto", before: "~2 horas", after: "~30 min", beforeValue: 120, afterValue: 30 },
+  { label: "Encontrar un documento antiguo", before: "~30 min", after: "segundos", beforeValue: 1800, afterValue: 10 },
+  { label: "Presupuestos con errores de cálculo", before: "frecuentes", after: "cero", beforeValue: 10, afterValue: 0 },
+]} />
 
-Y como todo queda guardado en un solo sitio, encontrar un presupuesto de hace seis meses lleva dos segundos en lugar de media hora revolviendo carpetas. La empresa se presenta mejor ante el cliente y, por dentro, el equipo trabaja más tranquilo.
-
-## Próximos pasos
-
-Próximamente, Voxye tendrá vista para clientes: tus clientes podrán entrar y seguir el avance de su reforma sin tener que llamarte para preguntar. Menos llamadas, más confianza, y un canal único donde la información ya vive.
-
-¿Tienes una empresa de reformas o un sector parecido y este caso te resuena? [Hablemos sobre tu proyecto](/contacto) — la primera conversación es gratis.
+Puedes ver el producto en [voxye.es](https://voxye.es). Hay más [proyectos en producción](/trabajos) resolviendo problemas parecidos en otros sectores. ¿Tienes una empresa de reformas o un sector similar? [Hablemos de tu proyecto](/contacto) — la primera conversación es gratis.

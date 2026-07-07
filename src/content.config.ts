@@ -55,6 +55,9 @@ const caseStudies = defineCollection({
       logo: z.string().optional(),
       clientLogo: z.string().optional(),
       client: z.string(),
+      // Short attribution shown next to the card meta ("Con Plazasys",
+      // "Producto propio").
+      attribution: z.string().optional(),
       year: z.number().int(),
       role: z.string(),
       stack: z.array(z.string()).min(1),
@@ -125,6 +128,9 @@ const experience = defineCollection({
       logo: z.string().optional(),
       // Official company website. Experience cards use it as their external link.
       companyUrl: z.string().url(),
+      // Public path to a partner's logo, shown next to the company logo
+      // (e.g. Marmibas × Plazasys).
+      partnerLogo: z.string().optional(),
       role: z.string(),
       period: z.string(),
       startDate: z.coerce.date(),

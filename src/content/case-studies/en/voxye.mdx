@@ -5,10 +5,11 @@ lang: "en"
 draft: false
 featured: true
 order: 1
-tagline: "The application that replaces Word and Excel for quotes and invoices in renovation companies."
+tagline: "Quotes and invoices without Word or Excel, always on brand."
 logo: "/logos/voxye.svg"
 client: "Renovation companies"
-year: 2026
+attribution: "Own product"
+year: 2025
 role: "Product design and development"
 stack:
   - "Quotes"
@@ -18,76 +19,28 @@ stack:
   - "Multi-company"
   - "Branded PDFs"
 status: "success"
-results:
-  - "No more Word, Excel and stray PDF folders: quotes, contracts and invoices in one single place."
-  - "Professional documents with your company's branding generated in minutes, no template wrestling."
-  - "Automatic, error-free calculations: no broken formulas, no miscounted totals."
-  - "Any employee produces the same polished PDF, with the same visual identity."
-metrics:
-  - label: "Time saved"
-    value: "Hours"
-    sublabel: "per quote"
-  - label: "Calculation errors"
-    value: "Zero"
-    sublabel: "formulas verified"
-  - label: "Documents"
-    value: "8 types"
-    sublabel: "quotes, invoices, contracts…"
-  - label: "Design"
-    value: "Your brand"
-    sublabel: "always consistent"
 ---
 
-import Callout from '@/components/ui/Callout.astro';
-import MetricsGrid from '@/components/ui/MetricsGrid.astro';
-
-## Context
-
-Renovation companies in Spain are, for the most part, small businesses: self-employed contractors with a crew of workers, family-run firms, neighbourhood builders. Their day is split between the job site and the office: visiting clients to take measurements, drafting the quote in Word, computing line items in Excel, printing the contract, filing the invoice in a folder, calling the supplier to order materials and, in between, replying to WhatsApp messages from clients asking how the renovation is going. All the paperwork revolves around a handful of tools that were never designed for this.
+import BeforeAfter from '@/components/ui/BeforeAfter.astro';
 
 ## The problem
 
-The first headache is the quotes themselves. A renovation is built from line items: labour, materials, chapters per room, discounts, VAT. Computing all of that in Excel works until someone drags a cell wrong and the total drifts by 800 euros without anyone noticing. When the client receives that PDF with the wrong number or a sloppy layout, they don't think "they made a mistake" — they think "this company isn't serious". The brand image is damaged before price is even on the table.
-
-The second pain is fragmentation. Every document lives somewhere different: the quote in Word, the invoices in Excel, signed contracts scanned into another folder, supplier orders in an Outlook email no one knows how to search, and client conversations on WhatsApp. When a client calls six months later asking about a warranty or an invoice, finding the information turns into a treasure hunt. And often, it simply never turns up.
-
-The third pain is inconsistency. Each employee writes quotes their own way: one uses an old template, another copies a previous job and edits the details, another starts from scratch. The result is misaligned logos, fonts that change mid-page, last year's tax data, legal terms that no longer apply. The company comes across as less professional without realising it.
+Renovation companies write quotes in Word, calculate in Excel and store every document somewhere different. One badly dragged cell shifts a total without anyone noticing, and finding an invoice from six months ago is a treasure hunt. When the client receives a PDF with a mistake, they don't think "they slipped up" — they think "this company isn't serious".
 
 ## The solution
 
-Voxye is an application that brings all the paperwork of a renovation company into one place: quotes, contracts, invoices, supplier orders, client records, products, subcontractors and on-site incidents. Any employee can generate a professional PDF with the company's branding in a couple of minutes, without opening Word or touching a single Excel formula.
-
-It's deliberately simple to use: you enter the client's details and the line items of the renovation, and the application takes care of the rest. It calculates totals, VAT and discounts without errors, generates the PDF with your logo and your colours, and emails it to the client automatically. What used to require opening three different programs, copying data by hand and praying nothing went wrong now happens on a single screen.
-
-If you want to see the rest of projects in production, see [all work](/en/work).
-
-## How it works day to day
-
-**Quotes without errors.** The first headache disappears. You enter the line items, quantities and unit prices, and the application calculates totals, VAT and discounts for you. No broken Excel sheets, no miscounted totals, no quotes sent with mistakes you have to apologise for over the phone afterwards.
-
-**Your brand on every PDF.** You upload your logo, tax data and brand colours once. Every PDF — quotes, contracts, invoices, supplier orders — comes out with the same visual identity. Professional, consistent, recognisable. The client always sees the same company, not eight different versions depending on who prepared the document.
-
-**Everything connected.** A client accepts a quote and, with one click, it becomes a contract. The contract is signed and the invoice is generated. The invoice is paid and everything is logged in the client's history. No jumping between Word, Excel and folders. No losing track of what's been paid and what hasn't.
-
-<Callout type="tip" title="For early-stage businesses">
-If you're starting your own renovation company, you don't need to invent Word templates or build spreadsheets from scratch. Voxye gives you the structure from your very first quote and grows with you as more clients and more employees come on board.
-</Callout>
-
-<MetricsGrid metrics={[
-  { label: "Time saved", value: "Hours", sublabel: "per quote" },
-  { label: "Calculation errors", value: "Zero", sublabel: "formulas verified" },
-  { label: "Documents", value: "8 types", sublabel: "quotes, invoices, contracts…" },
-  { label: "Design", value: "Your brand", sublabel: "always consistent" },
-]} />
+[Voxye](https://voxye.es) brings all the paperwork into one place: quotes, contracts, invoices, supplier orders and client records. You enter the line items and the application calculates the totals, generates the PDF with your logo and colours, and emails it to the client. Any employee produces the same polished document, without opening Word or touching a formula.
 
 ## Results
 
-Companies that use Voxye stop wasting time on admin. Quotes reach the client faster, with a better image, and without errors that have to be corrected later. Invoices are issued in the same format every time and information is stored safely, so nothing falls through the cracks.
+<BeforeAfter
+  beforeTag="Before"
+  afterTag="Now"
+  rows={[
+    { label: "Preparing and sending a quote", before: "~2 hours", after: "~30 min", beforeValue: 120, afterValue: 30 },
+    { label: "Finding an old document", before: "~30 min", after: "seconds", beforeValue: 1800, afterValue: 10 },
+    { label: "Quotes with calculation errors", before: "frequent", after: "zero", beforeValue: 10, afterValue: 0 },
+  ]}
+/>
 
-And because everything is kept in one place, finding a quote from six months ago takes two seconds instead of half an hour digging through folders. The company presents itself better to clients and, internally, the team works with less stress.
-
-## Next steps
-
-A client-facing view is on the roadmap: your clients will be able to log in and follow the progress of their renovation without having to call you for updates. Fewer phone calls, more trust, and a single channel where the information already lives.
-
-Do you run a renovation company or a similar sector and this case resonates? [Let's talk about your project](/en/contact) — the first conversation is free.
+You can see the product at [voxye.es](https://voxye.es). There are more [projects in production](/en/work) solving similar problems in other sectors. Do you run a renovation company or a similar business? [Let's talk about your project](/en/contact) — the first conversation is free.

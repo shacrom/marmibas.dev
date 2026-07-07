@@ -1,0 +1,139 @@
+---
+/**
+ * BeforeAfter.astro — before/after comparison bars for case study results.
+ *
+ * Renders one row per dimension (e.g. "Time per quote") with a muted
+ * reference bar (before) and an accent bar (after), scaled to the larger
+ * value of the pair. Follows the bullet-chart convention: the reference is
+ * deliberately neutral, the current value carries the brand accent.
+ *
+ * Accessibility: identity is never color-alone — every bar has a visible
+ * text tag ("Antes"/"Ahora") and its value as plain text. The bars are
+ * decorative reinforcement of data already present as text.
+ *
+ * Props:
+ *   - rows: comparison rows. `beforeValue`/`afterValue` share a unit within
+ *     the row (any unit — only their ratio matters for bar widths).
+ *   - beforeTag/afterTag: series tags, overridable per language.
+ */
+export interface Row {
+  /** Dimension being compared ("Hacer un presupuesto"). */
+  label: string;
+  /** Human value for the before bar ("2 horas"). */
+  before: string;
+  /** Human value for the after bar ("15 minutos"). */
+  after: string;
+  /** Numeric magnitude behind `before`, same unit as `afterValue`. */
+  beforeValue: number;
+  /** Numeric magnitude behind `after`, same unit as `beforeValue`. */
+  afterValue: number;
+}
+
+export interface Props {
+  rows: Row[];
+  beforeTag?: string;
+  afterTag?: string;
+}
+
+const { rows, beforeTag = 'Antes', afterTag = 'Ahora' } = Astro.props;
+
+/** Bar width as % of the row maximum; tiny values keep a visible sliver. */
+const width = (value: number, other: number): number =>
+  Math.max(4, Math.round((value / Math.max(value, other, 1)) * 100));
+---
+
+<div class="before-after">
+  {
+    rows.map((row) => (
+      <div class="before-after__row">
+        <p class="before-after__label">{row.label}</p>
+        <div class="before-after__pair">
+          <span class="before-after__tag">{beforeTag}</span>
+          <span class="before-after__track">
+            <span
+              class="before-after__bar before-after__bar--before"
+              style={`width: ${width(row.beforeValue, row.afterValue)}%`}
+            />
+          </span>
+          <span class="before-after__value">{row.before}</span>
+
+          <span class="before-after__tag">{afterTag}</span>
+          <span class="before-after__track">
+            <span
+              class="before-after__bar before-after__bar--after"
+              style={`width: ${width(row.afterValue, row.beforeValue)}%`}
+            />
+          </span>
+          <span class="before-after__value before-after__value--after">{row.after}</span>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .before-after {
+    display: grid;
+    gap: 1.5rem;
+    margin-block: 2rem;
+    padding: 1.5rem;
+    background: color-mix(in oklch, var(--bg-1) 80%, var(--bg-0));
+    border: 1px solid color-mix(in oklch, var(--border) 86%, transparent);
+    border-radius: var(--radius-lg);
+  }
+
+  .before-after__label {
+    margin: 0 0 0.625rem;
+    color: var(--text-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .before-after__pair {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.375rem 0.75rem;
+  }
+
+  .before-after__tag {
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+  }
+
+  .before-after__track {
+    display: block;
+    min-width: 0;
+  }
+
+  .before-after__bar {
+    display: block;
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  /* Reference (before): neutral on purpose — the bullet-chart convention.
+     Mixed above text-3 so it clears 3:1 against the page surface. */
+  .before-after__bar--before {
+    background: color-mix(in oklch, var(--text-2) 55%, var(--text-3));
+  }
+
+  .before-after__bar--after {
+    background: var(--accent-400);
+  }
+
+  .before-after__value {
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .before-after__value--after {
+    color: var(--text-0);
+    font-weight: 600;
+  }
+</style>

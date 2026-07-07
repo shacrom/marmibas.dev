@@ -59,12 +59,6 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const proofNotes = [
-  lang === 'es' ? 'Productos reales, no demos' : 'Real products, not demos',
-  lang === 'es' ? 'Problemas de negocio concretos' : 'Concrete business problems',
-  lang === 'es' ? 'Pensado para equipos no técnicos' : 'Built for non-technical teams',
-] as const;
-
 // ---------------------------------------------------------------------------
 // Featured case studies — hardcoded hasta que existan T-44/T-45.
 // ---------------------------------------------------------------------------
@@ -86,14 +80,15 @@ const featuredCases = [
         ? 'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.'
         : 'The application that replaces Word and Excel for quotes and invoices in renovation companies. Fewer errors, more time, all branded with your identity.',
     client: lang === 'es' ? 'Empresas de reformas' : 'Renovation companies',
+    attribution: lang === 'es' ? 'Producto propio' : 'Own product',
     logo: '/logos/voxye.svg',
-    year: 2026,
+    year: 2025,
     stack:
       lang === 'es'
         ? ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos']
         : ['Quotes', 'Invoices', 'Client management', 'Automated emails'],
     href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
-    externalUrl: 'https://voxye.com',
+    externalUrl: 'https://voxye.es',
     externalLabel: lang === 'es' ? 'Ir al proyecto' : 'Open project',
   },
   {
@@ -104,14 +99,35 @@ const featuredCases = [
         ? 'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.'
         : 'A digital notebook that replaces paper logs where machine settings are written down. The know-how of your best employees, preserved forever.',
     client: lang === 'es' ? 'Industria textil' : 'Textile industry',
-    logo: '/logos/recetas-novatex.png',
-    clientLogo: '/logos/novatex.jpg',
-    year: 2025,
+    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+    logo: '/logos/novatex.jpg',
+    year: 2026,
     stack:
       lang === 'es'
-        ? ['Industria textil', 'Móvil', 'Búsqueda rápida', 'Multi-empresa']
-        : ['Textile industry', 'Mobile', 'Fast search', 'Multi-company'],
+        ? ['Industria textil', 'Búsqueda rápida', 'Multi-empresa']
+        : ['Textile industry', 'Fast search', 'Multi-company'],
     href: lang === 'es' ? '/case-studies/recetas-novatex' : '/en/case-studies/recetas-novatex',
+    externalUrl: 'https://www.novatex.es/',
+    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
+  },
+  {
+    slug: 'visomos',
+    title: "Visomo's",
+    tagline:
+      lang === 'es'
+        ? 'El panel de control de una fábrica textil: producción, paradas y pedidos en tiempo real, sin depender de una hoja de cálculo gigante.'
+        : 'The control panel of a textile factory: production, downtime and orders in real time, without depending on a giant spreadsheet.',
+    client: lang === 'es' ? 'Envases para fruta' : 'Fruit packaging',
+    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+    logo: '/logos/visomos.svg',
+    year: 2026,
+    stack:
+      lang === 'es'
+        ? ['Producción en tiempo real', 'Trazabilidad', 'Registro en planta']
+        : ['Real-time production', 'Traceability', 'Shop-floor logging'],
+    href: lang === 'es' ? '/case-studies/visomos' : '/en/case-studies/visomos',
+    externalUrl: 'https://visomos.com',
+    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
   },
 ];
 
@@ -128,14 +144,6 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
         </h2>
         <p class="featured-projects__sub">{t('featured.sub')}</p>
       </div>
-
-      <ul
-        class="featured-projects__proof"
-        role="list"
-        aria-label={lang === 'es' ? 'Señales de confianza' : 'Trust signals'}
-      >
-        {proofNotes.map((note) => <li>{note}</li>)}
-      </ul>
     </header>
 
     <ul class="featured-projects__grid" role="list">
@@ -146,8 +154,8 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
               title={caseStudy.title}
               tagline={caseStudy.tagline}
               client={caseStudy.client}
+              attribution={caseStudy.attribution}
               logo={caseStudy.logo}
-              clientLogo={caseStudy.clientLogo}
               year={caseStudy.year}
               stack={caseStudy.stack}
               lang={lang}
@@ -224,12 +232,6 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
        desktop (mejor lectura). */
   }
 
-  @media (min-width: 900px) {
-    .featured-projects__header {
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
-    }
-  }
-
   .featured-projects__copy {
     max-width: 720px;
   }
@@ -260,32 +262,6 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
     line-height: var(--leading-normal);
   }
 
-  .featured-projects__proof {
-    display: grid;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .featured-projects__proof li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-2);
-    font-size: var(--text-sm);
-  }
-
-  .featured-projects__proof li::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    flex: 0 0 auto;
-    border-radius: var(--radius-full);
-    background: var(--accent-400);
-    box-shadow: 0 0 0 5px var(--accent-glow);
-  }
-
   /* ---------------------------------------------------------------------- */
   /* Grid                                                                    */
   /* ---------------------------------------------------------------------- */
@@ -302,23 +278,33 @@ const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
 
   @media (min-width: 1024px) {
     .featured-projects__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
   .featured-projects__item {
+    /* The external CTA is a DOM sibling of the CaseStudyCard anchor (nested
+       links are invalid HTML) but renders INSIDE the card via absolute
+       positioning over its bottom-right corner. */
+    position: relative;
     display: grid;
-    gap: 12px;
-    align-content: start;
-    /* Keeps any external project CTA outside the wrapping CaseStudyCard anchor. */
   }
 
   .featured-projects__item :global(.case-study-card) {
     width: 100%;
+    height: 100%;
+  }
+
+  /* Reserve room at the card bottom for the overlaid external CTA. */
+  .featured-projects__item:has(.featured-projects__external) :global(.case-study-card) {
+    padding-bottom: 3.75rem;
   }
 
   .featured-projects__external {
-    justify-self: start;
+    position: absolute;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;

@@ -14,21 +14,16 @@
  * - Reduced-motion neutralizado por `motion.css` (single source of truth).
  *
  * Estructura: `<a>` envuelve toda la card → toda el área es clickable.
- * Heading h3 (sub-jerarquía respecto al h1 del listado) con `font-display`
- * (Fraunces 600). Tagline en Inter sobre `--text-1`. Stack inline con
- * TechBadges (top 5). CTA inferior en JetBrains Mono `--accent-400`.
- *
- * Status pill: T-25 (`Pill.astro`) se desarrolla en paralelo. Para evitar un
- * import hard antes de que aterrice, embebemos la pill aquí con el mismo
- * shape visual que documenta DESIGN.md §2 (status success → `--accent-400`).
- * Cuando T-25 mergee, swap directo a `<Pill status="success" lang={lang} />`.
+ * Contenido compacto: meta (cliente · año), logo + título h3 con
+ * `font-display`, tagline, stack (top 3 TechBadges) y CTA en JetBrains Mono.
+ * Sin visual placeholder ni status pill — la card confía en el contenido.
  *
  * Props:
  *   - title: título del case study.
  *   - tagline: lead-paragraph corto del case study.
  *   - client, year: meta línea bajo el header.
  *   - stack: array de tecnologías (slice top 5 para no romper el ritmo).
- *   - lang: idioma activo, para traducir el CTA.
+ *   - lang: idioma activo (reservado; la card ya no traduce ningún texto propio).
  *   - href: ruta destino (`/trabajos/<slug>` o `/en/work/<slug>`).
  *   - heroImage: opcional, ImageMetadata de Astro (usa `<Image>` para AVIF/WebP).
  *   - featured: si true, activa el borde conic gradient.
@@ -38,7 +33,6 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import TechBadge from './TechBadge.astro';
-import { useTranslations } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 
 export interface Props {
@@ -48,6 +42,8 @@ export interface Props {
   tagline: string;
   /** Cliente o sector ("Cliente confidencial · sector reformas"). */
   client: string;
+  /** Atribución corta añadida a la meta línea ("Con Plazasys", "Producto propio"). */
+  attribution?: string;
   /** Ruta pública del logo del producto (tile claro junto al título). */
   logo?: string;
   /** Ruta pública del logo del cliente (chip pequeño junto al meta). */
@@ -72,29 +68,26 @@ const {
   title,
   tagline,
   client,
+  attribution,
   logo,
   clientLogo,
   year,
   stack,
-  lang,
   href,
   heroImage,
   featured = false,
   class: className,
 } = Astro.props;
 
-const t = useTranslations(lang);
-
 const classes = ['case-study-card', featured && 'is-featured', className].filter(Boolean).join(' ');
 
-// Top 5 del stack — DESIGN.md §8 muestra badges en featured cards, evitamos
-// que la card se infle si el stack es largo.
-const visibleStack = stack.slice(0, 5);
+// Top 3 del stack — suficiente para situar el proyecto sin inflar la card.
+const visibleStack = stack.slice(0, 3);
 ---
 
 <a class={classes} href={href}>
   {
-    heroImage ? (
+    heroImage && (
       <figure class="case-study-card__figure">
         <Image
           src={heroImage}
@@ -105,35 +98,11 @@ const visibleStack = stack.slice(0, 5);
           sizes="(min-width: 1024px) 480px, (min-width: 640px) 50vw, 100vw"
         />
       </figure>
-    ) : (
-      <div class="case-study-card__visual" aria-hidden="true">
-        <div class="case-study-card__visual-window">
-          <div class="case-study-card__visual-topbar">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div class="case-study-card__visual-grid">
-            <div class="case-study-card__visual-main">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div class="case-study-card__visual-side">
-              <span />
-              <span />
-            </div>
-          </div>
-        </div>
-      </div>
     )
   }
 
   <div class="case-study-card__body">
-    <header class="case-study-card__header">
-      <span class="case-study-card__pill" aria-label={t('status.success')}>
-        {t('status.success')}
-      </span>
+    <header class="case-study-card__top">
       <span class="case-study-card__meta">
         {clientLogo && (
           <img
@@ -147,6 +116,7 @@ const visibleStack = stack.slice(0, 5);
         )}
         {client} · {year}
       </span>
+      {attribution && <span class="case-study-card__attribution">{attribution}</span>}
     </header>
 
     <div class="case-study-card__title-row">
@@ -176,10 +146,6 @@ const visibleStack = stack.slice(0, 5);
       )
     }
 
-    <span class="case-study-card__cta" aria-hidden="true">
-      {t('cta.viewCaseStudy')}
-      <span class="case-study-card__cta-arrow">→</span>
-    </span>
   </div>
 </a>
 
@@ -190,8 +156,8 @@ const visibleStack = stack.slice(0, 5);
 
   .case-study-card {
     position: relative;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -313,99 +279,14 @@ const visibleStack = stack.slice(0, 5);
     transform: scale(1.02);
   }
 
-  .case-study-card__visual {
-    position: relative;
-    display: grid;
-    place-items: center;
-    min-height: 210px;
-    padding: 1.25rem;
-    overflow: hidden;
-    background: var(--bg-2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .case-study-card__visual-window {
-    width: min(100%, 360px);
-    padding: 0.75rem;
-    background: color-mix(in oklch, var(--bg-1) 86%, transparent);
-    border: 1px solid color-mix(in oklch, var(--accent-400) 20%, var(--border));
-    border-radius: var(--radius-lg);
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
-    transition: transform var(--motion-base) var(--motion-ease-out);
-  }
-
-  .case-study-card:hover .case-study-card__visual-window,
-  .case-study-card:focus-visible .case-study-card__visual-window {
-    transform: translateY(-2px);
-  }
-
-  .case-study-card__visual-topbar {
-    display: flex;
-    gap: 0.375rem;
-    padding-bottom: 0.75rem;
-  }
-
-  .case-study-card__visual-topbar span {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: var(--radius-full);
-    background: color-mix(in oklch, var(--text-3) 70%, transparent);
-  }
-
-  .case-study-card__visual-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(80px, 0.8fr);
-    gap: 0.75rem;
-  }
-
-  .case-study-card__visual-main,
-  .case-study-card__visual-side {
-    display: grid;
-    gap: 0.625rem;
-    padding: 0.875rem;
-    min-height: 120px;
-    background: color-mix(in oklch, var(--bg-0) 64%, transparent);
-    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
-    border-radius: var(--radius-md);
-  }
-
-  .case-study-card__visual-main span,
-  .case-study-card__visual-side span {
-    display: block;
-    height: 0.625rem;
-    border-radius: var(--radius-full);
-    background: color-mix(in oklch, var(--text-2) 26%, transparent);
-  }
-
-  .case-study-card__visual-main span:first-child {
-    width: 72%;
-    height: 1.75rem;
-    background: color-mix(in oklch, var(--accent-400) 34%, transparent);
-  }
-
-  .case-study-card__visual-main span:nth-child(2) {
-    width: 88%;
-  }
-
-  .case-study-card__visual-main span:nth-child(3) {
-    width: 58%;
-  }
-
-  .case-study-card__visual-side span:first-child {
-    height: 2.5rem;
-    background: color-mix(in oklch, var(--accent-300) 20%, transparent);
-  }
-
-  .case-study-card__visual-side span:last-child {
-    width: 74%;
-  }
-
   /* ---------------------------------------------------------------------- */
   /* Body                                                                    */
   /* ---------------------------------------------------------------------- */
 
   .case-study-card__body {
-    display: grid;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
     /* z-index: 2 para quedar encima del ::before sin perderse el borde. */
@@ -413,41 +294,39 @@ const visibleStack = stack.slice(0, 5);
     z-index: 2;
   }
 
-  .case-study-card__header {
+  /* Fila superior estable: meta a la izquierda, atribución a la derecha. */
+  .case-study-card__top {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
-  }
-
-  /* Pill embebida — replica el shape de Pill.astro (T-25). Status success
-     siempre porque el schema de case-studies fija `status: 'success'`
-     (content.config.ts). Cuando T-25 aterrice, swap a `<Pill ... />`. */
-  .case-study-card__pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    background: color-mix(in oklch, var(--color-status-success) 12%, transparent);
-    color: var(--color-status-success);
-    border: 1px solid color-mix(in oklch, var(--color-status-success) 30%, transparent);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0.01em;
-    text-transform: lowercase;
-    white-space: nowrap;
   }
 
   .case-study-card__meta {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
     color: var(--text-3);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+
+  .case-study-card__attribution {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 3px 9px;
+    color: var(--accent-300);
+    background: color-mix(in oklch, var(--accent-400) 10%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent-400) 26%, transparent);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    white-space: nowrap;
   }
 
   .case-study-card__client-logo {
@@ -478,20 +357,20 @@ const visibleStack = stack.slice(0, 5);
     border: 1px solid var(--border);
   }
 
-  /* Heading h3 — DESIGN.md §8 indica Fraunces ~25-32px peso 600. */
   .case-study-card__title {
     margin: 0;
     color: var(--text-0);
-    font-size: clamp(1.5625rem, 2.5vw + 0.5rem, 2rem); /* 25 → 32px */
+    font-size: var(--text-xl);
     font-weight: 600;
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
   }
 
   .case-study-card__tagline {
+    margin: 0;
     color: var(--text-1);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -503,35 +382,9 @@ const visibleStack = stack.slice(0, 5);
     flex-wrap: wrap;
     gap: 0.5rem;
     list-style: none;
-    margin: 0;
+    /* margin-top auto ancla badges + CTA al fondo → las tres cards alinean. */
+    margin: auto 0 0;
     padding: 0;
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* CTA                                                                     */
-  /* ---------------------------------------------------------------------- */
-
-  .case-study-card__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    margin-top: auto;
-    color: var(--accent-400);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .case-study-card__cta-arrow {
-    display: inline-block;
-    transition: transform var(--motion-fast) var(--motion-ease-out);
-  }
-
-  .case-study-card:hover .case-study-card__cta-arrow,
-  .case-study-card:focus-visible .case-study-card__cta-arrow {
-    transform: translateX(4px);
   }
 
   /* ---------------------------------------------------------------------- */
