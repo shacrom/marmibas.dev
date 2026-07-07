@@ -4,8 +4,8 @@
  *
  * Compose the home hero anchor: HeroIntro cascade + supporting tagline +
  * dual CTAs. This is the visual anchor described in DESIGN.md §8 ("Hero").
- * The hero atmosphere is the animated circuit background (CircuitBackground,
- * subtle grid + violet light pulses) rendered behind the content.
+ * The page atmosphere is provided by BaseLayout's main-level circuit
+ * background; this hero only owns the content composition and local stars.
  *
  * Layout (top → bottom):
  *   1. <HeroIntro eyebrow lines>           ← T-28, Fraunces cascade (§7 #2)
@@ -47,7 +47,6 @@
  */
 
 import HeroIntro from './HeroIntro.astro';
-import CircuitBackground from '../ui/CircuitBackground.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
 
@@ -115,12 +114,6 @@ const workHref = getRoutePath('work', lang);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
-  {/* Fondo de circuitos — diseño definitivo del hero. El componente pausa
-      su loop con IntersectionObserver cuando sale de pantalla y regenera la
-      escena con ResizeObserver, así que no requiere gestión externa. */}
-  <div class="hero__circuit" aria-hidden="true">
-    <CircuitBackground color="#8b5cf6" />
-  </div>
   <div class="hero__stars" aria-hidden="true"></div>
 
   <div class="hero__content motion-scroll-hero-exit">
@@ -204,17 +197,6 @@ const workHref = getRoutePath('work', lang);
    * el contenido (z-index 1 implícito en .hero__content via .hero stacking
    * context) por encima.
    * ------------------------------------------------------------------------ */
-  /* --------------------------------------------------------------------------
-   * Wrapper del fondo de circuitos (diseño definitivo). z-index 0 — el
-   * contenido (.hero__content, z-index 1) queda por encima.
-   * ------------------------------------------------------------------------ */
-  .hero__circuit {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
   .hero__stars {
     position: absolute;
     inset: 0;

@@ -30,6 +30,7 @@ import SeoHead from '../components/ui/SeoHead.astro';
 import SkipLink from '../components/ui/SkipLink.astro';
 import Header from '../components/ui/Header.astro';
 import Footer from '../components/ui/Footer.astro';
+import CircuitBackground from '../components/ui/CircuitBackground.astro';
 
 import { getLangFromUrl } from '../i18n/helpers';
 
@@ -98,6 +99,9 @@ const effectiveNoindex = noindex || lang === 'en';
     <Header currentLang={lang} currentUrl={Astro.url} />
 
     <main id="main" tabindex="-1" class="layout-main">
+      <div class="layout-main__circuit" aria-hidden="true">
+        <CircuitBackground color="#8b5cf6" />
+      </div>
       <slot />
     </main>
 
@@ -123,7 +127,9 @@ const effectiveNoindex = noindex || lang === 'en';
 
   .layout-main {
     /* Take all the remaining vertical space; flush the footer down. */
+    position: relative;
     flex: 1 0 auto;
+    isolation: isolate;
     /* Tabindex="-1" keeps `<main>` keyboard-focusable for the skip link
        without trapping focus permanently. Clear the default focus ring on
        programmatic focus only — :focus-visible from global.css still wins
@@ -131,13 +137,23 @@ const effectiveNoindex = noindex || lang === 'en';
     outline: none;
   }
 
+  .layout-main__circuit {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .layout-main > :global(:not(.layout-main__circuit)) {
+    position: relative;
+    z-index: 1;
+  }
+
   .layout-main:focus {
     outline: none;
   }
 
-  /* Nota: el aurora full-page de la home (body.is-home) se retiró al adoptar
-   * el diseño definitivo — el fondo de circuitos del hero (CircuitBackground
-   * en Hero.astro) es ahora el dueño de la atmósfera de la home. El token
-   * --gradient-hero-ambient sigue vivo para los ambient locales de sección
-   * (services, 404, case studies). */
+  /* The circuit atmosphere belongs to the whole <main>, not to the centered
+   * hero container, so the grid and pulses reach the available side gutters. */
 </style>
