@@ -161,16 +161,6 @@ function getFilterBucket(status: WorkItem['status']): string {
   return 'side-project';
 }
 
-/**
- * Featured case studies ocupan 2 columnas en desktop. El resto, 1.
- */
-function isFullWidth(item: WorkItem): boolean {
-  return item.kind === 'case-study' && item.entry.data.featured === true;
-}
-
-// Filtro inicial leído de query string (SSR ignora porque es estático).
-// Lo dejamos como default 'all' y el script cliente sincroniza al cargar.
-const initialStatus = 'all';
 ---
 
 <section class="work-index" aria-labelledby="work-heading">
@@ -179,32 +169,6 @@ const initialStatus = 'all';
       {t('work.heading')}
     </h1>
     <p class="work-index__tagline">{t('work.tagline')}</p>
-  </Reveal>
-
-  <Reveal as="div" class="work-index__filters">
-    <form method="GET" class="work-index__form" data-work-form>
-      <label class="work-index__label" for="work-status">
-        {t('work.filter.label')}
-      </label>
-      <select
-        id="work-status"
-        name="status"
-        class="work-index__select"
-        data-work-select
-      >
-        <option value="all" selected={initialStatus === 'all'}>
-          {t('work.filter.all')}
-        </option>
-        <option value="success">{t('work.filter.success')}</option>
-        <option value="in-development">{t('work.filter.development')}</option>
-        <option value="side-project">{t('work.filter.sideProjects')}</option>
-      </select>
-      <noscript>
-        <button type="submit" class="work-index__submit">
-          {t('work.filter.label')}
-        </button>
-      </noscript>
-    </form>
   </Reveal>
 
   <Reveal as="div" class="work-index__grid-wrapper">
@@ -218,13 +182,7 @@ const initialStatus = 'all';
           {items.map((item) => {
             const href = getHref(item);
             const bucket = getFilterBucket(item.status);
-            const fullWidth = isFullWidth(item);
-            const itemClasses = [
-              'work-index__item',
-              fullWidth && 'work-index__item--full',
-            ]
-              .filter(Boolean)
-              .join(' ');
+            const itemClasses = 'work-index__item';
             return (
               <li
                 class={itemClasses}
@@ -237,6 +195,7 @@ const initialStatus = 'all';
                     title={item.entry.data.title}
                     tagline={item.entry.data.tagline}
                     client={item.entry.data.client}
+                    attribution={item.entry.data.attribution}
                     logo={item.entry.data.logo}
                     clientLogo={item.entry.data.clientLogo}
                     year={item.entry.data.year}
@@ -268,14 +227,6 @@ const initialStatus = 'all';
       )
     }
 
-    {/* Mensaje vacío que aparece cuando el filtro client-side esconde todo. */}
-    <p
-      class="work-index__empty work-index__empty--filter"
-      data-work-empty-filter
-      hidden
-    >
-      {t('work.empty')}
-    </p>
   </Reveal>
 </section>
 
@@ -322,74 +273,6 @@ const initialStatus = 'all';
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Filtros                                                                 */
-  /* ---------------------------------------------------------------------- */
-
-  .work-index__filters {
-    display: flex;
-  }
-
-  .work-index__form {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px 8px 16px;
-    background: var(--bg-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    transition: border-color var(--motion-fast) var(--motion-ease-out);
-  }
-
-  .work-index__form:focus-within {
-    border-color: var(--accent-400);
-  }
-
-  .work-index__label {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--text-3);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .work-index__select {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    color: var(--text-1);
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    padding: 6px 28px 6px 8px;
-    cursor: pointer;
-    /* Caret SVG inline para mantener consistencia visual sin asset extra. */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%23a1a1aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-  }
-
-  .work-index__select:focus {
-    outline: none;
-  }
-
-  .work-index__select option {
-    background: var(--bg-1);
-    color: var(--text-1);
-  }
-
-  .work-index__submit {
-    padding: 6px 14px;
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    color: var(--text-0);
-    background: var(--gradient-cta);
-    border: 0;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-  }
-
-  /* ---------------------------------------------------------------------- */
   /* Grid                                                                    */
   /* ---------------------------------------------------------------------- */
 
@@ -423,13 +306,6 @@ const initialStatus = 'all';
     width: 100%;
   }
 
-  /* Featured case studies ocupan dos columnas en desktop. */
-  @media (min-width: 768px) {
-    .work-index__item--full {
-      grid-column: span 2;
-    }
-  }
-
   /* Cuando JS esconde un item del filtro, se quita del flow del grid
      completamente para que el grid se reconfigure sin huecos. */
   .work-index__item[hidden] {
@@ -452,94 +328,3 @@ const initialStatus = 'all';
     border-radius: var(--radius-lg);
   }
 </style>
-
-<script>
-  /**
-   * Filter driver — progressive enhancement layer.
-   *
-   * Sin frameworks. Lee el `<select>` del form, actualiza la URL via
-   * `history.replaceState` (sin recargar) y muestra/oculta los `<li>` del
-   * grid según `data-bucket`. Re-binds en `astro:page-load` para View
-   * Transitions.
-   *
-   * Mapeo bucket → status visible:
-   *   all             → todos
-   *   success         → data-bucket="success"
-   *   in-development  → data-bucket="in-development"
-   *   side-project    → data-bucket="side-project" (incluye paused)
-   */
-  function initWorkFilter(): void {
-    const form = document.querySelector<HTMLFormElement>('[data-work-form]');
-    if (!form || form.dataset.bound === 'true') return;
-    form.dataset.bound = 'true';
-
-    const select = form.querySelector<HTMLSelectElement>('[data-work-select]');
-    const grid = document.querySelector<HTMLElement>('[data-work-grid]');
-    const emptyFilter = document.querySelector<HTMLElement>(
-      '[data-work-empty-filter]',
-    );
-    if (!select) return;
-
-    // 1) Sincroniza el select con la query string al cargar.
-    const params = new URLSearchParams(window.location.search);
-    const initial = params.get('status') ?? 'all';
-    if (
-      ['all', 'success', 'in-development', 'side-project'].includes(initial)
-    ) {
-      select.value = initial;
-    }
-
-    function applyFilter(value: string): void {
-      const items = document.querySelectorAll<HTMLElement>('[data-work-item]');
-      let visibleCount = 0;
-      items.forEach((item) => {
-        const bucket = item.dataset.bucket;
-        const visible = value === 'all' || bucket === value;
-        item.hidden = !visible;
-        if (visible) visibleCount += 1;
-      });
-
-      // Empty state contextual: solo aparece si el filtro deja todo oculto
-      // pero el grid base TIENE entries (si está vacío, ya hay otro mensaje).
-      if (emptyFilter && grid) {
-        const hasItems =
-          document.querySelectorAll<HTMLElement>('[data-work-item]').length > 0;
-        emptyFilter.hidden = !(hasItems && visibleCount === 0);
-      }
-    }
-
-    function syncUrl(value: string): void {
-      const url = new URL(window.location.href);
-      if (value === 'all') {
-        url.searchParams.delete('status');
-      } else {
-        url.searchParams.set('status', value);
-      }
-      // replaceState evita poblar el history con cada cambio de filtro.
-      window.history.replaceState({}, '', url.toString());
-    }
-
-    // Aplica filtro inicial (en SSR el HTML ya muestra todo, así que solo
-    // hay efecto visual si la URL traía `?status=...`).
-    applyFilter(select.value);
-
-    select.addEventListener('change', () => {
-      applyFilter(select.value);
-      syncUrl(select.value);
-    });
-
-    // Bloquea el reload del form GET cuando JS está activo: ya hicimos el
-    // trabajo client-side. Sin JS, el submit recarga con `?status=...` y
-    // el SSR sirve la misma página (filtro es decorativo en URL).
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      applyFilter(select.value);
-      syncUrl(select.value);
-    });
-  }
-
-  initWorkFilter();
-  document.addEventListener('astro:page-load', initWorkFilter);
-</script>
-</content>
-</invoke>
