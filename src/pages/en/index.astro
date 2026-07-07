@@ -8,7 +8,6 @@ import ShowcaseSection from '../../components/home/ShowcaseSection.astro';
 import ProcessSection from '../../components/home/ProcessSection.astro';
 import FAQSection from '../../components/home/FAQSection.astro';
 import MidCta from '../../components/home/MidCta.astro';
-import DecorativeLine from '../../components/ui/DecorativeLine.astro';
 import { getFaqs } from '../../lib/faqs';
 import { getRoutePath } from '../../i18n/helpers';
 
@@ -37,13 +36,11 @@ const midCtaLink = "Let's talk";
   faqs={faqs}
 >
   <Hero lang={lang} />
-  <DecorativeLine />
   <ServicesSection lang={lang} />
   <ShowcaseSection lang={lang} />
   <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <FeaturedProjects lang={lang} />
   <ProcessSection lang={lang} />
   <AboutSection lang={lang} />
-  <DecorativeLine />
   <FAQSection lang={lang} />
 </BaseLayout>

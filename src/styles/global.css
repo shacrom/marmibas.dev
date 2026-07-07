@@ -194,18 +194,6 @@
     var(--color-accent-600)
   );
 
-  /* Línea decorativa horizontal — replica el reverso de la tarjeta de
-   * visita: pink → magenta → violet con fade en los extremos para que
-   * la línea "respire" sin recortes duros. Usada por DecorativeLine. */
-  --gradient-decorative: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-accent-pink) 25%,
-    var(--color-accent-magenta) 50%,
-    var(--color-accent-400) 75%,
-    transparent 100%
-  );
-
   /* Color scheme hint para UA dark widgets (scrollbar, form controls). */
   color-scheme: dark;
 }
