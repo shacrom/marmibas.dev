@@ -1176,11 +1176,13 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
   /* View stack: both views share the same grid cell; only opacity transitions
      (--motion-base). Inactive view is also hidden from AT + pointer. */
   .showcase__views {
+    position: relative;
     display: grid;
   }
 
   .showcase__view {
     grid-area: 1 / 1;
+    align-self: start;
     display: grid;
     gap: 0.875rem;
     align-content: start;
@@ -1190,6 +1192,17 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
     transition:
       opacity var(--motion-base) var(--motion-ease-out),
       visibility 0s linear var(--motion-base);
+  }
+
+  /* The active view drives the container height; the inactive one is taken out
+     of flow so it no longer forces the cell to the tallest view's height. This
+     collapses the empty space left below the short "Excel" table when the taller
+     "App" dashboard would otherwise reserve its height. */
+  .showcase__view:not(.is-active) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 
   .showcase__view.is-active {
@@ -1429,6 +1442,22 @@ const initialTotal = content.management.lines.reduce((sum, l) => sum + l.amount,
   @media (max-width: 639px) {
     .showcase__stats {
       grid-template-columns: 1fr;
+    }
+
+    /* The spreadsheet mock keeps its 5 columns but drops the rigid min-widths
+       (which summed to ~28rem and overflowed the viewport, clipping the last
+       columns). Proportional min-0 tracks always fit; cells wrap instead of
+       being truncated so the "chaos" stays readable on a phone. */
+    .showcase__excel {
+      grid-template-columns: 1.35fr 1.05fr 0.7fr 0.95fr 1fr;
+    }
+
+    .showcase__excel span {
+      padding: 0.4rem 0.4375rem;
+      font-size: 0.6875rem;
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .showcase__table,
