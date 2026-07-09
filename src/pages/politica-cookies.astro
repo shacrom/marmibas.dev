@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const updatedAt = '9 de julio de 2026';
+---
+
+<BaseLayout
+  title="Política de cookies | marmibas.dev"
+  description="Información sobre el uso de cookies técnicas y cookies de análisis en marmibas.dev."
+  noindex
+>
+  <article class="legal-page" aria-labelledby="cookie-policy-title">
+    <p class="legal-page__eyebrow font-mono">Privacidad</p>
+    <h1 id="cookie-policy-title" class="legal-page__title font-display">Política de cookies</h1>
+    <p class="legal-page__updated">Última actualización: {updatedAt}</p>
+
+    <div class="legal-page__content">
+      <section>
+        <h2>Resumen</h2>
+        <p>
+          Este sitio puede utilizar almacenamiento técnico necesario para recordar tu elección sobre
+          cookies de análisis. Las cookies de análisis solo se activan si das tu consentimiento.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cookies técnicas o necesarias</h2>
+        <p>
+          No se han identificado cookies técnicas propias imprescindibles para navegar por el sitio.
+          Sí se guarda tu elección sobre analítica en el almacenamiento local del navegador con la clave
+          <code>marmibas:analytics-consent</code>, para no volver a preguntarte en cada visita.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cookies de análisis</h2>
+        <p>
+          Si aceptas, este sitio carga Google Analytics 4 con el identificador de medición
+          <code>G-9WPZK36B04</code>. Google Analytics puede crear cookies como <code>_ga</code> y
+          cookies relacionadas para distinguir visitas y elaborar estadísticas agregadas de uso.
+        </p>
+        <p>
+          Si rechazas, el script de analítica no se carga y estas cookies de análisis no se crean desde
+          este sitio.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cómo cambiar tu elección</h2>
+        <p>
+          Puedes revocar o cambiar tu elección borrando los datos del sitio desde la configuración de tu
+          navegador. Al eliminar los datos locales de marmibas.dev, el banner volverá a mostrarse en tu
+          próxima visita.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal-page {
+    width: min(100% - 2rem, 760px);
+    margin-inline: auto;
+    padding-block: clamp(4rem, 10vw, 7rem);
+  }
+
+  .legal-page__eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--accent-300);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+
+  .legal-page__title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-4xl);
+  }
+
+  .legal-page__updated {
+    margin-top: 1rem;
+    color: var(--text-3);
+    font-size: var(--text-sm);
+  }
+
+  .legal-page__content {
+    display: grid;
+    gap: 2rem;
+    margin-top: 3rem;
+    color: var(--text-2);
+    line-height: var(--leading-relaxed);
+  }
+
+  .legal-page__content section {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .legal-page__content h2 {
+    color: var(--text-1);
+    font-size: var(--text-xl);
+  }
+
+  .legal-page__content p {
+    margin: 0;
+  }
+
+  .legal-page__content code {
+    color: var(--accent-300);
+    font-size: 0.95em;
+  }
+</style>

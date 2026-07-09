@@ -50,6 +50,7 @@ const blogHref = getRoutePath('blog', lang);
 const experienceHref = getRoutePath('experience', lang);
 const contactHref = getRoutePath('contact', lang);
 const rssHref = localePath('/rss.xml', lang);
+const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
 
 // Tagline hardcoded bilingüe — no añadimos clave a ui.ts en T-18.
 const tagline =
@@ -262,6 +263,11 @@ const ctaSection = {
                 <circle cx="5" cy="19" r="1" />
               </svg>
               <span>{t('footer.rss')}</span>
+            </a>
+          </li>
+          <li>
+            <a class="site-footer__link" href={cookiePolicyHref}>
+              {lang === 'es' ? 'Política de cookies' : 'Cookie policy'}
             </a>
           </li>
         </ul>

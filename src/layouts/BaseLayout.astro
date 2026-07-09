@@ -68,6 +68,23 @@ const {
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
+const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
+const analyticsConsentCopy =
+  lang === 'es'
+    ? {
+        title: 'Privacidad y mejora del sitio',
+        body: 'Usamos cookies de análisis solo si las aceptas. Nos ayudan a entender cómo se utiliza la web y a mejorarla.',
+        policy: 'Ver política de cookies',
+        accept: 'Aceptar',
+        reject: 'Rechazar',
+      }
+    : {
+        title: 'Privacy and site improvement',
+        body: 'We use analytics cookies only if you accept them. They help us understand how the website is used and improve it.',
+        policy: 'View cookie policy',
+        accept: 'Accept',
+        reject: 'Reject',
+      };
 
 // English content is currently hidden from the public UI (no switcher, not in
 // sitemap, blocked in robots.txt). Force `noindex` on every EN page so search
@@ -106,6 +123,137 @@ const effectiveNoindex = noindex || lang === 'en';
     </main>
 
     <Footer lang={lang} />
+
+    <aside
+      id="analytics-consent-banner"
+      class="analytics-consent"
+      role="region"
+      aria-labelledby="analytics-consent-title"
+      hidden
+    >
+      <div class="analytics-consent__content">
+        <h2 id="analytics-consent-title" class="analytics-consent__title">
+          {analyticsConsentCopy.title}
+        </h2>
+        <p class="analytics-consent__body">
+          {analyticsConsentCopy.body}
+          <a class="analytics-consent__link" href={cookiePolicyHref}>
+            {analyticsConsentCopy.policy}
+          </a>
+        </p>
+      </div>
+      <div class="analytics-consent__actions">
+        <button
+          class="analytics-consent__button analytics-consent__button--secondary"
+          type="button"
+          data-analytics-consent="rejected"
+        >
+          {analyticsConsentCopy.reject}
+        </button>
+        <button
+          class="analytics-consent__button analytics-consent__button--primary"
+          type="button"
+          data-analytics-consent="accepted"
+        >
+          {analyticsConsentCopy.accept}
+        </button>
+      </div>
+    </aside>
+
+    <script is:inline>
+      (() => {
+        if (document.documentElement.dataset.analyticsConsentInitialized === 'true') return;
+        document.documentElement.dataset.analyticsConsentInitialized = 'true';
+
+        const CONSENT_KEY = 'marmibas:analytics-consent';
+        const GA_ID = 'G-9WPZK36B04';
+        const GA_SCRIPT_ID = 'google-analytics-gtag';
+
+        let lastConfiguredPath = null;
+
+        function readConsent() {
+          try {
+            return window.localStorage.getItem(CONSENT_KEY);
+          } catch {
+            return null;
+          }
+        }
+
+        function writeConsent(value) {
+          try {
+            window.localStorage.setItem(CONSENT_KEY, value);
+            return true;
+          } catch {
+            // If storage is unavailable, keep the session private by not loading analytics.
+            return false;
+          }
+        }
+
+        function configureAnalytics() {
+          const currentPath = window.location.pathname + window.location.search;
+          if (lastConfiguredPath === currentPath) return;
+          lastConfiguredPath = currentPath;
+
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+          if (document.documentElement.dataset.analyticsReady !== 'true') {
+            window.gtag('js', new Date());
+            document.documentElement.dataset.analyticsReady = 'true';
+          }
+          window.gtag('config', GA_ID, {
+            page_path: currentPath,
+          });
+        }
+
+        function loadAnalytics() {
+          if (document.getElementById(GA_SCRIPT_ID)) {
+            configureAnalytics();
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.id = GA_SCRIPT_ID;
+          script.async = true;
+          script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+          document.head.append(script);
+
+          configureAnalytics();
+        }
+
+        function setupConsentBanner() {
+          const consent = readConsent();
+          const banner = document.getElementById('analytics-consent-banner');
+
+          if (consent === 'accepted') {
+            loadAnalytics();
+            if (banner) banner.hidden = true;
+            return;
+          }
+
+          if (!banner) return;
+
+          banner.hidden = consent === 'rejected';
+
+          banner.querySelectorAll('[data-analytics-consent]').forEach((button) => {
+            if (button.getAttribute('data-analytics-consent-bound') === 'true') return;
+            button.setAttribute('data-analytics-consent-bound', 'true');
+
+            button.addEventListener('click', () => {
+              const choice = button.getAttribute('data-analytics-consent');
+              const consentStored = writeConsent(choice);
+              banner.hidden = true;
+
+              if (choice === 'accepted' && consentStored) {
+                loadAnalytics();
+              }
+            });
+          });
+        }
+
+        document.addEventListener('astro:page-load', setupConsentBanner);
+        setupConsentBanner();
+      })();
+    </script>
   </body>
 </html>
 
@@ -152,6 +300,101 @@ const effectiveNoindex = noindex || lang === 'en';
 
   .layout-main:focus {
     outline: none;
+  }
+
+  .analytics-consent {
+    position: fixed;
+    right: clamp(1rem, 3vw, 1.5rem);
+    bottom: clamp(1rem, 3vw, 1.5rem);
+    z-index: 50;
+    display: grid;
+    gap: 1rem;
+    width: min(calc(100vw - 2rem), 38rem);
+    padding: 1rem;
+    background: color-mix(in oklch, var(--bg-1) 94%, black);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .analytics-consent[hidden] {
+    display: none;
+  }
+
+  .analytics-consent__content {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .analytics-consent__title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-base);
+  }
+
+  .analytics-consent__body {
+    margin: 0;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  .analytics-consent__link {
+    color: var(--accent-300);
+    white-space: nowrap;
+  }
+
+  .analytics-consent__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .analytics-consent__button {
+    min-height: 2.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition:
+      background var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .analytics-consent__button:hover {
+    transform: translateY(-1px);
+  }
+
+  .analytics-consent__button--secondary {
+    color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+
+  .analytics-consent__button--secondary:hover,
+  .analytics-consent__button--secondary:focus-visible {
+    color: var(--text-0);
+    border-color: var(--accent-400);
+  }
+
+  .analytics-consent__button--primary {
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    border: 1px solid transparent;
+  }
+
+  .analytics-consent__button--primary:hover,
+  .analytics-consent__button--primary:focus-visible {
+    background: var(--gradient-cta-hover);
+  }
+
+  @media (min-width: 720px) {
+    .analytics-consent {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
   }
 
   /* The circuit atmosphere belongs to the whole <main>, not to the centered

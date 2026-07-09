@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const updatedAt = '9 July 2026';
+---
+
+<BaseLayout
+  title="Cookie policy | marmibas.dev"
+  description="Information about technical cookies and analytics cookies on marmibas.dev."
+  noindex
+>
+  <article class="legal-page" aria-labelledby="cookie-policy-title">
+    <p class="legal-page__eyebrow font-mono">Privacy</p>
+    <h1 id="cookie-policy-title" class="legal-page__title font-display">Cookie policy</h1>
+    <p class="legal-page__updated">Last updated: {updatedAt}</p>
+
+    <div class="legal-page__content">
+      <section>
+        <h2>Summary</h2>
+        <p>
+          This website may use necessary technical storage to remember your analytics cookie choice.
+          Analytics cookies are only enabled if you give consent.
+        </p>
+      </section>
+
+      <section>
+        <h2>Technical or necessary cookies</h2>
+        <p>
+          No first-party technical cookies required for browsing the site have been identified. Your
+          analytics choice is stored in the browser's local storage under the key
+          <code>marmibas:analytics-consent</code>, so the site does not ask again on every visit.
+        </p>
+      </section>
+
+      <section>
+        <h2>Analytics cookies</h2>
+        <p>
+          If you accept, this website loads Google Analytics 4 with measurement ID
+          <code>G-9WPZK36B04</code>. Google Analytics may create cookies such as <code>_ga</code> and
+          related cookies to distinguish visits and prepare aggregated usage statistics.
+        </p>
+        <p>
+          If you reject, the analytics script is not loaded and these analytics cookies are not created
+          by this website.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to change your choice</h2>
+        <p>
+          You can revoke or change your choice by clearing this site's data in your browser settings.
+          After local data for marmibas.dev is removed, the banner will appear again on your next visit.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal-page {
+    width: min(100% - 2rem, 760px);
+    margin-inline: auto;
+    padding-block: clamp(4rem, 10vw, 7rem);
+  }
+
+  .legal-page__eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--accent-300);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+
+  .legal-page__title {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-4xl);
+  }
+
+  .legal-page__updated {
+    margin-top: 1rem;
+    color: var(--text-3);
+    font-size: var(--text-sm);
+  }
+
+  .legal-page__content {
+    display: grid;
+    gap: 2rem;
+    margin-top: 3rem;
+    color: var(--text-2);
+    line-height: var(--leading-relaxed);
+  }
+
+  .legal-page__content section {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .legal-page__content h2 {
+    color: var(--text-1);
+    font-size: var(--text-xl);
+  }
+
+  .legal-page__content p {
+    margin: 0;
+  }
+
+  .legal-page__content code {
+    color: var(--accent-300);
+    font-size: 0.95em;
+  }
+</style>
