@@ -8,6 +8,7 @@ This optional file is a discovery aid for language models; it is not a web stand
 - https://marmibas.dev/ — Software and application development for businesses.
 - https://marmibas.dev/servicios — Spanish service catalogue.
 - https://marmibas.dev/servicios/desarrollo-aplicaciones-web — Custom web application development.
+- https://marmibas.dev/servicios/aplicaciones-moviles — Custom mobile application development.
 - https://marmibas.dev/servicios/webs-corporativas — Corporate websites.
 - https://marmibas.dev/servicios/sistemas-de-gestion — Custom internal management systems.
 - https://marmibas.dev/servicios/tiendas-online — Custom online stores.
