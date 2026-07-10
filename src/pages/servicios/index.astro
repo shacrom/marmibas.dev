@@ -2,7 +2,7 @@
 /**
  * /servicios — índice de servicios (ES) — landing principal del catálogo.
  *
- * Lista las 6 landings dedicadas con cards pequeñas y enlaza a cada una.
+ * Lista las landings dedicadas con cards pequeñas y enlaza a cada una.
  * Audiencia: PYMEs y emprendedores buscando "qué puede hacer marmibas
  * por mi negocio".
  *
@@ -10,51 +10,7 @@
  */
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-
-const services = [
-  {
-    slug: 'tiendas-online',
-    title: 'Tiendas online a medida',
-    description:
-      'E-commerce con pasarelas de pago, stock, envíos y panel propio para vender sin pelearte con plantillas.',
-    keyword: 'E-commerce',
-  },
-  {
-    slug: 'sistemas-de-gestion',
-    title: 'Sistemas de gestión',
-    description:
-      'Software interno para llevar clientes, presupuestos, facturas y calendario en un único sitio.',
-    keyword: 'Backoffice',
-  },
-  {
-    slug: 'aplicaciones-moviles',
-    title: 'Aplicaciones móviles',
-    description:
-      'Apps iOS y Android para empleados o clientes, con publicación en stores incluida.',
-    keyword: 'Mobile',
-  },
-  {
-    slug: 'automatizaciones',
-    title: 'Automatizaciones',
-    description:
-      'Tareas repetitivas que se ejecutan solas: presupuestos, emails, informes, facturación.',
-    keyword: 'Procesos',
-  },
-  {
-    slug: 'webs-corporativas',
-    title: 'Webs corporativas',
-    description:
-      'Webs rápidas, accesibles y bien posicionadas en buscadores, sin plantillas genéricas.',
-    keyword: 'Web',
-  },
-  {
-    slug: 'integraciones',
-    title: 'Integraciones',
-    description:
-      'Conexiones entre WhatsApp, ERP, hojas de cálculo, email y demás herramientas que ya usas.',
-    keyword: 'Conexión',
-  },
-] as const;
+import { spanishServices as services } from '../../lib/services';
 ---
 
 <BaseLayout
@@ -69,9 +25,8 @@ const services = [
         Lo que puedo hacer por tu negocio
       </h1>
       <p class="srv-index-hero__tagline">
-        Seis líneas de trabajo enfocadas a un único objetivo: que el software
-        te ahorre horas, te traiga clientes o te ordene la operativa. Sin
-        jerga técnica, sin plantillas genéricas.
+        Servicios enfocados a un único objetivo: que el software te ahorre horas, te traiga clientes
+        o te ordene la operativa. Sin jerga técnica, sin plantillas genéricas.
       </p>
     </div>
   </section>
@@ -87,7 +42,9 @@ const services = [
                 <span class="srv-index__keyword font-mono">{s.keyword}</span>
                 <h3 class="srv-index__title font-display">{s.title}</h3>
                 <p class="srv-index__desc">{s.description}</p>
-                <span class="srv-index__arrow" aria-hidden="true">→</span>
+                <span class="srv-index__arrow" aria-hidden="true">
+                  →
+                </span>
               </a>
             </li>
           ))
@@ -102,9 +59,9 @@ const services = [
         ¿No ves lo que necesitas? Hablemos →
       </h2>
       <p class="srv-index-final__sub">
-        Si tu proyecto encaja a medio camino entre dos servicios, o no encaja
-        en ninguno, cuéntamelo igualmente. Lo más útil suele ser empezar por
-        una llamada para entender el problema antes de etiquetarlo.
+        Si tu proyecto encaja a medio camino entre dos servicios, o no encaja en ninguno, cuéntamelo
+        igualmente. Lo más útil suele ser empezar por una llamada para entender el problema antes de
+        etiquetarlo.
       </p>
       <a class="srv-cta srv-cta--primary" href="/contacto">Hablemos</a>
     </div>
@@ -130,7 +87,9 @@ const services = [
     pointer-events: none;
     z-index: -1;
   }
-  .srv-index-hero__inner { max-width: 760px; }
+  .srv-index-hero__inner {
+    max-width: 760px;
+  }
   .srv-index-hero__eyebrow {
     color: var(--accent-400);
     font-size: var(--text-xs);
@@ -187,7 +146,10 @@ const services = [
     padding-block: clamp(48px, 8vw, 96px);
     padding-inline: clamp(20px, 5vw, 48px);
   }
-  .srv-index__inner { max-width: 1080px; margin-inline: auto; }
+  .srv-index__inner {
+    max-width: 1080px;
+    margin-inline: auto;
+  }
 
   .srv-index__grid {
     list-style: none;
@@ -196,13 +158,20 @@ const services = [
     gap: 20px;
   }
   @media (min-width: 720px) {
-    .srv-index__grid { grid-template-columns: repeat(2, 1fr); }
+    .srv-index__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
   @media (min-width: 1000px) {
-    .srv-index__grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .srv-index__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
   }
 
-  .srv-index__card { display: contents; }
+  .srv-index__card {
+    display: contents;
+  }
 
   .srv-index__link {
     position: relative;
@@ -304,5 +273,3 @@ const services = [
     border: 0;
   }
 </style>
-</content>
-</invoke>

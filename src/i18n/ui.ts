@@ -30,6 +30,7 @@ export const ui = {
     'nav.work': 'Trabajos',
     'nav.projects': 'Proyectos',
     'nav.blog': 'Blog',
+    'nav.services': 'Servicios',
     'nav.experience': 'Experiencia',
     'nav.about': 'Sobre mí',
     'nav.contact': 'Contacto',
@@ -66,7 +67,8 @@ export const ui = {
     'form.sending': 'Enviando…',
     'form.success': 'Mensaje enviado. Te respondo en menos de 48 h.',
     'form.error': 'Algo ha salido mal. Inténtalo de nuevo o escríbeme a info@marmibas.dev.',
-    'form.error.rateLimit': 'Has enviado varios mensajes seguidos. Espera unos minutos y vuelve a intentarlo.',
+    'form.error.rateLimit':
+      'Has enviado varios mensajes seguidos. Espera unos minutos y vuelve a intentarlo.',
     'form.error.validation': 'Revisa los campos y vuelve a enviar.',
     'form.validation.nameRequired': 'Dime cómo te llamas.',
     'form.validation.nameTooShort': 'El nombre debe tener al menos 2 caracteres.',
@@ -116,13 +118,13 @@ export const ui = {
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Casos de éxito',
-    'featured.sub': 'Soluciones reales que ya están en funcionamiento en empresas de distintos sectores.',
+    'featured.sub':
+      'Soluciones reales que ya están en funcionamiento en empresas de distintos sectores.',
     'featured.viewAll': 'Ver todos los proyectos →',
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
     'work.heading': 'Proyectos de software a medida',
-    'work.tagline':
-      'Una selección de trabajos para clientes y proyectos propios.',
+    'work.tagline': 'Una selección de trabajos para clientes y proyectos propios.',
     'work.filter.label': 'Filtrar por',
     'work.filter.all': 'Todos',
     'work.filter.success': 'Para clientes',
@@ -164,14 +166,16 @@ export const ui = {
     'services.web.title': 'Webs corporativas',
     'services.web.description':
       'Tu presencia digital lista para captar clientes: rápida, accesible, y bien posicionada en buscadores.',
+    'services.webApp.title': 'Aplicaciones web',
+    'services.webApp.description':
+      'Plataformas web a medida para clientes o equipos: accesibles desde el navegador, seguras y preparadas para crecer.',
     'services.integration.title': 'Integraciones',
     'services.integration.description':
       'Conectamos las herramientas que ya usas (WhatsApp, email, hoja de cálculo, ERP) para que dejen de ser islas separadas.',
 
     // -- Experience page (T-35) ----------------------------------------------
     'experience.heading': 'Experiencia profesional',
-    'experience.tagline':
-      '5 años construyendo software en empresas de Valencia y remoto.',
+    'experience.tagline': '5 años construyendo software en empresas de Valencia y remoto.',
     'experience.disclaimer':
       'Las empresas listadas son empleadores anteriores. Hoy trabajo de forma independiente.',
     'experience.education.heading': 'Educación',
@@ -199,6 +203,7 @@ export const ui = {
     'nav.work': 'Work',
     'nav.projects': 'Projects',
     'nav.blog': 'Blog',
+    'nav.services': 'Services',
     'nav.experience': 'Experience',
     'nav.about': 'About',
     'nav.contact': 'Contact',
@@ -235,7 +240,8 @@ export const ui = {
     'form.sending': 'Sending…',
     'form.success': 'Message sent. I will get back to you within 48 hours.',
     'form.error': 'Something went wrong. Please try again or email info@marmibas.dev.',
-    'form.error.rateLimit': 'Too many messages in a short time. Please wait a few minutes and try again.',
+    'form.error.rateLimit':
+      'Too many messages in a short time. Please wait a few minutes and try again.',
     'form.error.validation': 'Please review the fields and try again.',
     'form.validation.nameRequired': 'Please share your name.',
     'form.validation.nameTooShort': 'Name must be at least 2 characters.',
@@ -290,8 +296,7 @@ export const ui = {
 
     // -- Work index — grid + filtros (T-34) ----------------------------------
     'work.heading': 'Custom software projects',
-    'work.tagline':
-      'A selection of work for clients and my own projects.',
+    'work.tagline': 'A selection of work for clients and my own projects.',
     'work.filter.label': 'Filter by',
     'work.filter.all': 'All',
     'work.filter.success': 'For clients',
@@ -333,16 +338,17 @@ export const ui = {
     'services.web.title': 'Corporate websites',
     'services.web.description':
       'Your digital presence ready to win clients: fast, accessible, and well positioned in search engines.',
+    'services.webApp.title': 'Web applications',
+    'services.webApp.description':
+      'Custom web platforms for customers or teams: available in the browser, secure, and ready to grow.',
     'services.integration.title': 'Integrations',
     'services.integration.description':
       'We connect the tools you already use (WhatsApp, email, spreadsheets, ERP) so they stop being separate islands.',
 
     // -- Experience page (T-35) ----------------------------------------------
     'experience.heading': 'Professional experience',
-    'experience.tagline':
-      '5 years building software in Valencia-based companies and remote.',
-    'experience.disclaimer':
-      'Companies listed are previous employers. Today I work independently.',
+    'experience.tagline': '5 years building software in Valencia-based companies and remote.',
+    'experience.disclaimer': 'Companies listed are previous employers. Today I work independently.',
     'experience.education.heading': 'Education',
     'experience.education.degree': "Bachelor's in Computer Engineering",
     'experience.education.school': 'ETSE Universidad de Valencia',

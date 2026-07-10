@@ -40,6 +40,7 @@ Comandos disponibles:
 | `npm run lint`     | ESLint con `--max-warnings=0`.                  |
 | `npm run format`   | Prettier sobre todo el repo.                    |
 | `npm run test`     | Vitest (unit tests, modo run).                  |
+| `npm run test:seo` | Build de producción y contrato SEO sobre `dist/`. |
 | `npm run size`     | `du -sh dist` para sanity check del bundle.     |
 
 Variables de entorno mínimas (ver `.env.example`):

@@ -27,6 +27,7 @@
     "lint": "eslint . --max-warnings=0",
     "size": "du -sh dist 2>/dev/null || echo 'no dist yet — run npm run build first'",
     "test": "vitest run",
+    "test:seo": "npm run build && node scripts/verify-seo-output.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

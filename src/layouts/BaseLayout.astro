@@ -46,8 +46,10 @@ interface Props {
   description: string;
   /** Optional override of the OG image (must be 1200x630). */
   ogImage?: string;
-  /** Mark page as `noindex, nofollow`. Default false. */
+  /** Keep the page out of search results. Default false. */
   noindex?: boolean;
+  /** Prevent link crawling only where appropriate (for example, 404 pages). */
+  nofollow?: boolean;
   /** OpenGraph type. Default `website`. */
   type?: 'website' | 'article';
   /**
@@ -63,6 +65,7 @@ const {
   description,
   ogImage,
   noindex = false,
+  nofollow = false,
   type = 'website',
   faqs,
 } = Astro.props;
@@ -103,12 +106,15 @@ const effectiveNoindex = noindex || lang === 'en';
       currentUrl={Astro.url}
       ogImage={ogImage}
       noindex={effectiveNoindex}
+      nofollow={nofollow}
       type={type}
       faqs={faqs}
     />
 
-    {/* Astro 6 View Transitions. Lives in <head> so the script registers
-        before the first paint and intercepts in-page navigation. */}
+    {
+      /* Astro 6 View Transitions. Lives in <head> so the script registers
+        before the first paint and intercepts in-page navigation. */
+    }
     <ClientRouter />
   </head>
   <body class="layout-body">
@@ -195,7 +201,11 @@ const effectiveNoindex = noindex || lang === 'en';
           lastConfiguredPath = currentPath;
 
           window.dataLayer = window.dataLayer || [];
-          window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+          window.gtag =
+            window.gtag ||
+            function gtag() {
+              window.dataLayer.push(arguments);
+            };
           if (document.documentElement.dataset.analyticsReady !== 'true') {
             window.gtag('js', new Date());
             document.documentElement.dataset.analyticsReady = 'true';

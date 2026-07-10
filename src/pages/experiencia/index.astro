@@ -42,13 +42,11 @@ const contactHref = getRoutePath('contact', lang);
 // `order` definido caen al final (Number.POSITIVE_INFINITY como fallback).
 const entries = await getCollection(
   'experience',
-  (entry: ExperienceEntry) => entry.data.lang === lang,
+  (entry: ExperienceEntry) => entry.data.lang === lang
 );
 
 const sorted = [...entries].sort(
-  (a, b) =>
-    (a.data.order ?? Number.POSITIVE_INFINITY) -
-    (b.data.order ?? Number.POSITIVE_INFINITY),
+  (a, b) => (a.data.order ?? Number.POSITIVE_INFINITY) - (b.data.order ?? Number.POSITIVE_INFINITY)
 );
 
 // Pre-renderiza los bodies MD para iterarlos en el template.
@@ -56,14 +54,13 @@ const items = await Promise.all(
   sorted.map(async (entry) => {
     const { Content } = await render(entry);
     return { entry, Content };
-  }),
+  })
 );
 ---
 
 <BaseLayout
   title="Experiencia profesional — Ingeniero informático | marmibas.dev"
   description="5 años desarrollando software para grandes empresas y consultoras. Capgemini, Cleverpy, Devoltec. Hoy trabajo de forma independiente."
-  noindex
 >
   <section class="experience" aria-labelledby="experience-title">
     <header class="experience__header">
@@ -173,7 +170,9 @@ const items = await Promise.all(
     <aside class="experience__cta" aria-label="Contacto">
       <p class="experience__cta-text font-display">
         ¿Tu empresa busca alguien con experiencia en estos sectores?
-        <a class="experience__cta-link" href={contactHref}>Hablemos <span aria-hidden="true">→</span></a>
+        <a class="experience__cta-link" href={contactHref}
+          >Hablemos <span aria-hidden="true">→</span></a
+        >
       </p>
     </aside>
   </section>

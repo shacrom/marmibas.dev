@@ -16,6 +16,7 @@
 
 import { defaultLang, ui, type Language, type UIKey } from './ui';
 import { routes, type RouteKey } from './routes';
+import { canonicalUrlFor, siteOriginFromConfiguredUrl } from '../lib/seo';
 
 // ---------------------------------------------------------------------------
 // Site URL — leído de env, con fallback hardcoded para desarrollo local.
@@ -28,8 +29,7 @@ import { routes, type RouteKey } from './routes';
  *
  * Fallback: `https://marmibas.dev` (dominio canónico del proyecto).
  */
-const SITE_URL: string =
-  (import.meta.env?.PUBLIC_SITE_URL as string | undefined) ?? 'https://marmibas.dev';
+const SITE_URL = siteOriginFromConfiguredUrl(import.meta.env?.PUBLIC_SITE_URL as string | undefined);
 
 // ---------------------------------------------------------------------------
 // getLangFromUrl
@@ -220,9 +220,7 @@ export function getAlternateUrl(currentUrl: URL, targetLang: Language): string {
  *   new URL('https://x.dev/')                        -> 'https://marmibas.dev/'
  */
 export function getCanonicalUrl(currentUrl: URL): string {
-  const base = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
-  const pathname = currentUrl.pathname || '/';
-  return `${base}${pathname}`;
+  return canonicalUrlFor(currentUrl, SITE_URL);
 }
 
 // ---------------------------------------------------------------------------
@@ -251,16 +249,11 @@ export function getCanonicalUrl(currentUrl: URL): string {
  *   isCurrentRoute('/en', 'home', 'en')                -> true
  *   isCurrentRoute('/en/', 'home', 'en')               -> true
  */
-export function isCurrentRoute(
-  currentPath: string,
-  routeKey: RouteKey,
-  lang: Language,
-): boolean {
+export function isCurrentRoute(currentPath: string, routeKey: RouteKey, lang: Language): boolean {
   const routePath = routes[routeKey][lang];
 
   // Normalizamos comparando sin trailing slash final salvo que sea '/'.
-  const stripTrail = (p: string): string =>
-    p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p;
+  const stripTrail = (p: string): string => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p);
 
   const cur = stripTrail(currentPath);
   const target = stripTrail(routePath);

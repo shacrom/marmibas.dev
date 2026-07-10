@@ -17,17 +17,19 @@
  */
 
 import type { GetStaticPaths } from 'astro';
-import { getCollection, render } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import ProjectDetailLayout from '../../../layouts/ProjectDetailLayout.astro';
 import Callout from '../../../components/ui/Callout.astro';
+
+type ProjectEntry = CollectionEntry<'projects'>;
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const entries = await getCollection(
     'projects',
-    (entry) => entry.data.lang === 'en'
+    (entry: ProjectEntry) => entry.data.lang === 'en'
   );
 
-  return entries.map((entry) => {
+  return entries.map((entry: ProjectEntry) => {
     const slug = entry.id.split('/').pop() ?? entry.id;
     return {
       params: { slug },
@@ -36,7 +38,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   });
 };
 
-const { entry } = Astro.props;
+const { entry } = Astro.props as { entry: ProjectEntry };
 const { Content } = await render(entry);
 ---
 

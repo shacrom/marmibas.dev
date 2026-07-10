@@ -1,0 +1,23 @@
+# marmibas.dev
+
+This is the public portfolio and service site of Marcos Miguel Báscones (marmibas), an independent software engineer.
+This optional file is a discovery aid for language models; it is not a web standard or a ranking signal.
+
+## Primary pages
+
+- https://marmibas.dev/ — Software and application development for businesses.
+- https://marmibas.dev/servicios — Spanish service catalogue.
+- https://marmibas.dev/servicios/desarrollo-aplicaciones-web — Custom web application development.
+- https://marmibas.dev/servicios/webs-corporativas — Corporate websites.
+- https://marmibas.dev/servicios/sistemas-de-gestion — Custom internal management systems.
+- https://marmibas.dev/servicios/tiendas-online — Custom online stores.
+- https://marmibas.dev/servicios/automatizaciones — Process automation.
+- https://marmibas.dev/servicios/integraciones — Business-tool integrations.
+
+## Case studies and work
+
+- https://marmibas.dev/case-studies/voxye
+- https://marmibas.dev/case-studies/recetas-novatex
+- https://marmibas.dev/case-studies/visomos
+- https://marmibas.dev/proyectos/jinba
+- https://marmibas.dev/proyectos/acompana

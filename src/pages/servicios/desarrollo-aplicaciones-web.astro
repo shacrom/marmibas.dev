@@ -1,0 +1,261 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Desarrollo de aplicaciones web a medida | marmibas.dev"
+  description="Desarrollo de aplicaciones web a medida para empresas: plataformas, portales y herramientas internas accesibles desde el navegador y preparadas para crecer."
+>
+  <section class="service-hero" aria-labelledby="service-title">
+    <p class="eyebrow font-mono">marmibas · desarrollo web</p>
+    <h1 id="service-title" class="font-display">
+      Desarrollo de aplicaciones web para que tu negocio avance
+    </h1>
+    <p>
+      Diseño y desarrollo aplicaciones web a medida para clientes, equipos y operaciones. Una
+      herramienta útil desde el navegador, sin obligarte a trabajar como una plantilla.
+    </p>
+    <a class="cta" href="/contacto">Hablemos de tu aplicación</a>
+  </section>
+
+  <section class="service-section" aria-labelledby="when-title">
+    <div>
+      <p class="eyebrow font-mono">Cuándo tiene sentido</p>
+      <h2 id="when-title" class="font-display">Cuando una web informativa ya no es suficiente</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Una aplicación web encaja cuando necesitas que personas hagan algo, no solo que lean:
+        consultar información, gestionar solicitudes, coordinar trabajo o dar acceso a un servicio.
+      </p>
+      <p>
+        Puede ser un portal para clientes, una plataforma interna o una herramienta que conecte
+        procesos que ahora viven entre mensajes, hojas de cálculo y aplicaciones separadas.
+      </p>
+    </div>
+  </section>
+
+  <section class="service-section service-section--surface" aria-labelledby="deliverables-title">
+    <div>
+      <p class="eyebrow font-mono">Qué construimos</p>
+      <h2 id="deliverables-title" class="font-display">
+        Una solución web pensada para usarla cada día
+      </h2>
+    </div>
+    <ul class="cards" role="list">
+      <li>
+        <h3 class="font-display">Portales para clientes</h3><p>
+          Espacios privados para consultas, solicitudes, documentos o seguimiento sin depender del
+          correo.
+        </p>
+      </li>
+      <li>
+        <h3 class="font-display">Herramientas para equipos</h3><p>
+          Paneles y flujos claros para que cada persona tenga la información y las tareas que
+          necesita.
+        </p>
+      </li>
+      <li>
+        <h3 class="font-display">Procesos conectados</h3><p>
+          Integración con las herramientas que ya utilizas para reducir copias, errores y trabajo
+          manual.
+        </p>
+      </li>
+      <li>
+        <h3 class="font-display">Base técnica mantenible</h3><p>
+          Una aplicación rápida, accesible y preparada para incorporar mejoras cuando el negocio las
+          necesite.
+        </p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="service-section" aria-labelledby="process-title">
+    <div>
+      <p class="eyebrow font-mono">Cómo trabajo</p>
+      <h2 id="process-title" class="font-display">
+        Primero entendemos el problema; después elegimos la pantalla
+      </h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <strong>01 · Descubrimiento</strong><span
+          >Revisamos quién usará la aplicación, qué necesita resolver y dónde se pierde tiempo hoy.</span>
+      </li>
+      <li>
+        <strong>02 · Prioridades</strong><span
+          >Definimos el primer flujo útil para empezar por valor real, no por una lista interminable
+          de funciones.</span>
+      </li>
+      <li>
+        <strong>03 · Diseño y desarrollo</strong><span
+          >Validamos las pantallas y construimos por entregas para poder ajustar con contexto.</span>
+      </li>
+      <li>
+        <strong>04 · Puesta en marcha</strong><span
+          >Preparamos el uso diario, la transición desde las herramientas actuales y las siguientes
+          mejoras.</span>
+      </li>
+    </ol>
+  </section>
+
+  <section class="service-section service-section--surface" aria-labelledby="difference-title">
+    <div>
+      <p class="eyebrow font-mono">Elegir bien el enfoque</p>
+      <h2 id="difference-title" class="font-display">
+        Aplicación web y web corporativa resuelven problemas distintos
+      </h2>
+    </div>
+    <div class="prose">
+      <p>
+        Una <a href="/servicios/webs-corporativas">web corporativa</a> presenta tu empresa y ayuda a captar
+        contactos. Una aplicación web da acceso a una herramienta: requiere usuarios, datos, flujos y
+        una experiencia pensada para trabajar.
+      </p>
+      <p>
+        Si el objetivo principal es ordenar la operativa interna, también puede encajar mejor un
+        <a href="/servicios/sistemas-de-gestion"> sistema de gestión a medida</a>. La primera
+        conversación sirve para decidirlo sin forzar una etiqueta.
+      </p>
+    </div>
+  </section>
+
+  <section class="service-final" aria-labelledby="final-title">
+    <h2 id="final-title" class="font-display">
+      ¿Tienes una idea o un proceso que necesita una aplicación web?
+    </h2>
+    <p>
+      Cuéntame qué necesita hacer la gente y qué ocurre hoy. Valoramos el primer paso más útil para
+      tu negocio.
+    </p>
+    <a class="cta" href="/contacto">Hablemos</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .service-hero,
+  .service-section,
+  .service-final {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding: clamp(4rem, 9vw, 8rem) clamp(1.25rem, 5vw, 3rem);
+  }
+  .service-hero {
+    max-width: 800px;
+    margin-left: max(0px, calc((100% - 1080px) / 2));
+  }
+  .service-hero h1 {
+    max-width: 14ch;
+    margin: 0.75rem 0 1.25rem;
+    color: var(--text-0);
+    font-size: clamp(2.6rem, 5vw, 4.2rem);
+    line-height: 1.05;
+  }
+  .service-hero > p:not(.eyebrow),
+  .prose {
+    max-width: 45rem;
+    color: var(--text-2);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+  }
+  .eyebrow {
+    margin: 0;
+    color: var(--accent-400);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+  .cta {
+    display: inline-flex;
+    margin-top: 1.5rem;
+    padding: 0.85rem 1.35rem;
+    border-radius: var(--radius-md);
+    color: var(--text-0);
+    background: var(--gradient-cta);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .cta:hover,
+  .cta:focus-visible {
+    background: var(--gradient-cta-hover);
+    box-shadow: var(--shadow-glow);
+  }
+  .service-section {
+    display: grid;
+    gap: 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .service-section--surface {
+    max-width: none;
+    padding-inline: max(1.25rem, calc((100% - 1080px) / 2));
+    background: color-mix(in oklch, var(--bg-1) 60%, transparent);
+  }
+  .service-section h2,
+  .service-final h2 {
+    margin: 0.75rem 0 0;
+    color: var(--text-0);
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    line-height: 1.15;
+  }
+  .prose {
+    font-size: var(--text-base);
+  }
+  .prose p {
+    margin: 0 0 1rem;
+  }
+  .prose a {
+    color: var(--accent-300);
+  }
+  .cards,
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cards li,
+  .steps li {
+    display: grid;
+    gap: 0.7rem;
+    padding: 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--bg-1);
+  }
+  .cards h3 {
+    margin: 0;
+    color: var(--text-0);
+    font-size: var(--text-lg);
+  }
+  .cards p,
+  .steps span {
+    margin: 0;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+  .steps strong {
+    color: var(--accent-300);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+  .service-final {
+    max-width: 760px;
+    text-align: center;
+  }
+  .service-final p {
+    margin: 1rem auto 0;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+  @media (min-width: 760px) {
+    .service-section {
+      grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.2fr);
+      align-items: start;
+    }
+    .service-section--surface {
+      grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.2fr);
+    }
+  }
+</style>

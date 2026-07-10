@@ -104,8 +104,7 @@ function buildLastmodMap() {
         continue;
       }
       const fmDate =
-        readFrontmatterDate(raw, 'updatedAt') ??
-        readFrontmatterDate(raw, 'publishedAt');
+        readFrontmatterDate(raw, 'updatedAt') ?? readFrontmatterDate(raw, 'publishedAt');
       let lastmod;
       if (fmDate) {
         lastmod = fmDate;
@@ -166,17 +165,26 @@ export default defineConfig({
       // exclusion below to bring the English version back.
       // Skip API endpoints (e.g. /api/contact) — they are not addressable
       // pages and search engines must not index them. Skip /en/* while the
-      // English version is hidden.
-      filter: (page) => !page.includes('/api/') && !/\/en(\/|$)/.test(page),
+      // English version is hidden, plus the Spanish utility pages that emit
+      // noindex. Public Spanish services, home and experience remain listed.
+      filter: (page) => {
+        const pathname = new URL(page).pathname.replace(/\/$/, '') || '/';
+        return (
+          !pathname.startsWith('/api/') &&
+          !/^\/en(\/|$)/.test(pathname) &&
+          !['/contacto', '/politica-cookies'].includes(pathname)
+        );
+      },
       // Inject `lastmod` from the collection frontmatter (or file mtime) for
       // case-studies + posts. Other pages keep the integration default.
       serialize: (item) => {
         try {
           const url = new URL(item.url);
           // Strip trailing slash so `/blog/post/` matches `/blog/post`.
-          const pathname = url.pathname.endsWith('/') && url.pathname !== '/'
-            ? url.pathname.slice(0, -1)
-            : url.pathname;
+          const pathname =
+            url.pathname.endsWith('/') && url.pathname !== '/'
+              ? url.pathname.slice(0, -1)
+              : url.pathname;
           const lastmod = LASTMOD_BY_PATH.get(pathname);
           if (lastmod) {
             return { ...item, lastmod };

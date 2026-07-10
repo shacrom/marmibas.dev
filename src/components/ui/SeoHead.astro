@@ -36,7 +36,9 @@
  */
 
 import { CRITICAL_FONT_PRELOADS } from '../../lib/fonts';
-import { getAlternateUrl, getCanonicalUrl } from '../../i18n/helpers';
+import { getCanonicalUrl } from '../../i18n/helpers';
+import { absoluteUrl } from '../../lib/seo';
+import { isSpanishServicePath } from '../../lib/services';
 import type { Language } from '../../i18n/ui';
 
 interface Props {
@@ -53,8 +55,10 @@ interface Props {
    * fallback `/og/default.png` (created in T-51).
    */
   ogImage?: string;
-  /** When true, emit `noindex, nofollow`. Used on 404, design-check, etc. */
+  /** When true, keep the page out of search results. */
   noindex?: boolean;
+  /** Prevent link crawling only for error or genuinely private pages. */
+  nofollow?: boolean;
   /** OpenGraph type. `website` for index pages, `article` for posts. */
   type?: 'website' | 'article';
   /**
@@ -87,6 +91,7 @@ const {
   currentUrl,
   ogImage = '/og/default.png',
   noindex = false,
+  nofollow = false,
   type = 'website',
   publishedAt,
   updatedAt,
@@ -102,35 +107,18 @@ const fullTitle = /marmibas/i.test(title) ? title : `marmibas — ${title}`;
 // --- Canonical + alternates ----------------------------------------------
 const canonicalUrl = getCanonicalUrl(currentUrl);
 
-// Build absolute hreflang alternates for ES + EN + x-default (→ ES per spec).
-// `getAlternateUrl` handles "current → other" path mapping; for the current
-// language we keep the canonical pathname.
-const siteOrigin = canonicalUrl.replace(currentUrl.pathname, '') || canonicalUrl;
-const baseOrigin = siteOrigin.endsWith('/')
-  ? siteOrigin.slice(0, -1)
-  : siteOrigin;
-
-const esPath =
-  lang === 'es' ? currentUrl.pathname : getAlternateUrl(currentUrl, 'es');
-const enPath =
-  lang === 'en' ? currentUrl.pathname : getAlternateUrl(currentUrl, 'en');
-
-const esHref = `${baseOrigin}${esPath}`;
-const enHref = `${baseOrigin}${enPath}`;
+const siteOrigin = new URL(canonicalUrl).origin;
 
 // --- og:image absolutisation ---------------------------------------------
 // OG/Twitter image MUST be an absolute URL (Facebook + most crawlers reject
 // relative paths). If the prop already starts with http(s), keep it; else
 // prefix with the canonical origin.
-const ogImageAbsolute = /^https?:\/\//i.test(ogImage)
-  ? ogImage
-  : `${baseOrigin}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`;
+const ogImageAbsolute = absoluteUrl(ogImage, siteOrigin);
 
 // --- og:locale -----------------------------------------------------------
 // OpenGraph expects `xx_XX` (BCP-47 with underscore). We pin to es_ES / en_US
 // matching the sitemap config in astro.config.mjs.
 const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
-const ogLocaleAlternate = lang === 'es' ? 'en_US' : 'es_ES';
 
 // --- JSON-LD structured data (T-50) --------------------------------------
 // Detect the home: ES home is exactly `/`; EN home is `/en` or `/en/`.
@@ -162,11 +150,14 @@ function toIso(value: string | Date | undefined): string | undefined {
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
-  name: 'marmibas',
-  alternateName: 'shacrom',
+  name: 'Marcos Miguel Báscones',
+  alternateName: ['marmibas', 'shacrom'],
   jobTitle: 'Software Engineer',
   url: 'https://marmibas.dev',
-  sameAs: ['https://github.com/shacrom'],
+  sameAs: [
+    'https://github.com/shacrom',
+    'https://www.linkedin.com/in/marcos-miguel-b%C3%A1scones-91669b205/',
+  ],
   knowsAbout: [
     'Astro',
     'Angular',
@@ -227,12 +218,30 @@ const articleSchema: ArticleSchema | undefined =
       }
     : undefined;
 
+const serviceSchema =
+  isSpanishServicePath(pathname)
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: title.replace(/\s*\|\s*marmibas\.dev$/i, ''),
+        description,
+        url: canonicalUrl,
+        provider: {
+          '@type': 'Person',
+          name: 'Marcos Miguel Báscones',
+          alternateName: 'marmibas',
+          url: siteOrigin,
+        },
+        inLanguage: 'es-ES',
+      }
+    : undefined;
+
 // Resolve the actual schema object to inject. Article wins over Person when
 // a page is somehow both home and an article (defensive — should not happen
 // in practice). We prefer to emit at most ONE primary JSON-LD block per
 // page to keep the head light and the structured-data validator unambiguous.
 const structuredData: object | undefined =
-  articleSchema ?? (isHome ? personSchema : undefined);
+  articleSchema ?? serviceSchema ?? (isHome ? personSchema : undefined);
 
 // FAQPage schema: emitted as a SECONDARY JSON-LD block when the page declares
 // FAQ entries (today: home only). Google explicitly allows multiple JSON-LD
@@ -267,16 +276,21 @@ const faqSchema =
 {/* --- Indexing ------------------------------------------------------ */}
 <meta
   name="robots"
-  content={noindex ? 'noindex, nofollow' : 'index, follow'}
+  content={noindex ? `noindex, ${nofollow ? 'nofollow' : 'follow'}` : 'index, follow'}
 />
 
 {/* --- Canonical ----------------------------------------------------- */}
 <link rel="canonical" href={canonicalUrl} />
 
-{/* --- hreflang alternates (ES, EN, x-default → ES) ----------------- */}
-<link rel="alternate" hreflang="es" href={esHref} />
-<link rel="alternate" hreflang="en" href={enHref} />
-<link rel="alternate" hreflang="x-default" href={esHref} />
+{/* English remains intentionally hidden and is not a truthful alternate. */}
+{
+  !noindex && lang === 'es' && (
+    <>
+      <link rel="alternate" hreflang="es" href={canonicalUrl} />
+      <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+    </>
+  )
+}
 
 {/* --- Open Graph ---------------------------------------------------- */}
 <meta property="og:type" content={type} />
@@ -288,7 +302,6 @@ const faqSchema =
 <meta property="og:image:height" content="630" />
 <meta property="og:site_name" content="marmibas.dev" />
 <meta property="og:locale" content={ogLocale} />
-<meta property="og:locale:alternate" content={ogLocaleAlternate} />
 
 {/* --- Twitter Card -------------------------------------------------- */}
 <meta name="twitter:card" content="summary_large_image" />
@@ -299,22 +312,18 @@ const faqSchema =
 {/* --- Critical font preloads (Fraunces variable + Inter 400) ------- */}
 {
   CRITICAL_FONT_PRELOADS.map((font) => (
-    <link
-      rel="preload"
-      href={font.href}
-      as="font"
-      type={font.type}
-      crossorigin="anonymous"
-    />
+    <link rel="preload" href={font.href} as="font" type={font.type} crossorigin="anonymous" />
   ))
 }
 
 {/* --- Favicon ------------------------------------------------------- */}
-{/*
- * favicon.svg is delivered by T-51. We declare the link now so it lights up
- * automatically once that asset lands (Astro will return 404 in dev for the
- * missing path, but the browser silently ignores it — no visual impact).
- */}
+{
+  /*
+   * favicon.svg is delivered by T-51. We declare the link now so it lights up
+   * automatically once that asset lands (Astro will return 404 in dev for the
+   * missing path, but the browser silently ignores it — no visual impact).
+   */
+}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
 {/* --- JSON-LD structured data (T-50) ------------------------------- */}
@@ -328,36 +337,28 @@ const faqSchema =
 }
 {
   structuredData && (
-    <script
-      is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify(structuredData)}
-    />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   )
 }
 
 {/* --- JSON-LD FAQPage (optional secondary block) ------------------ */}
-{/*
- * Emitted as an independent script when `faqs` is provided. Google supports
- * multiple JSON-LD blocks per page (one for the primary entity, additional
- * ones for supplementary structured data such as FAQPage / BreadcrumbList).
- */}
 {
-  faqSchema && (
-    <script
-      is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify(faqSchema)}
-    />
-  )
+  /*
+   * Emitted as an independent script when `faqs` is provided. Google supports
+   * multiple JSON-LD blocks per page (one for the primary entity, additional
+   * ones for supplementary structured data such as FAQPage / BreadcrumbList).
+   */
 }
+{faqSchema && <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
 
 {/* --- RSS feed discovery ------------------------------------------- */}
-{/*
- * Per language. Falls back to ES feed when EN is unavailable. The endpoint
- * lives at /rss.xml (T-52); browsers + feed readers auto-discover via this
- * link relation.
- */}
+{
+  /*
+   * Per language. Falls back to ES feed when EN is unavailable. The endpoint
+   * lives at /rss.xml (T-52); browsers + feed readers auto-discover via this
+   * link relation.
+   */
+}
 <link
   rel="alternate"
   type="application/rss+xml"

@@ -30,6 +30,7 @@
 
 import { useTranslations } from '../../i18n/helpers';
 import type { Language } from '../../i18n/ui';
+import { spanishServices } from '../../lib/services';
 import Reveal from '../ui/Reveal.astro';
 
 export interface Props {
@@ -55,44 +56,12 @@ const promise: Record<Language, { lead: string; highlight: string }> = {
  * Service catalogue. Order is intentional — most common requests first.
  * Each entry's `iconName` keys into the inline SVG switch below.
  */
-const services = [
-  {
-    key: 'shop',
-    iconName: 'shopping-bag',
-    title: t('services.shop.title'),
-    description: t('services.shop.description'),
-  },
-  {
-    key: 'management',
-    iconName: 'layout-dashboard',
-    title: t('services.management.title'),
-    description: t('services.management.description'),
-  },
-  {
-    key: 'mobile',
-    iconName: 'smartphone',
-    title: t('services.mobile.title'),
-    description: t('services.mobile.description'),
-  },
-  {
-    key: 'automation',
-    iconName: 'zap',
-    title: t('services.automation.title'),
-    description: t('services.automation.description'),
-  },
-  {
-    key: 'web',
-    iconName: 'globe',
-    title: t('services.web.title'),
-    description: t('services.web.description'),
-  },
-  {
-    key: 'integration',
-    iconName: 'plug-zap',
-    title: t('services.integration.title'),
-    description: t('services.integration.description'),
-  },
-] as const;
+const services = spanishServices.map((service) => ({
+  ...service,
+  path: `/servicios/${service.slug}`,
+  title: t(`services.${service.key}.title`),
+  description: t(`services.${service.key}.description`),
+}));
 ---
 
 <Reveal as="section" class="services" aria-labelledby="services-heading">
@@ -106,7 +75,8 @@ const services = [
         <p class="services__sub">{t('services.tagline')}</p>
       </div>
       <p class="services__promise">
-        {promise[lang].lead} <strong>{promise[lang].highlight}</strong>
+        {promise[lang].lead}
+        <strong>{promise[lang].highlight}</strong>
       </p>
     </header>
 
@@ -218,7 +188,16 @@ const services = [
                 </svg>
               )}
             </span>
-            <h3 class="services__card-title font-display">{service.title}</h3>
+            <h3 class="services__card-title font-display">
+              {lang === 'es' ? (
+                <a href={service.path}>
+                  {service.title}
+                  <span class="services__card-link-copy">Ver servicio</span>
+                </a>
+              ) : (
+                service.title
+              )}
+            </h3>
             <p class="services__card-description">{service.description}</p>
           </li>
         ))
@@ -425,6 +404,27 @@ const services = [
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
     color: var(--text-0);
+  }
+
+  .services__card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .services__card-title a:hover,
+  .services__card-title a:focus-visible {
+    color: var(--accent-300);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .services__card-link-copy {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--accent-300);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
   }
 
   /* --------------------------------------------------------------------------

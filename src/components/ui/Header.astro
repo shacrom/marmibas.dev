@@ -49,7 +49,7 @@ const contactHref = getRoutePath('contact', currentLang);
 const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
 
 interface NavItem {
-  key: RouteKey;
+  key: RouteKey | 'services';
   label: string;
   href: string;
   active: boolean;
@@ -72,13 +72,24 @@ const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
   href: getRoutePath(key, currentLang),
   active: isCurrentRoute(currentUrl.pathname, key, currentLang),
 }));
+
+if (currentLang === 'es') {
+  navItems.splice(1, 0, {
+    key: 'services',
+    label: t('nav.services'),
+    href: '/servicios',
+    active: currentUrl.pathname === '/servicios' || currentUrl.pathname.startsWith('/servicios/'),
+  });
+}
 ---
 
 <header class="site-header" data-current-lang={currentLang}>
   <div class="site-header__inner">
-    {/* Brand: logo metalizado (paquete externo) en vez del wordmark de texto.
+    {
+      /* Brand: logo metalizado (paquete externo) en vez del wordmark de texto.
         El aria-label y el focus ring viven en el link; el span del logo
-        aporta su propio role="img" con label por defecto. */}
+        aporta su propio role="img" con label por defecto. */
+    }
     <a class="site-header__brand" href={homeHref} aria-label="Marmibas — home">
       <MetallicLogo src="/marmibas-logo.png" width="165px" height="27px" />
     </a>
