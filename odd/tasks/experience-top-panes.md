@@ -53,7 +53,7 @@ industrial work only as the page's closing section, the owner missed it when rev
 |----|------|-------|--------|
 | P1 | Extract reusable lock-up pane; `FactorySoftwarePane` becomes data-only (no visual change) | delegated writer | [x] |
 | P2 | Marmibas × Voxye pane + both panes at the top + drop Marmibas from the timeline | delegated writer (same) | [x] |
-| P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
+| P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [x] |
 | P4 | Owner feedback: swap pane order; Marmibas pane without connector/partner logo (partner optional in `LockupPane`) | direct inline (3 small edits in understood files) | [x] |
 | P5 | Past roles as terminal panes: generalise `LockupPane` (primary logo, role line, tags, body slot, optional rows) without visual change to the top panes, then replace the timeline with one pane per role | delegated writer | [x] |
 
@@ -113,7 +113,14 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
   diff. Checks (writer): `npm test` 94/94, `npm run check` 0 errors, eslint + prettier on changed files clean,
   build OK, `test:seo` passed, whole-repo lint = the 7 known base errors only. Parent spot check `npm test` 94/94;
   visual QA 1440/390 (reduced motion) OK.
+- Owner tweaks — `c67a0de feat(experience): name the Plazasys pane after Plazasys and trim its intro`: bar/prompt
+  `~/plazasys` + `ls plazasys/`, intro drops "y cliente principal", Marmibas pane eyebrow "Marca propia". Checks:
+  `npm test` 94/94, build OK, eslint + prettier on the 2 files clean; strings verified in the dev server HTML.
+- Delivery (owner: "haz commit y sube todos los cambios a producción", 2026-09-25): one PR to `main` with label
+  `size:exception` (~1.7k changed lines in `src`, mostly the factory pane moved into `LockupPane` and the removed
+  timeline CSS; the owner asked to ship everything now rather than slice). Merged with a merge commit like #5/#6;
+  Vercel deploys `main` to production. `fix/og-image` ships in its own PR in the same round.
 
 ## Next step
 
-Owner review; push/PR only after explicit OK.
+Verify production after the merge.
