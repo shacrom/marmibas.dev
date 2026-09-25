@@ -1,0 +1,377 @@
+---
+/**
+ * ServicesPane.astro — Home services pane (T4 terminal redesign).
+ *
+ * Renders the SECOND home `TerminalPane` (`~/servicios` | `~/services`,
+ * `[2/7]`) — a pane SEPARATE from `HeroPane`, so its own reveal animations
+ * only start once IT scrolls into view (TerminalPane's run-on-view driver,
+ * T2). Replaces the pre-terminal `ServicesSection.astro`. Matches
+ * `Terminal.dc.html` (desktop 1440) / `TerminalMovil.dc.html` (mobile 390)
+ * — the read-only visual spec under the design scratchpad.
+ *
+ * Content sits directly in `TerminalPane`'s default slot: its own
+ * `.t-pane__body` padding (36/48/40 desktop, 20/16/28 mobile) already
+ * matches this section's padding in both mockups closely enough (the
+ * mobile top edge differs by 4px — 20px vs the mockup's 24px — which
+ * `TerminalPane.astro`'s own doc comment already accepts as the shared
+ * default across every mockup inspected), so no breakout margin is needed
+ * here (unlike `HeroPane`'s two-column grid, which DOES need one).
+ *
+ * Copy: `services.heading` / `services.tagline` / `services.<key>.title` /
+ * `services.<key>.description` are pre-existing `ui.ts` keys (unchanged).
+ * The service catalogue (order, slug, icon) is the pre-existing
+ * `spanishServices` array from `src/lib/services.ts` (unchanged) — same
+ * source `ServicesSection.astro` used. Icon paths are copied verbatim from
+ * `ServicesSection.astro`'s own inline SVG switch (including its `webApp`
+ * entry reusing the `layout-dashboard` icon — a pre-existing duplication,
+ * not a new decision) rather than the mockup's distinct "browser window"
+ * icon for that row, per T4's brief: "reuse the icon paths/mapping the
+ * current ServicesSection uses".
+ *
+ * New copy: only the decorative `ls servicios/`/`ls services/` command and
+ * the `→ ver servicio` hover affordance (ES only — EN mirrors the current
+ * non-link row behaviour, so it never renders an arrow). Kept as per-lang
+ * consts local to this component, consistent with `HeroPane.astro`'s same
+ * choice (see its docblock) rather than `ui.ts`.
+ *
+ * Row layout: a flat set of children (bar / index / icon / title /
+ * description / arrow) laid out with named CSS grid-template-areas that
+ * differ per breakpoint — desktop treats title/description as independent
+ * columns (`Terminal.dc.html`'s `40px 24px 300px minmax(0,1fr) 130px`);
+ * mobile groups index+icon and title+description into shared columns
+ * (`TerminalMovil.dc.html`'s `24px minmax(0,1fr) 14px`, arrow spanning
+ * both rows). Named areas let one flat DOM regroup visually per
+ * breakpoint without duplicating markup.
+ *
+ * ES rows render as the row's own `<a href>` (linking to `/servicios/
+ * <slug>`, exactly as `ServicesSection.astro` did); EN rows render as a
+ * plain `<div>` (no href) — hover/focus visuals below are scoped to
+ * `a.services-row` specifically, so the EN variant never picks them up
+ * even though a browser still fires `:hover` on a plain `<div>`.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+import { spanishServices } from '../../lib/services';
+
+export interface Props {
+  /** Active language. Drives heading + subheading + service copy. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+const t = useTranslations(lang);
+
+const panePath = lang === 'es' ? 'servicios' : 'services';
+const lsCommand = lang === 'es' ? 'ls servicios/' : 'ls services/';
+
+// New decorative copy (ES only renders it — see docblock). Kept local per
+// T4's per-component-consts choice, consistent with HeroPane.astro.
+const arrowLabel: Record<Language, string> = {
+  es: 'ver servicio',
+  en: 'view service',
+};
+
+// Verbatim from ServicesSection.astro's inline SVG switch (viewBox 0 0 24
+// 24, stroke-width 1.5, round caps/joins — set on the wrapping <svg> below).
+const ICONS: Record<string, string> = {
+  'shopping-bag':
+    '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>',
+  'layout-dashboard':
+    '<rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect>',
+  smartphone:
+    '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>',
+  globe:
+    '<circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path>',
+  'plug-zap':
+    '<path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"></path><path d="m2 22 3-3"></path><path d="M7.5 13.5 10 11"></path><path d="M10.5 16.5 13 14"></path><path d="m18 3-4 4h6l-4 4"></path>',
+};
+
+const services = spanishServices.map((service) => ({
+  ...service,
+  path: `/servicios/${service.slug}`,
+  title: t(`services.${service.key}.title`),
+  description: t(`services.${service.key}.description`),
+}));
+
+const isLink = lang === 'es';
+const RowTag = isLink ? 'a' : 'div';
+
+const contactHref = getRoutePath('contact', lang);
+---
+
+<TerminalPane path={panePath} index="2/7" labelledby="services-heading" class="t-pane-gutter">
+  <div class="services-pane">
+    <Prompt command={lsCommand} delay={200} duration={520} />
+
+    <div class="services-pane__heading-block t-show" style="--t-delay: 800ms;">
+      <h2 id="services-heading" class="services-pane__heading">
+        <span class="t-comment">{'# '}</span>{t('services.heading')}
+      </h2>
+      <p class="services-pane__tagline">{t('services.tagline')}</p>
+    </div>
+
+    <ul class="services-pane__list" role="list">
+      {
+        services.map((service, i) => (
+          <li class="t-show" style={`--t-delay: ${900 + i * 70}ms;`}>
+            <RowTag href={isLink ? service.path : undefined} class="services-row">
+              <span class="services-row__bar" aria-hidden="true" />
+              <span class="services-row__idx" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="services-row__ico" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  set:html={ICONS[service.iconName]}
+                />
+              </span>
+              <span class="services-row__ttl">{service.title}</span>
+              <span class="services-row__dsc">{service.description}</span>
+              {isLink && (
+                <>
+                  <span
+                    class="services-row__go services-row__go--desktop"
+                    aria-hidden="true"
+                  >
+                    → {arrowLabel[lang]}
+                  </span>
+                  <span class="services-row__go services-row__go--mobile" aria-hidden="true">
+                    →
+                  </span>
+                </>
+              )}
+            </RowTag>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="services-pane__final t-show" style="--t-delay: 1500ms;">
+      <span class="services-pane__prompt"
+        ><span class="services-pane__user">marcos@marmibas</span><span class="services-pane__sep"
+          >:~$</span
+        ></span
+      >
+      <TerminalButton href={contactHref} primary class="services-pane__cta">
+        [ {t('cta.contact')} ]
+      </TerminalButton>
+    </div>
+  </div>
+</TerminalPane>
+
+<style>
+  .services-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    font-size: 15px;
+  }
+
+  .services-pane__heading-block {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+
+  @media (min-width: 901px) {
+    .services-pane__heading-block {
+      grid-template-columns: minmax(0, 1fr) 420px;
+    }
+  }
+
+  .services-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .services-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .services-pane__tagline {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .services-pane__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* --- Row -------------------------------------------------------------
+   * Named grid-template-areas so the SAME flat set of children (bar, idx,
+   * ico, ttl, dsc, go) regroups visually per breakpoint — see docblock. */
+  .services-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px 24px 300px minmax(0, 1fr) 130px;
+    grid-template-areas: 'idx ico ttl dsc go';
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-0);
+    text-decoration: none;
+    transition: background-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  @media (max-width: 640px) {
+    .services-row {
+      grid-template-columns: 24px minmax(0, 1fr) 14px;
+      grid-template-areas:
+        'idx ttl go'
+        'ico dsc go';
+      align-items: start;
+      gap: 8px 12px;
+      padding: 14px 10px;
+    }
+  }
+
+  a.services-row:hover,
+  a.services-row:focus-visible {
+    background: color-mix(in srgb, var(--accent-400) 12%, transparent);
+  }
+
+  a.services-row:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: -2px;
+  }
+
+  .services-row__bar {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 2px;
+    background: var(--accent-400);
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--motion-ease-out);
+  }
+
+  a.services-row:hover .services-row__bar,
+  a.services-row:focus-visible .services-row__bar {
+    opacity: 1;
+  }
+
+  .services-row__idx {
+    grid-area: idx;
+    font-size: var(--text-xs);
+    color: var(--text-3);
+  }
+
+  .services-row__ico {
+    grid-area: ico;
+    display: inline-flex;
+    color: var(--accent-400);
+  }
+
+  .services-row__ico svg :global(*) {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 0;
+  }
+
+  a.services-row:hover .services-row__ico svg :global(*),
+  a.services-row:focus-visible .services-row__ico svg :global(*) {
+    animation: services-row-draw 600ms var(--motion-ease-out);
+  }
+
+  @keyframes services-row-draw {
+    from {
+      stroke-dashoffset: 120;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .services-row__ttl {
+    grid-area: ttl;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .services-row__dsc {
+    grid-area: dsc;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+
+  .services-row__go {
+    grid-area: go;
+    display: flex;
+    align-items: center;
+    font-size: var(--text-xs);
+    color: var(--accent-300);
+  }
+
+  .services-row__go--desktop {
+    justify-self: end;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity var(--motion-fast) var(--motion-ease-out),
+      transform var(--motion-base) var(--motion-ease-out);
+  }
+
+  a.services-row:hover .services-row__go--desktop,
+  a.services-row:focus-visible .services-row__go--desktop {
+    opacity: 1;
+    transform: none;
+  }
+
+  .services-row__go--mobile {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    .services-row__go--desktop {
+      display: none;
+    }
+
+    .services-row__go--mobile {
+      display: flex;
+      align-self: center;
+      justify-self: center;
+    }
+  }
+
+  .services-pane__final {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 6px;
+  }
+
+  .services-pane__user {
+    color: var(--accent-400);
+  }
+
+  .services-pane__sep {
+    color: var(--text-2);
+    white-space: pre;
+  }
+</style>

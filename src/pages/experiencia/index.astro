@@ -312,6 +312,21 @@ const items = await Promise.all(
     min-width: 0;
   }
 
+  /* Narrow screens: the logo tile(s) are a fixed-width flex item, so the
+     text column next to them gets squeezed until long role/company words
+     force the row wider than the viewport (overflow at 320-390px). Stack
+     logos → period → role instead, giving the text its own full-width row. */
+  @media (max-width: 640px) {
+    .timeline__head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .timeline__head-text {
+      width: 100%;
+    }
+  }
+
   /* Los logos oficiales (azul Capgemini, rosa Cleverpy) están pensados para
      fondos claros; la pastilla clara preserva sus colores de marca sobre el
      tema oscuro sin recolorearlos (DESIGN.md: assets de marca intactos). */
@@ -352,6 +367,17 @@ const items = await Promise.all(
     color: var(--text-3);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
+  }
+
+  /* The wordmark + partner pair (Marmibas × Plazasys) can add up to 300px+
+     of fixed-width pills — still too wide at 320px even after the header
+     stacks (below). Shrink both pills' max-width only on very narrow
+     screens so the pair fits inside the card's own padding. */
+  @media (max-width: 400px) {
+    .timeline__logo--wordmark,
+    .timeline__logo--wide {
+      max-width: 104px;
+    }
   }
 
   .timeline__period {

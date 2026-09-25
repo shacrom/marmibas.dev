@@ -1,0 +1,520 @@
+---
+/**
+ * CasesPane.astro — Home "case studies" pane (T6 terminal redesign).
+ *
+ * Renders the FOURTH home `TerminalPane` (`~/casos-de-exito` | `~/case-
+ * studies`, `[4/7]`), replacing the pre-terminal `MidCta.astro` +
+ * `FeaturedProjects.astro` pair (both rendered as ONE pane here, matching
+ * `CasosTerminal.dc.html` (desktop 1440) / `CasosTerminalMovil.dc.html`
+ * (mobile 390) — the read-only visual + timing spec under the design
+ * scratchpad, which puts the "idea?" prompt and the case grid in the same
+ * window separated only by a dashed rule).
+ *
+ * Copy is reused VERBATIM:
+ *   - The top block's sentence/CTA/href are exactly what `index.astro` /
+ *     `en/index.astro` passed to the old `<MidCta>` (`midCtaText`/
+ *     `midCtaLink`/`getRoutePath('contact', lang)`) — moved INTO this
+ *     component's own per-lang copy (this task's brief explicitly allows
+ *     either; keeping copy inside the pane component is the established
+ *     convention every other T4–T5 pane already follows, so index.astro
+ *     goes back to only passing `lang`).
+ *   - `featuredCases` (title/tagline/client/attribution/logo/year/stack/
+ *     href/externalUrl/externalLabel) is the exact array `FeaturedProjects.
+ *     astro` hardcoded (T-30) — copied as-is, nothing added or reworded.
+ *   - `eyebrow` ("Prueba real"/"Real proof") mirrors `FeaturedProjects.
+ *     astro`'s own inline ternary (never lived in `ui.ts`).
+ *   - `heading`/`sub`/final link text still come from `ui.ts`
+ *     (`featured.heading`/`featured.sub`/`featured.viewAll`, unchanged —
+ *     `featured.viewAll` already embeds its own `→`, so the final link
+ *     renders it with no extra markup).
+ *
+ * New copy: only the decorative `cat idea.txt` / `ls casos-de-exito/` (EN
+ * `ls case-studies/`) prompts and the "en funcionamiento"/"in production"
+ * status framing on each card's title bar — the section subtitle already
+ * states these are live products, so this is framing, not a new claim.
+ * Per-lang consts local to this component, same convention as every prior
+ * pane (`HeroPane`/`ServicesPane`/`DemoPane`).
+ *
+ * Tag formatting (`#gestión-de-clientes` from `'Gestión de clientes'`) is
+ * pure logic, so it lives in `src/lib/case-tags.ts` (TDD, no DOM) and is
+ * only WIRED to markup here, same split as `src/lib/showcase-demo.ts`/
+ * `DemoPane.astro`.
+ *
+ * Layout: heading block reuses the same `minmax(0,1fr) 420px` two-column
+ * shape as `ServicesPane`/`DemoPane`'s own heading blocks (901px
+ * breakpoint). The 3-card grid (`repeat(3, minmax(0,1fr))` desktop, 1
+ * column mobile) and per-card structure (title bar with LED + status, 44px
+ * white logo tile, `<dl>` meta, tagline, tag line, external link) mirror
+ * the mockup's own `.case` article exactly, including the `.lnk` hover
+ * style (this project's existing `.t-link` utility, terminal.css) and the
+ * `.case:hover` glow (this project's existing `--shadow-card-hover`
+ * token — same rgba values, already defined, not redeclared here). Each
+ * card's LED gets a small negative `animation-delay` (0/-600/-1200ms,
+ * copied from the mockup) purely so the three pulses don't beat in
+ * lock-step; the inline `style` attribute overrides just that one
+ * longhand safely since `.t-led`'s own animation is set via the
+ * shorthand with no `!important` (terminal.css).
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+import { toTags } from '../../lib/case-tags';
+
+export interface Props {
+  /** Active language. Drives heading + copy + framing strings. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+const t = useTranslations(lang);
+
+const panePath = lang === 'es' ? 'casos-de-exito' : 'case-studies';
+const catCommand = 'cat idea.txt';
+const lsCommand = lang === 'es' ? 'ls casos-de-exito/' : 'ls case-studies/';
+const eyebrow = lang === 'es' ? 'Prueba real' : 'Real proof';
+const statusLabel = lang === 'es' ? 'en funcionamiento' : 'in production';
+const metaLabels =
+  lang === 'es'
+    ? { client: 'cliente', year: 'año', by: 'autoría' }
+    : { client: 'client', year: 'year', by: 'by' };
+
+// Top block — moved verbatim from what index.astro/en/index.astro passed
+// to the old <MidCta> (see docblock above).
+const midCta = {
+  text:
+    lang === 'es'
+      ? '¿Tienes una idea o un problema que quieres resolver?'
+      : 'Have an idea or a problem you want to solve?',
+  cta: lang === 'es' ? 'Escríbeme' : "Let's talk",
+};
+const contactHref = getRoutePath('contact', lang);
+
+// Featured case studies — copied verbatim from FeaturedProjects.astro
+// (T-30's hardcoded array, unchanged shape/values).
+const featuredCases = [
+  {
+    slug: 'voxye',
+    title: 'Voxye',
+    tagline:
+      lang === 'es'
+        ? 'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.'
+        : 'The application that replaces Word and Excel for quotes and invoices in renovation companies. Fewer errors, more time, all branded with your identity.',
+    client: lang === 'es' ? 'Empresas de reformas' : 'Renovation companies',
+    attribution: lang === 'es' ? 'Producto propio' : 'Own product',
+    logo: '/logos/voxye.svg',
+    year: 2025,
+    stack:
+      lang === 'es'
+        ? ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos']
+        : ['Quotes', 'Invoices', 'Client management', 'Automated emails'],
+    href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
+    externalUrl: 'https://voxye.es',
+    externalLabel: lang === 'es' ? 'Ir al proyecto' : 'Open project',
+  },
+  {
+    slug: 'recetas-novatex',
+    title: 'Recetas Novatex',
+    tagline:
+      lang === 'es'
+        ? 'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.'
+        : 'A digital notebook that replaces paper logs where machine settings are written down. The know-how of your best employees, preserved forever.',
+    client: lang === 'es' ? 'Industria textil' : 'Textile industry',
+    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+    logo: '/logos/novatex.jpg',
+    year: 2026,
+    stack:
+      lang === 'es'
+        ? ['Industria textil', 'Búsqueda rápida', 'Multi-empresa']
+        : ['Textile industry', 'Fast search', 'Multi-company'],
+    href: lang === 'es' ? '/case-studies/recetas-novatex' : '/en/case-studies/recetas-novatex',
+    externalUrl: 'https://www.novatex.es/',
+    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
+  },
+  {
+    slug: 'visomos',
+    title: "Visomo's",
+    tagline:
+      lang === 'es'
+        ? 'El panel de control de una fábrica textil: producción, paradas y pedidos en tiempo real, sin depender de una hoja de cálculo gigante.'
+        : 'The control panel of a textile factory: production, downtime and orders in real time, without depending on a giant spreadsheet.',
+    client: lang === 'es' ? 'Envases para fruta' : 'Fruit packaging',
+    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+    logo: '/logos/visomos.svg',
+    year: 2026,
+    stack:
+      lang === 'es'
+        ? ['Producción en tiempo real', 'Trazabilidad', 'Registro en planta']
+        : ['Real-time production', 'Traceability', 'Shop-floor logging'],
+    href: lang === 'es' ? '/case-studies/visomos' : '/en/case-studies/visomos',
+    externalUrl: 'https://visomos.com',
+    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
+  },
+];
+
+const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
+const headingId = 'cases-heading';
+---
+
+<TerminalPane path={panePath} index="4/7" labelledby={headingId} class="t-pane-gutter">
+  <div class="cases-pane">
+    <div class="cases-pane__top">
+      <Prompt command={catCommand} delay={200} duration={456} />
+
+      <p class="cases-pane__midcta t-print" style="--t-delay: 750ms;">{midCta.text}</p>
+
+      <div class="t-show" style="--t-delay: 1000ms;">
+        <TerminalButton href={contactHref} primary class="cases-pane__midcta-cta">
+          [ {midCta.cta} → ]
+        </TerminalButton>
+      </div>
+    </div>
+
+    <Prompt command={lsCommand} showAt={1100} delay={1150} duration={684} />
+
+    <div class="cases-pane__heading-block t-show" style="--t-delay: 1700ms;">
+      <div class="cases-pane__heading-col">
+        <p class="t-comment cases-pane__eyebrow"># {eyebrow}</p>
+        <h2 id={headingId} class="cases-pane__heading">{t('featured.heading')}</h2>
+      </div>
+      <p class="cases-pane__sub">{t('featured.sub')}</p>
+    </div>
+
+    <ul class="cases-pane__grid" role="list">
+      {
+        featuredCases.map((caseStudy, i) => (
+          <li>
+            <article
+              class="cases-pane__card t-show"
+              style={`--t-delay: ${1850 + i * 150}ms;`}
+              aria-labelledby={`case-${caseStudy.slug}-title`}
+            >
+              <div class="cases-pane__card-bar">
+                <span>{caseStudy.slug}/</span>
+                <span class="cases-pane__status">
+                  <span
+                    class="t-led"
+                    aria-hidden="true"
+                    style={i > 0 ? `animation-delay: ${i * -600}ms;` : undefined}
+                  />
+                  {statusLabel}
+                </span>
+              </div>
+
+              <div class="cases-pane__card-body">
+                <div class="cases-pane__card-head">
+                  <span class="cases-pane__logo-tile">
+                    <img src={caseStudy.logo} alt="" width="30" height="30" loading="lazy" />
+                  </span>
+                  <h3 id={`case-${caseStudy.slug}-title`} class="cases-pane__card-title">
+                    <a href={caseStudy.href} class="cases-pane__title-link">
+                      {caseStudy.title}
+                    </a>
+                  </h3>
+                </div>
+
+                <dl class="cases-pane__meta">
+                  <dt>{metaLabels.client}</dt>
+                  <dd>{caseStudy.client}</dd>
+                  <dt>{metaLabels.year}</dt>
+                  <dd>{caseStudy.year}</dd>
+                  <dt>{metaLabels.by}</dt>
+                  <dd>{caseStudy.attribution}</dd>
+                </dl>
+
+                <p class="cases-pane__tagline">{caseStudy.tagline}</p>
+
+                <p class="cases-pane__tags">{toTags(caseStudy.stack)}</p>
+
+                <a
+                  class="t-link cases-pane__external"
+                  href={caseStudy.externalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {caseStudy.externalLabel} ↗
+                </a>
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="t-show" style="--t-delay: 2400ms;">
+      <a class="t-link" href={viewAllHref}>{t('featured.viewAll')}</a>
+    </div>
+  </div>
+</TerminalPane>
+
+<style>
+  .cases-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 15px;
+  }
+
+  .cases-pane__top {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 32px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__top {
+      padding-bottom: 24px;
+    }
+  }
+
+  .cases-pane__midcta {
+    margin: 0;
+    max-width: 940px;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-0);
+    text-shadow: 0 0 24px rgba(167, 139, 250, 0.25);
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__midcta {
+      font-size: 23px;
+    }
+  }
+
+  .cases-pane__midcta-cta {
+    min-height: 48px;
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__midcta-cta {
+      width: 100%;
+    }
+  }
+
+  .cases-pane__heading-block {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+
+  @media (min-width: 901px) {
+    .cases-pane__heading-block {
+      grid-template-columns: minmax(0, 1fr) 420px;
+    }
+  }
+
+  .cases-pane__heading-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cases-pane__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+  }
+
+  .cases-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .cases-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .cases-pane__sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .cases-pane__grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .cases-pane__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    transition:
+      border-color var(--motion-base) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .cases-pane__card:hover,
+  .cases-pane__card:focus-within {
+    border-color: var(--accent-400);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .cases-pane__card-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__card-bar {
+      padding: 10px 12px;
+    }
+  }
+
+  .cases-pane__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-300);
+  }
+
+  .cases-pane__card-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__card-body {
+      padding: 16px 12px;
+    }
+  }
+
+  .cases-pane__card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cases-pane__logo-tile {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    box-sizing: border-box;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border-radius: var(--radius-lg);
+  }
+
+  .cases-pane__logo-tile img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+
+  .cases-pane__card-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__card-title {
+      font-size: 20px;
+    }
+  }
+
+  .cases-pane__title-link {
+    color: var(--text-0);
+    text-decoration: none;
+    background-image: linear-gradient(var(--accent-400), var(--accent-400));
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 300ms var(--motion-ease-out);
+  }
+
+  .cases-pane__card:hover .cases-pane__title-link,
+  .cases-pane__title-link:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .cases-pane__meta {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 4px 12px;
+    font-size: var(--text-xs);
+  }
+
+  @media (max-width: 640px) {
+    .cases-pane__meta {
+      grid-template-columns: 72px minmax(0, 1fr);
+      gap: 4px 10px;
+    }
+  }
+
+  .cases-pane__meta dt {
+    color: var(--text-3);
+  }
+
+  .cases-pane__meta dd {
+    margin: 0;
+    color: var(--text-0);
+    overflow-wrap: anywhere;
+  }
+
+  .cases-pane__tagline {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-2);
+  }
+
+  .cases-pane__tags {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    color: var(--accent-400);
+    overflow-wrap: anywhere;
+  }
+
+  .cases-pane__external {
+    margin-top: auto;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: var(--text-xs);
+  }
+</style>

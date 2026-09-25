@@ -1,0 +1,358 @@
+---
+/**
+ * ProcessPane.astro — Home "process" pane (T6 terminal redesign).
+ *
+ * Renders the FIFTH home `TerminalPane` (`~/proceso` | `~/process`,
+ * `[5/7]`), replacing the pre-terminal `ProcessSection.astro`. Matches
+ * `ProcesoTerminal.dc.html` (desktop 1440) / `ProcesoTerminalMovil.dc.html`
+ * (mobile 390) — the read-only visual + timing spec under the design
+ * scratchpad.
+ *
+ * Copy (`eyebrow`/`heading`/`sub`/`steps[].title/text`) is reused VERBATIM
+ * from `ProcessSection.astro`'s own local `copy` object — copied as-is,
+ * nothing added or reworded. New copy is only the decorative `./proceso` /
+ * `./process` prompt and the `paso NN` / `step NN` stage label, per-lang
+ * consts local to this component (same convention as every prior pane).
+ *
+ * Pipeline: `role="list"` wrapper + `role="listitem"` per stage (the
+ * mockup's own accessible pattern, explicitly offered as an alternative to
+ * a real `<ol>` in the task brief) — connectors sit as plain
+ * `aria-hidden="true"` siblings between stage items, at the SAME nesting
+ * level, so a screen reader's list item count stays exactly 3 regardless
+ * of the 2 decorative connectors interleaved in the DOM. Desktop lays the
+ * 5 children (stage/connector/stage/connector/stage) out via
+ * `grid-template-columns: minmax(0,1fr) 56px minmax(0,1fr) 56px
+ * minmax(0,1fr)` (auto-placement fills columns in DOM order — exactly 5
+ * children for 5 columns); mobile stacks them in a flex column. ONE set of
+ * DOM nodes serves both breakpoints: each connector renders both a
+ * horizontal (`t-flow`) and a vertical (`t-flow-v`) dashed bar plus both
+ * arrow glyphs (`▶`/`▼`), and CSS `display` picks the right pair per
+ * breakpoint — the same dual-element convention `ServicesPane.astro`
+ * already uses for its desktop/mobile arrow affordance.
+ *
+ * Each stage's spinner→✓ timing follows the task brief's own formula
+ * ("stage i shown at 800+500i ms, done 500ms later"), which is exactly
+ * what the mockup's own inline delays encode (800/1300, 1300/1800,
+ * 1800/2300) — a connector's delay equals the delay of the stage it leads
+ * INTO, so the dashes start flowing right as the next stage's box fades in.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives heading + copy + framing strings. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+
+const panePath = lang === 'es' ? 'proceso' : 'process';
+const promptCommand = lang === 'es' ? './proceso' : './process';
+const stepWord = lang === 'es' ? 'paso' : 'step';
+
+// Copy reused verbatim from ProcessSection.astro's own local object.
+const copy = {
+  es: {
+    eyebrow: 'El proceso',
+    heading: 'De problema confuso a herramienta útil, sin perder meses.',
+    sub: 'El objetivo no es construir por construir: es encontrar la herramienta que más impacto tiene en ventas, tiempo o control del negocio.',
+    steps: [
+      {
+        title: 'Diagnóstico claro',
+        text: 'Entendemos dónde se pierde dinero, tiempo o clientes y priorizamos lo que merece convertirse en software.',
+      },
+      {
+        title: 'Primer entregable pequeño',
+        text: 'Definimos un MVP usable para validar rápido, con alcance cerrado y sin funcionalidades decorativas.',
+      },
+      {
+        title: 'Iteración con datos reales',
+        text: 'Mejoramos lo que ya usan tus clientes o equipo, midiendo fricción, errores y oportunidades de automatización.',
+      },
+    ],
+  },
+  en: {
+    eyebrow: 'The process',
+    heading: 'From messy problem to useful tool without losing months.',
+    sub: 'The goal is not to build for the sake of building. It is to find the tool with the highest impact on sales, time or business control.',
+    steps: [
+      {
+        title: 'Clear diagnosis',
+        text: 'We understand where money, time or clients are being lost and prioritize what deserves to become software.',
+      },
+      {
+        title: 'Small first delivery',
+        text: 'We define a usable MVP to validate quickly, with closed scope and no decorative features.',
+      },
+      {
+        title: 'Iteration with real data',
+        text: 'We improve what your customers or team already use, measuring friction, errors and automation opportunities.',
+      },
+    ],
+  },
+} as const;
+
+const content = copy[lang];
+
+// Stage timing — "shown at 800+500i ms, done 500ms later" (task brief),
+// matching the mockup's own inline delays exactly.
+const stages = content.steps.map((step, i) => ({
+  ...step,
+  show: 800 + 500 * i,
+  done: 800 + 500 * i + 500,
+}));
+
+const headingId = 'process-heading';
+---
+
+<TerminalPane path={panePath} index="5/7" labelledby={headingId} class="t-pane-gutter">
+  <div class="process-pane">
+    <Prompt command={promptCommand} delay={200} duration={342} />
+
+    <div class="process-pane__heading-block t-show" style="--t-delay: 600ms;">
+      <div class="process-pane__heading-col">
+        <p class="t-comment process-pane__eyebrow"># {content.eyebrow}</p>
+        <h2 id={headingId} class="process-pane__heading">{content.heading}</h2>
+      </div>
+      <p class="process-pane__sub">{content.sub}</p>
+    </div>
+
+    <div class="process-pane__pipeline" role="list">
+      {
+        stages.map((stage, i) => (
+          <>
+            <div class="process-pane__stage t-show" style={`--t-delay: ${stage.show}ms;`} role="listitem">
+              <div class="process-pane__stage-head">
+                <span>
+                  {stepWord} {String(i + 1).padStart(2, '0')}
+                </span>
+                <span class="process-pane__check" aria-hidden="true">
+                  <span class="t-spinner" style={`--t-done: ${stage.done}ms;`} />
+                  <span class="t-tick" style={`--t-done: ${stage.done}ms;`}>
+                    ✓
+                  </span>
+                </span>
+              </div>
+              <h3 class="process-pane__stage-title">{stage.title}</h3>
+              <p class="process-pane__stage-body">{stage.text}</p>
+            </div>
+
+            {i < stages.length - 1 && (
+              <div
+                class="process-pane__connector t-show"
+                style={`--t-delay: ${stages[i + 1]?.show}ms;`}
+                aria-hidden="true"
+              >
+                <span class="process-pane__connector-bar process-pane__connector-bar--h t-flow" />
+                <span class="process-pane__connector-bar process-pane__connector-bar--v t-flow-v" />
+                <span class="process-pane__connector-arrow process-pane__connector-arrow--h">▶</span>
+                <span class="process-pane__connector-arrow process-pane__connector-arrow--v">▼</span>
+              </div>
+            )}
+          </>
+        ))
+      }
+    </div>
+  </div>
+</TerminalPane>
+
+<style>
+  .process-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 15px;
+  }
+
+  .process-pane__heading-block {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+
+  @media (min-width: 901px) {
+    .process-pane__heading-block {
+      grid-template-columns: minmax(0, 1fr) 460px;
+    }
+  }
+
+  .process-pane__heading-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .process-pane__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+  }
+
+  .process-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .process-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .process-pane__sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .process-pane__pipeline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr) 56px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__pipeline {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .process-pane__stage {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    transition:
+      border-color var(--motion-base) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__stage {
+      padding: 18px 14px;
+      gap: 10px;
+    }
+  }
+
+  .process-pane__stage:hover {
+    border-color: var(--accent-400);
+    box-shadow: 0 0 30px rgba(167, 139, 250, 0.1);
+  }
+
+  .process-pane__stage-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .process-pane__check {
+    position: relative;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  .process-pane__check .t-tick {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .process-pane__stage-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__stage-title {
+      font-size: 19px;
+    }
+  }
+
+  .process-pane__stage-body {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-2);
+  }
+
+  /* --- Connector: dual desktop/mobile bar + arrow, see docblock. -------- */
+  .process-pane__connector {
+    display: flex;
+    align-items: center;
+    padding-inline: 6px;
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__connector {
+      flex-direction: column;
+      justify-content: center;
+      height: 44px;
+      padding-inline: 0;
+    }
+  }
+
+  .process-pane__connector-bar {
+    display: none;
+  }
+
+  .process-pane__connector-bar--h {
+    display: block;
+    flex: 1 1 auto;
+    height: 2px;
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__connector-bar--h {
+      display: none;
+    }
+
+    .process-pane__connector-bar--v {
+      display: block;
+      flex: 1 1 auto;
+      width: 2px;
+    }
+  }
+
+  .process-pane__connector-arrow {
+    display: none;
+    color: var(--accent-400);
+  }
+
+  .process-pane__connector-arrow--h {
+    display: block;
+    margin-left: 2px;
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 860px) {
+    .process-pane__connector-arrow--h {
+      display: none;
+    }
+
+    .process-pane__connector-arrow--v {
+      display: block;
+      font-size: 11px;
+      line-height: 1;
+    }
+  }
+</style>

@@ -306,6 +306,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .srv-hero {
     position: relative;
     isolation: isolate;
+    overflow: clip;
     padding-block: clamp(72px, 10vw, 120px) clamp(48px, 7vw, 80px);
     padding-inline: clamp(20px, 5vw, 48px);
     max-width: 1080px;
@@ -374,7 +375,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   .srv-cta--primary {
-    color: var(--text-0);
+    color: var(--bg-0);
     background: var(--gradient-cta);
     background-size: 200% 200%;
     border: 1px solid transparent;

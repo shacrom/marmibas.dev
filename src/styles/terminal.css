@@ -1,0 +1,522 @@
+/* ============================================================================
+ * terminal.css — Terminal motion + primitives (T2 terminal redesign)
+ *
+ * Source of truth: DESIGN.md §7 (motion policy) and §8 (component contracts:
+ * TerminalPane, Prompt, buttons). Keyframes/timings/markup mirror the
+ * approved mockups (`Terminal.dc.html`, `TerminalMovil.dc.html`,
+ * `DemoTerminal.dc.html`, `ProcesoTerminal.dc.html`).
+ *
+ * Timing contract — every animated `.t-*` utility below reads its timing
+ * from CSS custom properties so markup can tune it per instance inline
+ * (e.g. `style="--t-delay: 350ms; --t-steps: 13"`), without new classes:
+ *   --t-dur    animation-duration       (per-class default below)
+ *   --t-delay  animation-delay          (default 0ms)
+ *   --t-steps  steps() step count       (`.t-type`/`.t-print` only)
+ *   --t-done   delay before the "resolved" state (`.t-spinner`/`.t-tick`)
+ *
+ * Reduced motion — DEVIATION FROM THE LITERAL TASK BRIEF, DOCUMENTED HERE:
+ * this file intentionally does NOT declare its own
+ * `@media (prefers-reduced-motion: reduce)` block. `src/styles/motion.css`
+ * states explicitly (and DESIGN.md §7 repeats): "Único punto donde se
+ * neutralizan TODAS las animaciones — vive en src/styles/motion.css y no
+ * se duplica en ningún otro sitio" / "Do NOT add another
+ * `@media (prefers-reduced-motion: reduce)` anywhere else in the project."
+ * That single-source-of-truth rule predates this task and is stronger than
+ * the generic per-task checklist line asking for a block "in terminal.css".
+ * The terminal-specific reduced-motion FINAL STATES (spinner hidden, tick
+ * visible, cursor static, scan hidden, etc.) are therefore appended to the
+ * one existing block in `motion.css` instead of opening a second block
+ * here. Nothing terminal-related is unhandled — it just lives in the file
+ * the project designates as the single source of truth.
+ *
+ * Progressive enhancement / run-on-view — without JS, nothing carries
+ * `.is-waiting`, so every `.t-*` animation plays on load (server-rendered
+ * final state is always correct). `TerminalPane.astro`'s client script adds
+ * `.is-waiting` to a pane not yet in the viewport and removes it once an
+ * IntersectionObserver reports it has scrolled in; see the rule at the
+ * bottom of this file.
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------- */
+/* 1. Keyframes                                                            */
+/* ----------------------------------------------------------------------- */
+
+/* t-type: command "typing" — clip-path reveal left → right. Pair with
+   `steps(var(--t-steps, <command length>), end)` so each step reveals one
+   character. */
+@keyframes t-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* t-print: output line "printing" — clip-path reveal top → down, as if the
+   terminal flushed the whole line at once after the command resolved. */
+@keyframes t-print {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* t-show: instant opacity reveal (used both standalone and composed with
+   `t-blink` for the caret's initial appearance). */
+@keyframes t-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* t-fade: opacity + 6px rise — generic content fade used for line-level
+   reveals that want a touch more motion than `t-show`. */
+@keyframes t-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* t-blink: 2-step terminal caret blink. Distinct from `motion.css`'s
+   `caret-blink` (kept separate: that one is shared site-wide, this one is
+   scoped to the terminal caret's own composed animation list). */
+@keyframes t-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* t-spin: full rotation, used by `.t-spinner`'s ring. */
+@keyframes t-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* t-hide: opacity → 0, `forwards`-only. Combined with `t-spin` and an
+   `animation-delay: var(--t-done)` on `.t-spinner` so the ring spins then
+   disappears once the "task" resolves. */
+@keyframes t-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+/* t-sweep: scanline sweep band. Starts just above the pane and travels
+   160% of the viewport height — comfortably clears any real pane height
+   (the pane itself clips via `overflow: hidden`), unlike a fixed pixel
+   value tied to one mockup's fixed canvas size. */
+@keyframes t-sweep {
+  from {
+    transform: translateY(-160px);
+  }
+  to {
+    transform: translateY(160vh);
+  }
+}
+
+/* t-pulse: LED box-shadow ring pulse (diagnostic/status dots). */
+@keyframes t-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-400) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px transparent;
+  }
+}
+
+/* t-stripes: scrolling diagonal-free stripe pattern — "running" activity
+   bars (T5 demo pane). Shifts `background-position` only; the striped
+   `background-image` itself is set by `.t-stripes` below, not here. */
+@keyframes t-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 14px 0;
+  }
+}
+
+/* t-grow: one-shot vertical grow from a fixed bottom origin — chart bars
+   revealing their height (T5 demo pane). */
+@keyframes t-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* t-slide: one-shot row/line entrance — opacity + a short leftward-origin
+   slide (T5 demo pane list/table rows). Named distinctly from `.t-fade`
+   (which rises vertically) since this one moves horizontally. */
+@keyframes t-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* t-flow / t-flow-v: scrolling dashed connector between process pipeline
+   stages (T6 home process pane). Continuous/infinite like `.t-stripes`
+   above — background-position only, the dashed `background-image` itself
+   is set by the utility class, not the keyframe. Horizontal (`t-flow`,
+   desktop pipeline) and vertical (`t-flow-v`, mobile stacked pipeline) are
+   separate keyframes/classes — `ProcessPane.astro` renders both connector
+   bars and lets CSS `display` pick the right one per breakpoint, rather
+   than trying to flip one shared background-image's direction at a
+   breakpoint (`background-position`-driven keyframes can't be redirected
+   by a later cascade rule without redeclaring the whole animation). */
+@keyframes t-flow {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 16px 0;
+  }
+}
+
+@keyframes t-flow-v {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 16px;
+  }
+}
+
+.t-flow {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--accent-400) 0 6px,
+    transparent 6px 16px
+  );
+  background-size: 16px 2px;
+  background-repeat: repeat-x;
+  animation: t-flow 600ms linear infinite;
+}
+
+.t-flow-v {
+  background-image: repeating-linear-gradient(
+    180deg,
+    var(--accent-400) 0 6px,
+    transparent 6px 16px
+  );
+  background-size: 2px 16px;
+  background-repeat: repeat-y;
+  animation: t-flow-v 600ms linear infinite;
+}
+
+/* t-glitch: short color/position flicker for "broken data" cells (T5 demo
+   pane spreadsheet mock). `steps(4, end)` so each of the 4 iterations reads
+   as a discrete flicker frame, not a smooth wobble; fill-mode is
+   deliberately the default (`none`) so once it ends the element settles
+   back on whatever colour its own markup set (danger red for `#ERROR`,
+   warning terracotta for `Duplicado`) rather than the keyframe's hardcoded
+   colour. */
+@keyframes t-glitch {
+  0% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* ----------------------------------------------------------------------- */
+/* 2. Utility classes — timing-parametrised via custom properties.         */
+/* ----------------------------------------------------------------------- */
+
+/* Fill mode is `backwards`, never `both`: every element's base style IS its
+   final state, so once an animation ends the base style takes over. With
+   `both`, Chrome can end a `steps()` animation at progress 0.9999… and keep
+   the last step (e.g. the final typed character) clipped forever. */
+
+.t-type {
+  display: inline-block;
+  animation: t-type var(--t-dur, 500ms) steps(var(--t-steps, 12), end) var(--t-delay, 0ms) backwards;
+}
+
+.t-print {
+  display: inline-block;
+  animation: t-print var(--t-dur, 240ms) steps(var(--t-steps, 3), end) var(--t-delay, 0ms) backwards;
+}
+
+.t-show {
+  animation: t-show var(--t-dur, 60ms) linear var(--t-delay, 0ms) backwards;
+}
+
+.t-fade {
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-reveal: generic opacity+rise reveal, identical to `.t-fade` under a
+   name that does not imply "terminal line output" — reserved for
+   non-prompt content (e.g. cards, panels) composed inside a `.t-pane` in
+   later tasks (T3+). Included now because the run-on-view pause rule below
+   already needs to cover it. */
+.t-reveal {
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-cursor: violet block caret. Appears at `--t-delay` (via `t-show`, 1ms)
+   then blinks indefinitely (`t-blink`, also delayed so it doesn't blink
+   before it has appeared). */
+.t-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  vertical-align: -0.22em;
+  background: var(--accent-400);
+  animation:
+    t-show 1ms linear var(--t-delay, 0ms) both,
+    t-blink 1.1s steps(1, end) var(--t-delay, 0ms) infinite;
+}
+
+/* t-spinner: absolutely-positioned ring, meant inside a small square
+   wrapper (`position: relative`, e.g. 16px×16px) alongside a `.t-tick`.
+   Spins forever, then hides at `--t-done` so the sibling tick can "take
+   over" the resolved state. */
+.t-spinner {
+  position: absolute;
+  inset: 1px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent-400);
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation:
+    t-spin 700ms linear infinite,
+    t-hide 1ms linear var(--t-done, 0ms) forwards;
+}
+
+/* t-tick: the resolved "✓" companion to `.t-spinner`. Hidden until
+   `--t-done`, then appears — content (the ✓ glyph) is real text supplied
+   by the consumer, not CSS `content`. */
+.t-tick {
+  display: inline-block;
+  color: var(--accent-400);
+  animation: t-show 1ms linear var(--t-done, 0ms) backwards;
+}
+
+/* t-led: small pulsing status dot (DESIGN.md §8 pane-bar "LED"). */
+.t-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-400);
+  animation: t-pulse 1.8s ease-in-out infinite;
+}
+
+/* t-scan: decorative scanline sweep band. Self-contained — positions
+   itself absolutely against the nearest positioned ancestor (`.t-pane`),
+   so a consumer only needs `<div class="t-scan" aria-hidden="true"></div>`. */
+.t-scan {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 160px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--accent-400) 5%, transparent),
+    transparent
+  );
+  animation: t-sweep 7s linear infinite;
+  pointer-events: none;
+}
+
+/* t-stripes: violet diagonal-stripe texture inside a running machine's
+   ASCII activity bar (T5 demo pane). Continuous/infinite like `.t-led`/
+   `.t-scan` above — a consumer removes the class entirely when the machine
+   stops rather than pausing it, so no fill-mode/`--t-delay` axis is needed. */
+.t-stripes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--accent-400) 0 2px,
+    transparent 2px 7px
+  );
+  background-size: 14px 100%;
+  animation: t-stripes 500ms linear infinite;
+}
+
+/* t-grow: one-shot bar reveal growing up from its own bottom edge (T5 demo
+   pane "Ventas por semana" chart bars). `backwards` per the fill-mode rule
+   above — the bar's own height/transform is unset outside the animation,
+   so it settles at "grown" (no transform) once the animation ends. */
+.t-grow {
+  transform-origin: center bottom;
+  animation: t-grow var(--t-dur, 700ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-slide: one-shot row/line entrance (T5 demo pane machine/doc-line/table
+   rows) — opacity + a short leftward-origin slide. Distinct from `.t-fade`
+   (vertical rise) so a consumer can choose the direction that matches the
+   list it's revealing. */
+.t-slide {
+  animation: t-slide var(--t-dur, 350ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-glitch: short flicker on "broken data" cells (T5 demo pane spreadsheet
+   mock). Fill-mode `none` (the keyframe's own default, kept explicit here
+   for clarity) — see the `@keyframes t-glitch` docblock above for why. */
+.t-glitch {
+  display: inline-block;
+  animation: t-glitch 300ms steps(4, end) var(--t-delay, 500ms) 4 none;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 3. Components — buttons, links, comments.                              */
+/* ----------------------------------------------------------------------- */
+
+/* btn-term: secondary/outline terminal button — DESIGN.md §8 "[ Acción ]"
+   bracket syntax is supplied by the caller's label text, not added here. */
+.btn-term {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 44px;
+  padding-inline: 1.125rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-0);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease-out),
+    color var(--motion-fast) var(--motion-ease-out),
+    border-color var(--motion-fast) var(--motion-ease-out);
+}
+
+.btn-term:hover {
+  background: var(--accent-400);
+  border-color: var(--accent-400);
+  color: var(--bg-0);
+}
+
+.btn-term:focus-visible {
+  outline: 2px solid var(--accent-400);
+  outline-offset: 2px;
+}
+
+/* btn-term--primary: solid violet fill — DESIGN.md §8 "Primario". */
+.btn-term--primary {
+  background: var(--accent-400);
+  border-color: var(--accent-400);
+  color: var(--bg-0);
+}
+
+.btn-term--primary:hover {
+  background: var(--accent-300);
+  border-color: var(--accent-300);
+  color: var(--bg-0);
+}
+
+/* t-link: inline terminal-styled link (prompt output, comments). */
+.t-link {
+  color: var(--accent-300);
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--motion-ease-out);
+}
+
+.t-link:hover,
+.t-link:focus-visible {
+  color: var(--text-0);
+}
+
+/* --font-glyphs: box-drawing and block characters (ASCII art, `tree`
+   connectors). The self-hosted IBM Plex Mono subsets (latin, latin-ext) do
+   not include U+2500–U+259F, so those glyphs would fall back to a font with
+   different metrics and break the art; system monospace fonts ship them. */
+:root {
+  --font-glyphs: ui-monospace, 'SFMono-Regular', Menlo, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono',
+    'Liberation Mono', monospace;
+}
+
+/* t-comment: muted "# " prefixed line. The literal `# ` prefix is markup,
+   not CSS-generated content (keeps it copy-pasteable/selectable/screen-
+   reader-visible as real text). */
+.t-comment {
+  color: var(--text-3);
+}
+
+/* t-pane-gutter: outer spacing for a `.t-pane` placed directly in the page
+   flow (not already inside a padded container) — desktop: 40px side +
+   bottom margin, so the window "floats" with breathing room; mobile
+   (≤640px, the SAME breakpoint `.t-pane` itself uses to go full-bleed):
+   flush, no margin, matching the pane's own edge-to-edge mobile treatment.
+   Established in T3 for Footer.astro; reuse this instead of redeclaring
+   the same margin per section (T4+ home panes). */
+.t-pane-gutter {
+  margin: 0 40px 40px;
+}
+
+@media (max-width: 640px) {
+  .t-pane-gutter {
+    margin: 0;
+  }
+}
+
+/* ----------------------------------------------------------------------- */
+/* 4. Run-on-view — pause every terminal animation while its pane hasn't   */
+/*    scrolled into view yet. `TerminalPane.astro`'s client script is the  */
+/*    only thing that ever adds/removes `.is-waiting`; without JS nothing  */
+/*    gets this class, so animations simply play on load (progressive     */
+/*    enhancement, per DESIGN.md §7).                                      */
+/* ----------------------------------------------------------------------- */
+
+.t-pane.is-waiting
+  :is(
+    .t-type,
+    .t-print,
+    .t-show,
+    .t-fade,
+    .t-cursor,
+    .t-spinner,
+    .t-tick,
+    .t-reveal,
+    .t-grow,
+    .t-slide
+  ) {
+  animation-play-state: paused;
+}

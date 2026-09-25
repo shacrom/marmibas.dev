@@ -1,0 +1,85 @@
+---
+/**
+ * Prompt.astro — a single terminal prompt line (T2 terminal redesign).
+ *
+ * DESIGN.md §8 contract: `marcos@marmibas` (accent-400) + `:~$ ` (text-2),
+ * followed by the command typed with `.t-type` (terminal.css). The typed
+ * command is always real, selectable/screen-reader-visible text — `t-type`
+ * only clip-paths it visually during the reveal animation, it never
+ * toggles visibility/display.
+ *
+ * NOT used in any page yet — T3–T6 build the sections that render these.
+ *
+ * Usage (future, T3+):
+ *   <Prompt command="whoami" />
+ *   <Prompt command="ls servicios/" delay={350} />
+ *   <Prompt command="cat enfoque.txt" showAt={1200} as="div" />
+ */
+
+export interface Props {
+  /** The command text, typed out via `.t-type`. Kept as real DOM text. */
+  command: string;
+  /** Typing start delay in ms (`--t-delay` on the command span). Defaults to `0`. */
+  delay?: number;
+  /** Typing duration in ms. Defaults to `max(220, command.length * 38)`. */
+  duration?: number;
+  /**
+   * When set, the whole line stays hidden (via `.t-show`) until `showAt`
+   * ms — used to stagger a prompt after a previous line's output.
+   */
+  showAt?: number;
+  /** Root element tag. Defaults to `p`. */
+  as?: 'p' | 'div';
+  /** Extra classes merged onto the root element. */
+  class?: string;
+}
+
+const {
+  command,
+  delay = 0,
+  duration,
+  showAt,
+  as: Tag = 'p',
+  class: className,
+} = Astro.props as Props;
+
+const typeDuration = duration ?? Math.max(220, command.length * 38);
+const steps = Math.max(1, command.length);
+
+const rootClass = ['t-prompt', showAt !== undefined ? 't-show' : undefined, className]
+  .filter(Boolean)
+  .join(' ');
+
+const rootStyle = showAt !== undefined ? `--t-delay: ${showAt}ms;` : undefined;
+const commandStyle = `--t-steps: ${steps}; --t-dur: ${typeDuration}ms; --t-delay: ${delay}ms;`;
+---
+
+<Tag class={rootClass} style={rootStyle}
+  ><span class="t-prompt__user">marcos@marmibas</span><span class="t-prompt__sep">:~$ </span><span
+    class="t-prompt__command t-type"
+    style={commandStyle}>{command}</span
+  ></Tag
+>
+
+<style>
+  .t-prompt {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-family: var(--font-mono);
+  }
+
+  .t-prompt__user {
+    color: var(--accent-400);
+  }
+
+  .t-prompt__sep {
+    color: var(--text-2);
+    white-space: pre;
+  }
+
+  .t-prompt__command {
+    color: var(--text-0);
+  }
+</style>

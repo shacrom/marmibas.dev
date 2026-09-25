@@ -263,4 +263,105 @@
     opacity: 1;
     transform: none;
   }
+
+  /* --- Terminal (T2, src/styles/terminal.css) final states -------------
+   * Zeroing the duration tokens above already neutralises `t-type`/
+   * `t-print`'s `steps()` timing and `t-fade`'s easing, but a handful of
+   * `.t-*` utilities need an explicit end-state override: clip-path-based
+   * reveals must resolve to fully revealed, the spinner/tick pair must
+   * show its RESOLVED state (not a mid-spin frame), the caret must be a
+   * static solid block (no blink loop), and decorative motion (scanline
+   * sweep, LED pulse) must disappear rather than freeze mid-animation.
+   * Kept here, not in terminal.css, per this file's single-source-of-truth
+   * rule above. */
+  .t-type,
+  .t-print,
+  .t-show,
+  .t-fade,
+  .t-reveal {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
+  .t-cursor {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .t-spinner {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .t-tick {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .t-led {
+    animation: none !important;
+    box-shadow: none;
+  }
+
+  .t-scan {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  /* --- Demo pane (T5, src/styles/terminal.css) final states ------------
+   * Same rationale as the terminal block above: zeroing the duration
+   * tokens alone is not enough for a DELAYED one-shot reveal (`.t-grow`,
+   * `.t-slide`) — an unzeroed `--t-delay` would still hold the element at
+   * its "before" frame for the whole original delay, then flash to the
+   * end state. `animation: none` bypasses the delay entirely and the
+   * explicit opacity/transform below IS the resolved end-state.
+   * `.t-stripes` (running-machine bar texture) and `.t-glitch` (broken-data
+   * flicker) are continuous/repeating DECORATIVE effects, like `.t-scan`
+   * above — their motion simply disappears rather than freezing
+   * mid-frame; nothing else needs overriding since their own non-animated
+   * base styles (or the caller's inline colour, for `.t-glitch`) already
+   * are the correct static appearance. */
+  .t-grow {
+    animation: none !important;
+    transform: none;
+  }
+
+  .t-slide {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .t-stripes,
+  .t-glitch {
+    animation: none !important;
+  }
+
+  /* --- Process pane (T6, src/styles/terminal.css) final state ----------
+   * `.t-flow`/`.t-flow-v` (pipeline connector dashes) are continuous/
+   * repeating decorative motion, same category as `.t-stripes` above:
+   * their own static background-image is already the correct resting
+   * appearance, so the dashes simply stop scrolling instead of needing an
+   * opacity/transform override. */
+  .t-flow,
+  .t-flow-v {
+    animation: none !important;
+  }
+
+  /* --- FAQ pane (T6) final state -----------------------------------------
+   * `.faq-pane__item[open] .faq-pane__answer` (FaqPane.astro) plays a
+   * `t-fade`-style reveal every time a `<details>` is toggled open, not
+   * just once on load — the zeroed duration tokens above already make it
+   * instant, but it still needs the same explicit end-state override as
+   * `.t-fade` (see the terminal block above) since `backwards` fill mode
+   * only holds the FROM state during the (here, zero) delay: without this,
+   * the animation would still run its clip/opacity keyframe at 0.01ms
+   * instead of never animating at all. */
+  .faq-pane__item[open] .faq-pane__answer {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
 }

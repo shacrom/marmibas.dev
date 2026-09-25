@@ -1,0 +1,285 @@
+---
+/**
+ * FaqPane.astro — Home "FAQ" pane (T6 terminal redesign).
+ *
+ * Renders the SEVENTH and last home `TerminalPane` (`~/faq`, `[7/7]`),
+ * replacing the pre-terminal `FAQSection.astro`. Matches `FAQTerminal.
+ * dc.html` (desktop 1440) / `FAQTerminalMovil.dc.html` (mobile 390) — the
+ * read-only visual + timing spec under the design scratchpad.
+ *
+ * Copy: `eyebrow`/`heading`/`subheading` are reused VERBATIM from
+ * `FAQSection.astro`'s own local `copy` object (never lived in `ui.ts`).
+ * The FAQ list itself comes from `getFaqs(lang)` (`src/lib/faqs.ts`,
+ * unchanged) — same source of truth `FAQSection.astro` used, and the SAME
+ * source `index.astro`/`en/index.astro` pass to `<BaseLayout faqs={...}>`
+ * for the FAQPage JSON-LD, so nothing about that Schema wiring changes
+ * here. New copy is only the decorative `cat preguntas.txt` / `cat
+ * questions.txt` prompt, per-lang, local to this component.
+ *
+ * Accordion: native `<details>`/`<summary>` (zero JS, full keyboard/
+ * screen-reader support by default), first item `open` on the server. The
+ * `[+]`/`[-]` marker and the question's `text-1 → text-0` colour swap are
+ * pure CSS `[open]` attribute-selector toggles (no JS) — same mechanism
+ * `FAQSection.astro`'s own chevron rotation already relied on, just
+ * applied to a text marker instead of an SVG chevron. The answer's short
+ * fade-on-open (`.faq-pane__item[open] .faq-pane__answer`) re-plays every
+ * time a `<details>` toggles open (browsers (re)start a CSS animation
+ * whenever an element newly matches a rule that names it) — its reduced-
+ * motion override lives in `motion.css`'s single reduced-motion block,
+ * per this project's rule.
+ *
+ * Items reveal in sequence via `.t-show` (same run-on-view pane pause as
+ * every other terminal pane). Mobile drops the index column (`01`…`07`)
+ * per the task brief — implemented by hiding `.faq-pane__index` and
+ * collapsing the summary's grid to 2 columns at the same breakpoint
+ * `TerminalPane`/every other pane already uses (640px).
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import { getFaqs } from '../../lib/faqs';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives heading + copy + the FAQ list. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+
+const catCommand = lang === 'es' ? 'cat preguntas.txt' : 'cat questions.txt';
+
+// Copy reused verbatim from FAQSection.astro's own local object.
+const copy = {
+  es: {
+    eyebrow: 'FAQ',
+    heading: 'Preguntas frecuentes',
+    subheading: 'Las dudas más comunes que recibo antes de empezar un proyecto.',
+  },
+  en: {
+    eyebrow: 'FAQ',
+    heading: 'Frequently asked questions',
+    subheading: 'The most common questions I get before starting a project.',
+  },
+} as const;
+
+const content = copy[lang];
+const faqs = getFaqs(lang);
+const headingId = 'faq-heading';
+---
+
+<TerminalPane path="faq" index="7/7" labelledby={headingId} class="t-pane-gutter">
+  <div class="faq-pane">
+    <Prompt command={catCommand} delay={200} duration={646} />
+
+    <div class="faq-pane__heading-block t-show" style="--t-delay: 900ms;">
+      <div class="faq-pane__heading-col">
+        <p class="t-comment faq-pane__eyebrow"># {content.eyebrow}</p>
+        <h2 id={headingId} class="faq-pane__heading">{content.heading}</h2>
+      </div>
+      <p class="faq-pane__sub">{content.subheading}</p>
+    </div>
+
+    <div class="faq-pane__list">
+      {
+        faqs.map((faq, i) => (
+          <details
+            class="faq-pane__item t-show"
+            style={`--t-delay: ${1100 + i * 90}ms;`}
+            open={i === 0 ? true : undefined}
+          >
+            <summary class="faq-pane__summary">
+              <span class="faq-pane__index" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="faq-pane__marker" aria-hidden="true">
+                <span class="faq-pane__marker-closed">[+]</span>
+                <span class="faq-pane__marker-open">[-]</span>
+              </span>
+              <span class="faq-pane__question">{faq.question}</span>
+            </summary>
+            <div class="faq-pane__answer">
+              <span class="faq-pane__arrow" aria-hidden="true">
+                →
+              </span>
+              <p>{faq.answer}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</TerminalPane>
+
+<style>
+  .faq-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 15px;
+  }
+
+  .faq-pane__heading-block {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+
+  @media (min-width: 901px) {
+    .faq-pane__heading-block {
+      grid-template-columns: minmax(0, 1fr) 420px;
+    }
+  }
+
+  .faq-pane__heading-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .faq-pane__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+  }
+
+  .faq-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .faq-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .faq-pane__sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .faq-pane__list {
+    max-width: 1040px;
+    border-top: 1px solid var(--border);
+  }
+
+  .faq-pane__item {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .faq-pane__summary {
+    display: grid;
+    grid-template-columns: 36px 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 16px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .faq-pane__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-pane__summary:hover,
+  .faq-pane__summary:focus-visible {
+    background: color-mix(in srgb, var(--accent-400) 8%, transparent);
+  }
+
+  .faq-pane__summary:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: -2px;
+  }
+
+  @media (max-width: 640px) {
+    .faq-pane__summary {
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: start;
+      min-height: 44px;
+      box-sizing: border-box;
+      padding: 14px 8px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .faq-pane__index {
+      display: none;
+    }
+  }
+
+  .faq-pane__index {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+  }
+
+  .faq-pane__marker {
+    font-weight: 600;
+    color: var(--accent-400);
+  }
+
+  .faq-pane__marker-open {
+    display: none;
+  }
+
+  .faq-pane__item[open] .faq-pane__marker-open {
+    display: inline;
+  }
+
+  .faq-pane__item[open] .faq-pane__marker-closed {
+    display: none;
+  }
+
+  .faq-pane__question {
+    font-weight: 500;
+    color: var(--text-1);
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .faq-pane__item[open] .faq-pane__question {
+    color: var(--text-0);
+  }
+
+  .faq-pane__answer {
+    display: flex;
+    gap: 12px;
+    padding: 0 12px 20px 108px;
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--text-2);
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .faq-pane__answer {
+      gap: 10px;
+      padding: 0 8px 18px 48px;
+    }
+  }
+
+  .faq-pane__answer p {
+    margin: 0;
+    max-width: 72ch;
+  }
+
+  .faq-pane__arrow {
+    flex-shrink: 0;
+    color: var(--accent-400);
+  }
+
+  /* Short fade every time the item opens — see docblock for why this can
+     safely re-trigger without JS. Base state above (`opacity: 1`) is
+     already the resolved end-state, matching this project's "backwards,
+     never both" fill-mode rule. */
+  .faq-pane__item[open] .faq-pane__answer {
+    animation: t-fade 300ms var(--motion-ease-out) backwards;
+  }
+</style>

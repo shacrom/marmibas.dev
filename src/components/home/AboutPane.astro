@@ -1,0 +1,360 @@
+---
+/**
+ * AboutPane.astro — Home "about" pane (T6 terminal redesign).
+ *
+ * Renders the SIXTH home `TerminalPane` (`~/sobre-mi` | `~/about`, `[6/7]`),
+ * replacing the pre-terminal `AboutSection.astro`. Two columns on desktop
+ * (left: `neofetch` block; right: bio + CTAs), stacked on mobile — matching
+ * `SobreMiTerminal.dc.html` (desktop 1440) / `SobreMiTerminalMovil.dc.html`
+ * (mobile 390), the read-only visual + timing spec under the design
+ * scratchpad.
+ *
+ * Copy reused VERBATIM from `ui.ts` (unchanged): `about.heading`,
+ * `about.bio.p1/p2/p3`, `about.cta.contact`, `about.cta.experience`.
+ *
+ * New content — the `neofetch` block's `<dl>` — is a set of FACTS DERIVED
+ * from the existing bio copy (task brief gives the exact ES label/value
+ * pairs, lifted straight from the ES bio sentences already in `ui.ts`; the
+ * EN pairs below are the same derivation applied to the EN bio, quoting it
+ * directly rather than re-translating the ES values):
+ *   - Nombre/Rol/Experiencia/Clientes: `about.bio.p1` ("Soy Marcos... 5 años
+ *     ... startups, pymes y grandes compañías" / EN: "I'm marmibas... 5
+ *     years... startups to large enterprises" — EN literally introduces
+ *     itself as "marmibas", not "Marcos", so the EN `Name` fact quotes
+ *     that rather than importing the ES name).
+ *   - Hoy/Para/Socio industrial: `about.bio.p2` ("trabajo de forma
+ *     independiente... emprendedores, autónomos y pequeñas empresas...
+ *     Plazasys" / EN: "I work independently... entrepreneurs, freelancers
+ *     and small businesses... Plazasys").
+ *   - Base/Primera llamada: `about.bio.p3` ("España, en remoto... gratis y
+ *     sin compromiso" / EN: "remotely from Spain... free and no-strings-
+ *     attached").
+ *   - `Experiencia`/`Experience` reuses the existing `about.stats.
+ *     yearsValue` ("5+") rather than re-deriving a new number.
+ * Framing strings (`neofetch`, `cat sobre-mi.txt`/`cat about.txt`, the
+ * `marcos@marmibas` header + rule) are new, decorative, per-lang consts —
+ * same convention as every prior pane.
+ *
+ * Timing: the mockup gives DIFFERENT delays per breakpoint for the right
+ * column (desktop runs it in parallel with the left column; mobile
+ * serializes it after, since the two columns are now stacked) — this
+ * component intentionally uses the DESKTOP delays for both breakpoints, a
+ * documented, imperceptible simplification in the same spirit as
+ * `HeroPane.astro`'s own `.t-print` duration note: the content still reveals
+ * in the same relative order, just without a duplicate media-scoped delay
+ * override for every affected element.
+ *
+ * ASCII art: 6 lines stored as a plain JS string array and rendered via
+ * `{line}` expressions (never literal text inside a `white-space: pre`
+ * element written across multiple indented source lines) — the exact
+ * pitfall documented in this task's QA lessons (indentation/newlines
+ * inside a `white-space: pre` element corrupt the rendered art).
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives heading + copy + framing strings. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+const t = useTranslations(lang);
+
+const panePath = lang === 'es' ? 'sobre-mi' : 'about';
+const catCommand = lang === 'es' ? 'cat sobre-mi.txt' : 'cat about.txt';
+
+const facts: Record<Language, Array<{ label: string; value: string }>> = {
+  es: [
+    { label: 'Nombre', value: 'Marcos' },
+    { label: 'Rol', value: 'Ingeniero informático' },
+    { label: 'Experiencia', value: '5+ años' },
+    { label: 'Clientes', value: 'startups, pymes y grandes compañías' },
+    { label: 'Hoy', value: 'independiente' },
+    { label: 'Para', value: 'emprendedores, autónomos y pequeñas empresas' },
+    { label: 'Socio industrial', value: 'Plazasys' },
+    { label: 'Base', value: 'España · en remoto' },
+    { label: 'Primera llamada', value: 'gratis y sin compromiso' },
+  ],
+  en: [
+    { label: 'Name', value: 'marmibas' },
+    { label: 'Role', value: 'Software engineer' },
+    { label: 'Experience', value: '5+ years' },
+    { label: 'Clients', value: 'startups to large enterprises' },
+    { label: 'Today', value: 'independently' },
+    { label: 'For', value: 'entrepreneurs, freelancers and small businesses' },
+    { label: 'Industrial partner', value: 'Plazasys' },
+    { label: 'Base', value: 'Spain · remote' },
+    { label: 'First call', value: 'free and no-strings-attached' },
+  ],
+};
+
+const currentFacts = facts[lang];
+
+// ASCII "M" — plain string array, rendered via {line} expressions (see
+// docblock's QA-lesson note on `white-space: pre`).
+const asciiLines = [
+  '███╗   ███╗',
+  '████╗ ████║',
+  '██╔████╔██║',
+  '██║╚██╔╝██║',
+  '██║ ╚═╝ ██║',
+  '╚═╝     ╚═╝',
+];
+
+const swatchTokens = [
+  '--border',
+  '--accent-700',
+  '--accent-600',
+  '--accent-500',
+  '--accent-400',
+  '--accent-300',
+  '--accent-100',
+  '--text-0',
+];
+
+const contactHref = getRoutePath('contact', lang);
+const experienceHref = getRoutePath('experience', lang);
+const headingId = 'about-heading';
+---
+
+<TerminalPane path={panePath} index="6/7" labelledby={headingId} class="t-pane-gutter">
+  <div class="about-pane">
+    <div class="about-pane__col about-pane__col--left">
+      <Prompt command="neofetch" delay={200} duration={304} />
+
+      <div class="about-pane__neofetch t-show" style="--t-delay: 600ms;">
+        <div class="about-pane__ascii" aria-hidden="true">
+          {asciiLines.map((line) => <span style="white-space: pre;">{line}</span>)}
+        </div>
+
+        <div class="about-pane__identity">
+          <span class="about-pane__handle"
+            ><span class="about-pane__handle-accent">marcos</span>@<span class="about-pane__handle-accent"
+              >marmibas</span
+            ></span
+          >
+          <span class="about-pane__rule" aria-hidden="true">────────────────</span>
+
+          <dl class="about-pane__facts">
+            {
+              currentFacts.map((fact, i) => (
+                <div class="about-pane__fact t-show" style={`--t-delay: ${700 + i * 90}ms;`}>
+                  <dt>{fact.label}:</dt>
+                  <dd>{fact.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+
+          <div class="about-pane__swatches t-show" style="--t-delay: 1550ms;" aria-hidden="true">
+            {swatchTokens.map((token) => <span style={`background-color: var(${token});`} />)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-pane__col about-pane__col--right">
+      <Prompt command={catCommand} showAt={900} delay={950} duration={608} />
+
+      <h2 id={headingId} class="about-pane__heading t-fade" style="--t-delay: 1500ms;">
+        <span class="t-comment">{'# '}</span>{t('about.heading')}
+      </h2>
+
+      <div class="about-pane__bio t-fade" style="--t-delay: 1600ms;">
+        <p>{t('about.bio.p1')}</p>
+        <p>{t('about.bio.p2')}</p>
+        <p>{t('about.bio.p3')}</p>
+      </div>
+
+      <div class="about-pane__ctas t-fade" style="--t-delay: 1750ms;">
+        <TerminalButton href={contactHref} primary class="about-pane__cta">
+          [ {t('about.cta.contact')} ]
+        </TerminalButton>
+        <a class="t-link about-pane__experience" href={experienceHref}>
+          {t('about.cta.experience')} →
+        </a>
+      </div>
+    </div>
+  </div>
+</TerminalPane>
+
+<style>
+  .about-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    font-size: 15px;
+  }
+
+  @media (min-width: 901px) {
+    .about-pane {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: start;
+    }
+  }
+
+  .about-pane__col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .about-pane__neofetch {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+
+  @media (max-width: 900px) {
+    .about-pane__neofetch {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  .about-pane__ascii {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-glyphs);
+    font-size: 15px;
+    line-height: 1.08;
+    color: var(--accent-400);
+    text-shadow: 0 0 16px rgba(167, 139, 250, 0.45);
+  }
+
+  @media (max-width: 900px) {
+    .about-pane__ascii {
+      font-size: 12px;
+      text-shadow: 0 0 14px rgba(167, 139, 250, 0.45);
+    }
+  }
+
+  .about-pane__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .about-pane__handle {
+    font-weight: 600;
+    color: var(--text-0);
+  }
+
+  .about-pane__handle-accent {
+    color: var(--accent-400);
+  }
+
+  .about-pane__rule {
+    color: var(--border-strong);
+  }
+
+  .about-pane__facts {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .about-pane__fact {
+    display: flex;
+    gap: 8px;
+  }
+
+  .about-pane__fact dt {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--accent-400);
+  }
+
+  .about-pane__fact dd {
+    margin: 0;
+    color: var(--text-0);
+    overflow-wrap: anywhere;
+  }
+
+  .about-pane__swatches {
+    display: flex;
+    margin-top: 8px;
+  }
+
+  .about-pane__swatches span {
+    width: 26px;
+    height: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .about-pane__swatches span {
+      flex-grow: 1;
+      width: auto;
+      height: 12px;
+    }
+  }
+
+  .about-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .about-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .about-pane__bio {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-1);
+  }
+
+  .about-pane__bio p {
+    margin: 0;
+  }
+
+  .about-pane__ctas {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .about-pane__ctas {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+
+    .about-pane__cta {
+      width: 100%;
+    }
+
+    .about-pane__experience {
+      justify-content: center;
+    }
+  }
+
+  .about-pane__experience {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: var(--text-sm);
+  }
+</style>

@@ -290,7 +290,7 @@ const tagline =
   }
 
   .field__input[aria-invalid='true'] {
-    border-color: #f87171;
+    border-color: var(--danger);
   }
 
   .field__textarea {
@@ -302,7 +302,7 @@ const tagline =
   .field__error {
     min-height: 1em;
     font-size: var(--text-sm);
-    color: #fca5a5;
+    color: var(--danger);
   }
 
   .field__error:empty {
@@ -331,7 +331,7 @@ const tagline =
     font-family: var(--font-sans);
     font-size: var(--text-base);
     font-weight: 500;
-    color: var(--text-0);
+    color: var(--bg-0);
     background: var(--gradient-cta);
     background-size: 200% 200%;
     background-position: 0% 50%;
@@ -397,7 +397,7 @@ const tagline =
   .contact__alert--error {
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
+    color: var(--danger);
   }
 
   .contact__success {
