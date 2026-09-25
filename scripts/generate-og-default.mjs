@@ -2,97 +2,173 @@
 /**
  * Generate public/og/default.png — 1200x630 Open Graph fallback image.
  *
- * Composition follows DESIGN.md:
- *   - Base bg `#0a0a0f` (--bg-0).
- *   - Radial violet ambient at the top (--gradient-hero-ambient).
- *   - Wordmark "marmibas.dev" in serif display + tagline in sans.
- *   - Subtle border in --border tone.
+ * Composition follows DESIGN.md ("B3 · Terminal"):
+ *   - Near-black base `--bg-0` with the barely-there violet ambient at the top.
+ *   - One terminal pane (`--bg-1`, `--border`) with its `~/inicio` bar.
+ *   - Prompt + the home hero headline in Space Mono 700, body in IBM Plex Mono.
  *
- * Source: T-51. Run with `node scripts/generate-og-default.mjs`.
- * Re-run whenever the wordmark or tagline changes.
+ * Crop safety: WhatsApp and most chat apps crop the centre of the card for
+ * their thumbnails, down to a square in the narrowest case. Every piece of
+ * text therefore lives inside SAFE_ZONE (the centred 630x630 square); only
+ * the pane frame and background reach the edges.
+ *
+ * Fonts: rendered with resvg from the site's own self-hosted woff2 files
+ * (decompressed to a temp dir), never from system fonts, so the output is the
+ * same on every machine.
+ *
+ * Run with `node scripts/generate-og-default.mjs`.
+ * Re-run whenever the hero copy or the palette changes.
  */
-import sharp from 'sharp';
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Resvg } from '@resvg/resvg-js';
+import wawoff2 from 'wawoff2';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const outDir = resolve(__dirname, '../public/og');
-const outPath = resolve(outDir, 'default.png');
-mkdirSync(outDir, { recursive: true });
+export const OG_WIDTH = 1200;
+export const OG_HEIGHT = 630;
 
-const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+/** Centred square kept by the narrowest chat-app crop. */
+export const SAFE_ZONE = {
+  x: (OG_WIDTH - OG_HEIGHT) / 2,
+  y: 0,
+  width: OG_HEIGHT,
+  height: OG_HEIGHT,
+};
+
+const FONT_DIRS = ['space-mono', 'ibm-plex-mono'];
+// Only the `latin` subset (covers Spanish: á, ñ, ¿...). resvg picks one face
+// per family and weight with no per-glyph fallback, so loading `latin-ext`
+// too can select a face without basic letters and render .notdef boxes.
+const LATIN_SUBSET = /-latin-\d+-normal\.woff2$/;
+const fontsRoot = fileURLToPath(new URL('../public/fonts/', import.meta.url));
+const outPath = fileURLToPath(new URL('../public/og/default.png', import.meta.url));
+
+// DESIGN.md tokens.
+const color = {
+  bg0: '#08070b',
+  bg1: '#0c0b11',
+  bgInset: '#0a090e',
+  text0: '#e9e6f2',
+  text1: '#c9c5d6',
+  text2: '#9b97a8',
+  border: '#24222e',
+  accent: '#a78bfa',
+};
+
+const display = `font-family="Space Mono" font-weight="700"`;
+const mono = `font-family="IBM Plex Mono" font-weight="400"`;
+
+// Content column: left-aligned text, centred as a block inside SAFE_ZONE.
+const COLUMN_X = SAFE_ZONE.x + 24;
+const COLUMN_RIGHT = SAFE_ZONE.x + SAFE_ZONE.width - 24;
+// IBM Plex Mono advance width is 600/1000 em.
+const PROMPT_SIZE = 22;
+const PROMPT = 'marcos@marmibas:~$ ';
+const cursorX = COLUMN_X + PROMPT.length * PROMPT_SIZE * 0.6;
+
+function prompt(y, command = '') {
+  return `<text x="${COLUMN_X}" y="${y}" ${mono} font-size="${PROMPT_SIZE}" xml:space="preserve"><tspan fill="${color.accent}">marcos@marmibas</tspan><tspan fill="${color.text2}">:~$ </tspan><tspan fill="${color.text1}">${command}</tspan></text>`;
+}
+
+function content() {
+  return `
+  <circle cx="${COLUMN_X + 5}" cy="62" r="5" fill="${color.accent}"/>
+  <text x="${COLUMN_X + 20}" y="67" ${mono} font-size="15" fill="${color.text2}">~/inicio</text>
+  <text x="${COLUMN_RIGHT}" y="67" ${mono} font-size="15" fill="${color.text2}"
+        text-anchor="end">marmibas.dev</text>
+
+  ${prompt(190, 'whoami')}
+
+  <g ${display} font-size="50" fill="${color.text0}">
+    <text x="${COLUMN_X}" y="272">Software a medida</text>
+    <text x="${COLUMN_X}" y="334">para negocios</text>
+    <text x="${COLUMN_X}" y="396">que quieren <tspan fill="${color.accent}">crecer.</tspan></text>
+  </g>
+
+  <text x="${COLUMN_X}" y="452" ${mono} font-size="${PROMPT_SIZE}" fill="${color.text2}">Webs, apps y sistemas internos.</text>
+
+  ${prompt(524)}
+  <rect x="${cursorX}" y="505" width="12" height="24" fill="${color.accent}"/>`;
+}
+
+function frame() {
+  return `
   <defs>
-    <radialGradient id="ambient" cx="50%" cy="0%" r="80%">
-      <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.55"/>
-      <stop offset="55%" stop-color="#6d28d9" stop-opacity="0.05"/>
-      <stop offset="100%" stop-color="#0a0a0f" stop-opacity="0"/>
+    <radialGradient id="ambient" cx="50%" cy="0%" r="70%" fx="50%" fy="0%">
+      <stop offset="0%" stop-color="${color.accent}" stop-opacity="0.12"/>
+      <stop offset="60%" stop-color="${color.accent}" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="title" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fafafa"/>
-      <stop offset="100%" stop-color="#c4b5fd"/>
-    </linearGradient>
-    <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#8b5cf6"/>
-      <stop offset="100%" stop-color="#c4b5fd"/>
-    </linearGradient>
+    <clipPath id="pane">
+      <rect x="48" y="40" width="1104" height="550" rx="20"/>
+    </clipPath>
   </defs>
 
-  <!-- Base + ambient -->
-  <rect width="1200" height="630" fill="#0a0a0f"/>
-  <rect width="1200" height="630" fill="url(#ambient)"/>
+  <rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="${color.bg0}"/>
+  <rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="url(#ambient)"/>
 
-  <!-- Inner border -->
-  <rect x="32" y="32" width="1136" height="566" rx="20" ry="20"
-        fill="none" stroke="#252535" stroke-width="1.5"/>
-
-  <!-- Top-left brand dot + url chip -->
-  <g transform="translate(80, 96)">
-    <circle cx="10" cy="10" r="10" fill="url(#dot)"/>
-    <text x="34" y="17" fill="#a8a8b8"
-          font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
-          font-size="22" letter-spacing="0.04em">marmibas.dev</text>
+  <g clip-path="url(#pane)">
+    <rect x="48" y="40" width="1104" height="550" fill="${color.bg1}"/>
+    <rect x="48" y="40" width="1104" height="44" fill="${color.bgInset}"/>
+    <line x1="48" y1="84.5" x2="1152" y2="84.5" stroke="${color.border}"/>
   </g>
+  <rect x="48.5" y="40.5" width="1103" height="549" rx="20"
+        fill="none" stroke="${color.border}"/>
+`;
+}
 
-  <!-- Display title -->
-  <text x="80" y="340" fill="url(#title)"
-        font-family="'Geist Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="128" font-weight="600" letter-spacing="-0.02em">
-    Software para
-  </text>
-  <text x="80" y="470" fill="url(#title)"
-        font-family="'Geist Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="128" font-weight="600" letter-spacing="-0.02em">
-    tu negocio.
-  </text>
-
-  <!-- Tagline -->
-  <text x="80" y="540" fill="#a8a8b8"
-        font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
-        font-size="30" font-weight="400">
-    Full stack engineer — Astro, TypeScript, Node, cloud.
-  </text>
-
-  <!-- Bottom-right status pill -->
-  <g transform="translate(940, 540)">
-    <rect x="0" y="0" width="180" height="36" rx="18" ry="18"
-          fill="#12121a" stroke="#252535" stroke-width="1"/>
-    <circle cx="20" cy="18" r="5" fill="#a78bfa"/>
-    <text x="36" y="24" fill="#e8e8ee"
-          font-family="'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
-          font-size="16" font-weight="500">en producción</text>
-  </g>
+/**
+ * Build the card as SVG. `contentOnly` drops the background and pane so a
+ * bounding box measures just the text that has to survive the crop.
+ */
+export function buildOgSvg({ contentOnly = false } = {}) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${OG_WIDTH}" height="${OG_HEIGHT}" viewBox="0 0 ${OG_WIDTH} ${OG_HEIGHT}">${
+    contentOnly ? '' : frame()
+  }${content()}
 </svg>`;
+}
 
-// Persist the source SVG too — handy fallback for platforms that accept SVG.
-writeFileSync(resolve(outDir, 'default.svg'), svg);
+/**
+ * Decompress the self-hosted woff2 files into a temp dir of TTFs: resvg reads
+ * neither woff2 nor (in 2.6) in-memory font buffers.
+ */
+async function withSiteFonts(render) {
+  const dir = mkdtempSync(join(tmpdir(), 'og-fonts-'));
+  try {
+    const fontFiles = [];
+    // Sequential on purpose: wawoff2 returns a view into its shared WASM heap,
+    // so a concurrent decompress overwrites the bytes of the previous one.
+    for (const family of FONT_DIRS) {
+      for (const name of readdirSync(resolve(fontsRoot, family))) {
+        if (!LATIN_SUBSET.test(name)) continue;
+        const ttf = await wawoff2.decompress(readFileSync(resolve(fontsRoot, family, name)));
+        const path = join(dir, name.replace(/\.woff2$/, '.ttf'));
+        writeFileSync(path, ttf);
+        fontFiles.push(path);
+      }
+    }
+    return render(fontFiles);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
 
-await sharp(Buffer.from(svg))
-  .png({ compressionLevel: 9, palette: false })
-  .toFile(outPath);
+export async function renderSvg(svg) {
+  return withSiteFonts((fontFiles) => {
+    const resvg = new Resvg(svg, {
+      font: { fontFiles, loadSystemFonts: false, defaultFontFamily: 'IBM Plex Mono' },
+    });
+    return { png: resvg.render().asPng(), bbox: resvg.getBBox() };
+  });
+}
 
-const { size } = await sharp(outPath).metadata();
-console.log(`Wrote ${outPath}`);
-console.log(`Wrote ${resolve(outDir, 'default.svg')}`);
-console.log(`PNG size: ${size ?? 'n/a'}`);
+export async function renderOgImage({ contentOnly = false } = {}) {
+  return renderSvg(buildOgSvg({ contentOnly }));
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const { png } = await renderOgImage();
+  writeFileSync(outPath, png);
+  console.log(`Wrote ${outPath} (${(png.byteLength / 1024).toFixed(1)} KB)`);
+}
