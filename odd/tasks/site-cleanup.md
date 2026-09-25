@@ -217,7 +217,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
   flags are pre-existing contained/clipped overflows per T7's fix, not page-level scroll; matches
   terminal-redesign.md's own "0/87" baseline methodology).
 
-- C5 commit: (pending — recorded after this commit).
+- C5 commit: 181a7ab.
 
 ## Next step
 
