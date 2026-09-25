@@ -28,7 +28,7 @@
  *     below the mosaic" reading order), and every "incluye" item is real
  *     server-rendered text, so it is crawlable either way.
  *   - With JS, `initMosaic` below collapses every drawer (`.is-collapsed` +
- *     `inert`) and, on click, moves the clicked service's `<li>` INTO the
+ *     `inert`), hides the fallback list, and, on click, moves the clicked service's `<li>` INTO the
  *     grid `<ul>` at the correct child index — computed from the actual
  *     rendered column count (`getComputedStyle(grid).gridTemplateColumns`,
  *     robust across the 4/2/1-column breakpoints below without duplicating
@@ -450,6 +450,11 @@ const ICONS: Record<string, string> = {
     gap: 16px;
   }
 
+  /* Author `display: flex` above would beat the UA `[hidden]` rule. */
+  .mosaic__drawers[hidden] {
+    display: none;
+  }
+
   .mosaic-drawer {
     position: relative;
     grid-column: 1 / -1;
@@ -659,6 +664,10 @@ const ICONS: Record<string, string> = {
       drawer.classList.add('is-collapsed');
       drawer.inert = true;
     });
+    // The fallback list only parks closed drawers from here on (the open one
+    // is moved into the grid), so hide it: otherwise every collapsed drawer
+    // still paints its border and notch below the mosaic.
+    fallback.hidden = true;
 
     let openSlug: string | null = null;
 
