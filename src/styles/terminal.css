@@ -310,6 +310,45 @@
   pointer-events: none;
 }
 
+/* t-stripes: violet diagonal-stripe texture inside a running machine's
+   ASCII activity bar (T5 demo pane). Continuous/infinite like `.t-led`/
+   `.t-scan` above — a consumer removes the class entirely when the machine
+   stops rather than pausing it, so no fill-mode/`--t-delay` axis is needed. */
+.t-stripes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--accent-400) 0 2px,
+    transparent 2px 7px
+  );
+  background-size: 14px 100%;
+  animation: t-stripes 500ms linear infinite;
+}
+
+/* t-grow: one-shot bar reveal growing up from its own bottom edge (T5 demo
+   pane "Ventas por semana" chart bars). `backwards` per the fill-mode rule
+   above — the bar's own height/transform is unset outside the animation,
+   so it settles at "grown" (no transform) once the animation ends. */
+.t-grow {
+  transform-origin: center bottom;
+  animation: t-grow var(--t-dur, 700ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-slide: one-shot row/line entrance (T5 demo pane machine/doc-line/table
+   rows) — opacity + a short leftward-origin slide. Distinct from `.t-fade`
+   (vertical rise) so a consumer can choose the direction that matches the
+   list it's revealing. */
+.t-slide {
+  animation: t-slide var(--t-dur, 350ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-glitch: short flicker on "broken data" cells (T5 demo pane spreadsheet
+   mock). Fill-mode `none` (the keyframe's own default, kept explicit here
+   for clarity) — see the `@keyframes t-glitch` docblock above for why. */
+.t-glitch {
+  display: inline-block;
+  animation: t-glitch 300ms steps(4, end) var(--t-delay, 500ms) 4 none;
+}
+
 /* ----------------------------------------------------------------------- */
 /* 3. Components — buttons, links, comments.                              */
 /* ----------------------------------------------------------------------- */
@@ -408,6 +447,17 @@
 /* ----------------------------------------------------------------------- */
 
 .t-pane.is-waiting
-  :is(.t-type, .t-print, .t-show, .t-fade, .t-cursor, .t-spinner, .t-tick, .t-reveal) {
+  :is(
+    .t-type,
+    .t-print,
+    .t-show,
+    .t-fade,
+    .t-cursor,
+    .t-spinner,
+    .t-tick,
+    .t-reveal,
+    .t-grow,
+    .t-slide
+  ) {
   animation-play-state: paused;
 }

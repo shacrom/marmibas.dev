@@ -309,4 +309,33 @@
     animation: none !important;
     opacity: 0;
   }
+
+  /* --- Demo pane (T5, src/styles/terminal.css) final states ------------
+   * Same rationale as the terminal block above: zeroing the duration
+   * tokens alone is not enough for a DELAYED one-shot reveal (`.t-grow`,
+   * `.t-slide`) — an unzeroed `--t-delay` would still hold the element at
+   * its "before" frame for the whole original delay, then flash to the
+   * end state. `animation: none` bypasses the delay entirely and the
+   * explicit opacity/transform below IS the resolved end-state.
+   * `.t-stripes` (running-machine bar texture) and `.t-glitch` (broken-data
+   * flicker) are continuous/repeating DECORATIVE effects, like `.t-scan`
+   * above — their motion simply disappears rather than freezing
+   * mid-frame; nothing else needs overriding since their own non-animated
+   * base styles (or the caller's inline colour, for `.t-glitch`) already
+   * are the correct static appearance. */
+  .t-grow {
+    animation: none !important;
+    transform: none;
+  }
+
+  .t-slide {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .t-stripes,
+  .t-glitch {
+    animation: none !important;
+  }
 }

@@ -55,7 +55,7 @@ look so navigation stays coherent.
 | T2 | Terminal primitives: terminal motion CSS, `TerminalPane`/`Prompt` components, `src/lib/clock.ts` (TDD) | delegated writer | [x] |
 | T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [x] |
 | T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [x] |
-| T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [ ] |
+| T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [x] |
 | T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [ ] |
 | T7 | Inner pages pass: fix breakages from the new tokens (contact danger colours, overflow with monospace) | delegated writer | [ ] |
 | T8 | Verification + delivery: full checks, visual QA desktop/mobile, push, PR, preview, production (each outward step asked) | parent | [ ] |
@@ -92,6 +92,20 @@ look so navigation stays coherent.
   rows as before). Old Hero/HeroIntro/ServicesSection deleted. Copy reused verbatim; framing strings per-lang consts.
   Checks: npm test 33/33; check 0 errors; test:seo passed; build OK (one h1, 7 ES service hrefs); lint = known base.
 
+- T4 commit: 1d055ef.
+- Parent visual QA (Playwright + system Chrome, 1440/390/360/320): fixed the last typed character staying clipped
+  (Chrome ends steps() at 0.999… progress with fill `both` → terminal animations now use `backwards`), 320px header
+  overflow (mobile brand cell padding) and the services closing prompt; commit 7c788c9. Menu verified: opens,
+  Escape closes, focus returns to the button. No horizontal scroll at 1440/390/360/320 (old demo excluded).
+- T5 done: `DemoPane` (~/demo [3/7]) replaces ShowcaseSection; logic in `src/lib/showcase-demo.ts` (TDD, RED =
+  module-not-found, 24 tests). Live counters only while visible, tweened total, ASCII PDF progress, sliding
+  Excel/App toggle, filtered table, lazily rendered Excel view. Sort control dropped (not in the approved design).
+  Parent QA fixes before commit: running-machine stripes were wiped by a `background` shorthand, chart bars had 0
+  height (percentage against an indefinite parent), PDF label pushed down by `white-space: pre`, and aria-live
+  removed from the per-second counters and the PDF button (kept on the quote total).
+  Checks: npm test 57/57; check 0 errors; test:seo passed; lint = known base; bars 50/79/64/102 px at 1440.
+- Follow-up: EN demo numbers use dot grouping (EN page is hidden; revisit if EN is published).
+
 ## Next step
 
-T5.
+T6.

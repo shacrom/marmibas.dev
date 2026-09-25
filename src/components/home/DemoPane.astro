@@ -1,0 +1,1748 @@
+---
+/**
+ * DemoPane.astro — Home "interactive demo" pane (T5 terminal redesign).
+ *
+ * Renders the THIRD home `TerminalPane` (`~/demo`, `[3/7]`), replacing the
+ * pre-terminal `ShowcaseSection.astro`. Three bordered sub-panes matching
+ * `DemoTerminal.dc.html` (desktop 1440) / `DemoTerminalMovil.dc.html`
+ * (mobile 390) — the read-only visual + behaviour spec under the design
+ * scratchpad (inline styles AND the embedded `<script type="text/x-dc">`
+ * logic are both authoritative):
+ *   1. Planta — machine monitor: start/stop toggle, live per-second
+ *      counters, production/stops summary.
+ *   2. Documentos — quote lines with checkboxes, an eased total tween, and
+ *      a fake "Generar PDF" busy → done → idle button.
+ *   3. Excel → App — segmented toggle between a decorative broken
+ *      spreadsheet mock and a real filterable table.
+ *
+ * Copy is reused VERBATIM from the pre-terminal `ShowcaseSection.astro`
+ * (`eyebrow`/`heading`/`sub`, `panels[].title/desc`, `machines.*`,
+ * `management.*`, `data.*` minus the sort control below) — nothing
+ * invented except decorative terminal framing strings (the `./demo …`
+ * prompt, each sub-pane's `path/` bar label + status text, the `Vista`/
+ * `View` toggle group label, and `buscar>`/`search>`), all per-lang consts
+ * local to this component (same convention as `HeroPane`/`ServicesPane`).
+ *
+ * DROPPED vs `ShowcaseSection.astro`: the "sort by amount" `<select>`. It
+ * has no equivalent anywhere in the approved mockup's table (search + date
+ * filter only) — keeping it would be inventing a control the design never
+ * asked for. `sortLabel`/`sortHighToLow`/`sortLowToHigh` in the old copy
+ * object are therefore unused by this component (the underlying i18n keys
+ * live in `ShowcaseSection.astro`'s own local copy object, not `ui.ts`, so
+ * nothing needs deleting there — see T5's task report for the full note).
+ *
+ * All pure calculation used by the client script below lives in
+ * `src/lib/showcase-demo.ts` (TDD, no DOM) — this component only wires
+ * that logic to real markup/events. `formatThousands` there is
+ * deliberately locale-INVARIANT (always dot-grouped, "es-ES style" per its
+ * own contract) rather than switching to comma-grouping for `lang="en"` —
+ * a direct, intentional port of the mockup's own hardcoded `fmt()`, not an
+ * oversight; the rest of this component's EN copy is fully translated as
+ * usual.
+ *
+ * Architecture note vs the mockup's own re-render approach: the mockup's
+ * `<script type="text/x-dc">` re-templates the ENTIRE row/line list on
+ * every state change (hence its `interacted` flag, which suppresses the
+ * entrance-cascade delay on re-renders so already-shown rows don't replay
+ * their slide-in). This component instead renders every row ONCE
+ * server-side and only ever toggles `hidden`/text on the SAME existing
+ * DOM nodes — so the entrance animation naturally never replays (it
+ * already finished), and no `interacted`-style flag is needed at all.
+ *
+ * Progressive enhancement: the server-rendered HTML already shows the
+ * complete initial state (2 running + 1 stopped machine with correct
+ * meters, all 3 quote lines checked with the correct total, the "App"
+ * view with the full unfiltered table). The client `<script>` only adds
+ * the choreography (toggles, live counters, tweened total, PDF sequence,
+ * view switch, search/date filtering) on top; without JS every control is
+ * a real, visible, static element and the demo remains fully readable.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import { docTotal, formatThousands, productionTotal, stopsCount } from '../../lib/showcase-demo';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives heading + copy + framing strings. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+
+const fmtMeters = (n: number): string => `${formatThousands(n)} m`;
+const fmtCurrency = (n: number): string =>
+  lang === 'es' ? `${formatThousands(n)} €` : `€${formatThousands(n)}`;
+
+// --- Decorative terminal framing (new copy, per-lang, local to this
+// component — see docblock above for why not ui.ts). -----------------------
+const promptCommand: Record<Language, string> = {
+  es: './demo --datos-ficticios',
+  en: './demo --sample-data',
+};
+
+const subPanePaths: Record<Language, { machines: string; doc: string; data: string }> = {
+  es: { machines: 'planta/', doc: 'documentos/', data: 'excel-a-app/' },
+  en: { machines: 'floor/', doc: 'documents/', data: 'excel-to-app/' },
+};
+
+const realtimeLabel: Record<Language, string> = { es: 'tiempo real', en: 'real time' };
+const viewGroupLabel: Record<Language, string> = { es: 'Vista', en: 'View' };
+const searchPromptGlyph: Record<Language, string> = { es: 'buscar>', en: 'search>' };
+const docNumber = '#2026-041';
+
+// --- Real copy, reused verbatim from the pre-terminal ShowcaseSection.astro
+// (sort-related keys dropped — see docblock). ------------------------------
+const copy = {
+  es: {
+    eyebrow: 'Demostración interactiva',
+    heading: 'Así se ven las pantallas de una aplicación',
+    sub: 'Paneles de demostración con datos ficticios: esto es lo que tu equipo vería en pantalla.',
+    panels: [
+      {
+        title: 'Planta industrial en tiempo real',
+        desc: 'Monitoriza máquinas y producción en tiempo real, sin pasear con la libreta.',
+      },
+      {
+        title: 'Gestión documental',
+        desc: 'Presupuestos, facturas y contratos que se calculan solos y salen con tu marca.',
+      },
+      {
+        title: 'Del Excel a la aplicación',
+        desc: 'Sustituye hojas de cálculo frágiles por una aplicación que cualquiera puede usar.',
+      },
+    ],
+    machines: {
+      names: ['Telar V1', 'Telar V2', 'Madejera M1'],
+      stop: 'Parar',
+      start: 'Arrancar',
+      summaryProduction: 'Producción hoy',
+      summaryStops: 'Paradas',
+    },
+    management: {
+      docTitle: 'Presupuesto #2026-041',
+      status: 'Aceptado',
+      includeLine: 'Incluir partida',
+      lines: [
+        { label: 'Diseño e implementación', amount: 3200 },
+        { label: 'Integración con TPV', amount: 950 },
+        { label: 'Soporte primer mes', amount: 700 },
+      ],
+      totalLabel: 'Total',
+      pdfIdle: 'Generar PDF',
+      pdfDone: 'PDF listo ✓',
+    },
+    data: {
+      viewBefore: 'Antes · Excel',
+      viewAfter: 'Ahora · App',
+      searchLabel: 'Buscar cliente o producto',
+      searchPlaceholder: 'Cliente · Producto…',
+      dateFilterLabel: 'Filtrar por fecha',
+      dateFilterAll: 'Todas las fechas',
+      noResults: 'Sin resultados',
+      statsLabel: 'Resumen del tablero',
+      stats: [
+        { label: 'Ventas mes', value: '8.240 €' },
+        { label: 'Pedidos abiertos', value: '14' },
+        { label: 'Errores evitados', value: '7' },
+      ],
+      chartTitle: 'Ventas por semana',
+      headers: ['Cliente', 'Producto', 'Fecha', 'Total', 'Estado'],
+      dateOptions: [
+        { value: 'Hoy', label: 'Hoy' },
+        { value: 'Ayer', label: 'Ayer' },
+        { value: 'Semana', label: 'Semana' },
+      ],
+      rows: [
+        { client: 'Ferretería Solá', product: 'Tornillería M6', date: 'Hoy', amount: 1240, status: 'Listo' },
+        { client: 'Grupo Ánfora', product: 'Tornillería M8', date: 'Semana', amount: 1180, status: 'Listo' },
+        {
+          client: 'Mueblex S.L.',
+          product: 'Bisagra reforzada',
+          date: 'Hoy',
+          amount: 860,
+          status: 'Pendiente',
+        },
+        {
+          client: 'Distribuciones Rus',
+          product: 'Perfil aluminio',
+          date: 'Ayer',
+          amount: 650,
+          status: 'Listo',
+        },
+        {
+          client: 'Talleres Camps',
+          product: 'Chapa galvanizada',
+          date: 'Ayer',
+          amount: 420,
+          status: 'Revisar',
+        },
+      ],
+      chart: [42, 66, 54, 86],
+      // Deliberately simple spreadsheet with obvious problems — 5 columns × 5
+      // rows, flat list. Cells starting with '#' render as broken-formula
+      // error cells; cells equal to 'Duplicado' render as duplicate-warning
+      // cells (see `isErrorCell`/`isDuplicateCell` below).
+      excel: [
+        'Cliente', 'Producto', 'Cant.', 'Precio', 'Estado',
+        'Ferretería Solá', 'Tornillos', '120', '54 €', 'Pendiente',
+        'Mueblex', 'Bisagras', '80', '#ERROR', 'Revisar',
+        'Talleres Camps', 'Chapa', '25', '310 €', 'OK',
+        'Grupo Ánfora', 'Tornillos', '140', 'Duplicado', 'Duplicado',
+      ],
+    },
+  },
+  en: {
+    eyebrow: 'Interactive demo',
+    heading: 'This is what the screens of an application look like',
+    sub: 'Demo panels with fictional data: this is what your team would actually see on screen.',
+    panels: [
+      {
+        title: 'Real-time shop floor',
+        desc: 'Monitor machines and production in real time, without walking the floor with a notepad.',
+      },
+      {
+        title: 'Document management',
+        desc: 'Quotes, invoices and contracts that calculate themselves and go out under your brand.',
+      },
+      {
+        title: 'From spreadsheet to app',
+        desc: 'Replace fragile spreadsheets with an application anyone on the team can use.',
+      },
+    ],
+    machines: {
+      names: ['Loom V1', 'Loom V2', 'Winder M1'],
+      stop: 'Stop',
+      start: 'Start',
+      summaryProduction: 'Production today',
+      summaryStops: 'Stops',
+    },
+    management: {
+      docTitle: 'Quote #2026-041',
+      status: 'Accepted',
+      includeLine: 'Include line',
+      lines: [
+        { label: 'Design & implementation', amount: 3200 },
+        { label: 'POS integration', amount: 950 },
+        { label: 'First month support', amount: 700 },
+      ],
+      totalLabel: 'Total',
+      pdfIdle: 'Generate PDF',
+      pdfDone: 'PDF ready ✓',
+    },
+    data: {
+      viewBefore: 'Before · Excel',
+      viewAfter: 'Now · App',
+      searchLabel: 'Search customer or product',
+      searchPlaceholder: 'Customer · Product…',
+      dateFilterLabel: 'Filter by date',
+      dateFilterAll: 'All dates',
+      noResults: 'No results',
+      statsLabel: 'Dashboard summary',
+      stats: [
+        { label: 'Monthly sales', value: '€8,240' },
+        { label: 'Open orders', value: '14' },
+        { label: 'Errors avoided', value: '7' },
+      ],
+      chartTitle: 'Sales by week',
+      headers: ['Customer', 'Product', 'Date', 'Total', 'Status'],
+      dateOptions: [
+        { value: 'Today', label: 'Today' },
+        { value: 'Yesterday', label: 'Yesterday' },
+        { value: 'Week', label: 'Week' },
+      ],
+      rows: [
+        { client: 'Ferretería Solá', product: 'M6 screws', date: 'Today', amount: 1240, status: 'Ready' },
+        { client: 'Grupo Ánfora', product: 'M8 screws', date: 'Week', amount: 1180, status: 'Ready' },
+        {
+          client: 'Mueblex S.L.',
+          product: 'Reinforced hinge',
+          date: 'Today',
+          amount: 860,
+          status: 'Pending',
+        },
+        {
+          client: 'Distribuciones Rus',
+          product: 'Aluminium profile',
+          date: 'Yesterday',
+          amount: 650,
+          status: 'Ready',
+        },
+        {
+          client: 'Talleres Camps',
+          product: 'Galvanized sheet',
+          date: 'Yesterday',
+          amount: 420,
+          status: 'Review',
+        },
+      ],
+      chart: [42, 66, 54, 86],
+      excel: [
+        'Customer', 'Product', 'Qty', 'Price', 'Status',
+        'Ferretería Solá', 'Screws', '120', '€54', 'Pending',
+        'Mueblex', 'Hinges', '80', '#ERROR', 'Review',
+        'Talleres Camps', 'Sheet', '25', '€310', 'OK',
+        'Grupo Ánfora', 'Screws', '140', 'Duplicate', 'Duplicate',
+      ],
+    },
+  },
+} as const;
+
+const content = copy[lang];
+const duplicateCellText = lang === 'es' ? 'Duplicado' : 'Duplicate';
+const isErrorCell = (cell: string): boolean => cell.startsWith('#');
+const isDuplicateCell = (cell: string): boolean => cell === duplicateCellText;
+
+/**
+ * Panel 1 initial state. Matches the spec's own default machine
+ * state/counts exactly (`running: [true, true, false]`,
+ * `counts: [1240, 980, 0]`, `base production 1262`, `base stops 1`).
+ */
+const MACHINE_RUNNING = [true, true, false] as const;
+const MACHINE_METERS = [1240, 980, 0] as const;
+const BASE_PRODUCTION = 1262;
+const BASE_STOPS = 1;
+
+const initialProduction = productionTotal(MACHINE_METERS, BASE_PRODUCTION);
+const initialStops = stopsCount(MACHINE_RUNNING, BASE_STOPS);
+
+// Panel 2 initial state: all 3 lines checked (matches `lines: [true, true, true]`).
+const LINE_CHECKED = [true, true, true] as const;
+const lineAmounts = content.management.lines.map((line) => line.amount);
+const initialTotal = docTotal(lineAmounts, LINE_CHECKED);
+
+const machinesTitleId = 'demo-machines-title';
+const docTitleId = 'demo-doc-title';
+const dataTitleId = 'demo-data-title';
+---
+
+<TerminalPane path="demo" index="3/7" labelledby="demo-heading" class="t-pane-gutter">
+  <div class="demo-pane" data-demo data-lang={lang} data-base-production={String(BASE_PRODUCTION)} data-base-stops={String(BASE_STOPS)}>
+    <Prompt command={promptCommand[lang]} delay={200} duration={600} />
+
+    <div class="demo-pane__heading-block t-show" style="--t-delay: 850ms;">
+      <div class="demo-pane__heading-col">
+        <p class="t-comment demo-pane__eyebrow"># {content.eyebrow}</p>
+        <h2 id="demo-heading" class="demo-pane__heading">{content.heading}</h2>
+      </div>
+      <p class="demo-pane__sub">{content.sub}</p>
+    </div>
+
+    <div class="demo-pane__panels t-fade" style="--t-delay: 950ms;">
+      {/* --------------------------------------------------------------
+       * Sub-pane 1 — Planta / shop floor
+       * ------------------------------------------------------------ */}
+      <article class="demo-panel" aria-labelledby={machinesTitleId}>
+        <div class="demo-panel__bar">
+          <span>{subPanePaths[lang].machines}</span>
+          <span class="demo-panel__bar-status">
+            <span class="t-led" aria-hidden="true"></span>
+            {realtimeLabel[lang]}
+          </span>
+        </div>
+
+        <div class="demo-panel__body">
+          <h3 id={machinesTitleId} class="demo-panel__title">{content.panels[0].title}</h3>
+
+          <ul class="demo-machines" role="list">
+            {
+              content.machines.names.map((name, i) => {
+                const running = MACHINE_RUNNING[i] ?? false;
+                const meters = MACHINE_METERS[i] ?? 0;
+                const labelStop = `[ ${content.machines.stop} ]`;
+                const labelStart = `[ ${content.machines.start} ]`;
+                return (
+                  <li
+                    class="demo-machine t-slide"
+                    style={`--t-delay: ${1000 + i * 80}ms;`}
+                    data-machine
+                    data-state={running ? 'running' : 'stopped'}
+                    data-meters={String(meters)}
+                  >
+                    <span
+                      class:list={['demo-machine__led', { 't-led': running }]}
+                      aria-hidden="true"
+                    />
+                    <span class="demo-machine__name">{name}</span>
+                    <span class="demo-machine__bar" aria-hidden="true"
+                      >[<span
+                        class:list={['demo-machine__bar-fill', { 't-stripes': running }]}
+                        data-machine-bar-fill
+                      />]</span
+                    >
+                    <span class="demo-machine__meters" data-machine-meters>{fmtMeters(meters)}</span>
+                    <button
+                      type="button"
+                      class="demo-machine__toggle"
+                      data-machine-toggle
+                      aria-pressed={running ? 'true' : 'false'}
+                      data-label-stop={labelStop}
+                      data-label-start={labelStart}
+                    >
+                      {running ? labelStop : labelStart}
+                    </button>
+                  </li>
+                );
+              })
+            }
+          </ul>
+
+          <!-- No aria-live: these figures tick every second while visible and
+               would flood screen readers; they are read on demand instead. -->
+          <div class="demo-machines__summary">
+            <div class="demo-machines__stat">
+              <span class="demo-machines__stat-label">{content.machines.summaryProduction}</span>
+              <span class="demo-machines__stat-value" data-production>{fmtMeters(initialProduction)}</span>
+            </div>
+            <div class="demo-machines__stat">
+              <span class="demo-machines__stat-label">{content.machines.summaryStops}</span>
+              <span class="demo-machines__stat-value" data-stops>{String(initialStops)}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="t-comment demo-panel__footer"># {content.panels[0].desc}</p>
+      </article>
+
+      {/* --------------------------------------------------------------
+       * Sub-pane 2 — Documentos / quote
+       * ------------------------------------------------------------ */}
+      <article class="demo-panel" aria-labelledby={docTitleId}>
+        <div class="demo-panel__bar">
+          <span>{subPanePaths[lang].doc}</span>
+          <span class="demo-panel__bar-status demo-panel__bar-status--accent">{docNumber}</span>
+        </div>
+
+        <div class="demo-panel__body">
+          <h3 id={docTitleId} class="demo-panel__title">{content.panels[1].title}</h3>
+
+          <div class="demo-doc__head">
+            <span class="demo-doc__name">{content.management.docTitle}</span>
+            <span class="demo-doc__status">[ {content.management.status} ]</span>
+          </div>
+
+          <div class="demo-doc__lines" role="group" aria-label={content.management.includeLine}>
+            {
+              content.management.lines.map((line, i) => (
+                <label
+                  class:list={['demo-doc__line', 't-slide']}
+                  style={`--t-delay: ${1000 + i * 80}ms;`}
+                  data-doc-line
+                  data-amount={String(line.amount)}
+                >
+                  <input type="checkbox" checked data-doc-checkbox />
+                  <span class="demo-doc__label">{line.label}</span>
+                  <span class="demo-doc__leader" aria-hidden="true" />
+                  <span class="demo-doc__amount">{fmtCurrency(line.amount)}</span>
+                </label>
+              ))
+            }
+          </div>
+
+          <div class="demo-doc__total">
+            <span class="demo-doc__total-label">{content.management.totalLabel}</span>
+            <span class="demo-doc__total-value" aria-live="polite" data-doc-total
+              >{fmtCurrency(initialTotal)}</span
+            >
+          </div>
+
+          <button
+            type="button"
+            class="demo-doc__pdf"
+            data-pdf-button
+            data-label-idle={`[ ${content.management.pdfIdle} ]`}
+            data-label-done={content.management.pdfDone}
+          >
+            [ {content.management.pdfIdle} ]
+          </button>
+        </div>
+
+        <p class="t-comment demo-panel__footer"># {content.panels[1].desc}</p>
+      </article>
+
+      {/* --------------------------------------------------------------
+       * Sub-pane 3 — Excel → App (spans both columns on desktop)
+       * ------------------------------------------------------------ */}
+      <article class="demo-panel demo-panel--wide" aria-labelledby={dataTitleId}>
+        <div class="demo-panel__bar">
+          <span>{subPanePaths[lang].data}</span>
+          <span class="demo-panel__bar-status">{content.data.statsLabel}</span>
+        </div>
+
+        <div class="demo-panel__body">
+          <div class="demo-data__head">
+            <h3 id={dataTitleId} class="demo-panel__title">{content.panels[2].title}</h3>
+
+            <div class="demo-segment" role="group" aria-label={viewGroupLabel[lang]}>
+              <span class="demo-segment__indicator" aria-hidden="true" data-view-indicator />
+              <button type="button" data-view-toggle="excel" aria-pressed="false">
+                {content.data.viewBefore}
+              </button>
+              <button type="button" data-view-toggle="app" aria-pressed="true">
+                {content.data.viewAfter}
+              </button>
+            </div>
+          </div>
+
+          {/* "App" view — the real, filterable table. Default/visible. */}
+          <div class="demo-view" data-view="app">
+            <div class="demo-app">
+              <div class="demo-app__stats" role="list" aria-label={content.data.statsLabel}>
+                {
+                  content.data.stats.map((stat) => (
+                    <div class="demo-app__stat" role="listitem">
+                      <span class="demo-app__stat-label">{stat.label}</span>
+                      <span class="demo-app__stat-leader" aria-hidden="true" />
+                      <span class="demo-app__stat-value">{stat.value}</span>
+                    </div>
+                  ))
+                }
+              </div>
+
+              <div class="demo-app__chart">
+                <span class="demo-app__chart-title">{content.data.chartTitle}</span>
+                <div class="demo-app__bars" aria-hidden="true">
+                  {
+                    content.data.chart.map((value, i) => (
+                      <span
+                        class="demo-app__bar t-grow"
+                        style={`--bar-value: ${value}%; --t-delay: ${1200 + i * 80}ms;`}
+                      />
+                    ))
+                  }
+                </div>
+              </div>
+
+              <div class="demo-app__controls">
+                <label class="demo-app__search">
+                  <span class="demo-app__search-glyph" aria-hidden="true">{searchPromptGlyph[lang]}</span>
+                  <span class="demo-pane__sr-only">{content.data.searchLabel}</span>
+                  <input
+                    type="search"
+                    data-search-input
+                    placeholder={content.data.searchPlaceholder}
+                  />
+                </label>
+                <label class="demo-app__date">
+                  <span class="demo-pane__sr-only">{content.data.dateFilterLabel}</span>
+                  <select data-date-select>
+                    <option value="all">{content.data.dateFilterAll}</option>
+                    {
+                      content.data.dateOptions.map((option) => (
+                        <option value={option.value}>{option.label}</option>
+                      ))
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <table class="demo-table" data-demo-table>
+                <colgroup>
+                  <col style="width: 27%;" />
+                  <col style="width: 25%;" />
+                  <col style="width: 14%;" />
+                  <col style="width: 16%;" />
+                  <col style="width: 18%;" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    {content.data.headers.map((header) => <th scope="col">{header}</th>)}
+                  </tr>
+                </thead>
+                <tbody data-table-body>
+                  {
+                    content.data.rows.map((row, i) => (
+                      <tr
+                        class="t-slide"
+                        style={`--t-delay: ${1150 + i * 70}ms;`}
+                        data-table-row
+                        data-client={row.client}
+                        data-product={row.product}
+                        data-date={row.date}
+                        data-amount={String(row.amount)}
+                        data-status={row.status}
+                      >
+                        <td>{row.client}</td>
+                        <td>{row.product}</td>
+                        <td>{row.date}</td>
+                        <td>{fmtCurrency(row.amount)}</td>
+                        <td>[{row.status}]</td>
+                      </tr>
+                    ))
+                  }
+                  <tr data-table-empty hidden>
+                    <td colspan="5">{content.data.noResults}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* "Excel" view — decorative broken-spreadsheet mock. Never
+              exposed to assistive tech (the App table above already
+              carries the same data accessibly); its markup is only
+              cloned from `<template>` the FIRST time a visitor selects
+              it, matching the brief's "only rendered … when selected"
+              and, as a side effect, letting the glitch flicker replay
+              fresh whenever this view is first opened rather than firing
+              once at page load while still hidden. */}
+          <div class="demo-view" data-view="excel" hidden aria-hidden="true">
+            <template data-excel-template>
+              <div class="demo-excel">
+                {
+                  content.data.excel.map((cell, i) => (
+                    <span
+                      class:list={[
+                        'demo-excel__cell',
+                        { 'demo-excel__cell--header': i < 5 },
+                        { 'demo-excel__cell--error': isErrorCell(cell) },
+                        { 'demo-excel__cell--duplicate': isDuplicateCell(cell) },
+                      ]}
+                    >
+                      {isErrorCell(cell) || isDuplicateCell(cell) ? (
+                        <span class="t-glitch" style={isDuplicateCell(cell) ? '--t-delay: 700ms;' : undefined}>
+                          {cell}
+                        </span>
+                      ) : (
+                        cell
+                      )}
+                    </span>
+                  ))
+                }
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <p class="t-comment demo-panel__footer"># {content.panels[2].desc}</p>
+      </article>
+    </div>
+  </div>
+</TerminalPane>
+
+<script>
+  import {
+    docTotal,
+    filterRows,
+    formatThousands,
+    pdfProgressLabel,
+    productionTotal,
+    stopsCount,
+    tickCounts,
+    tweenValue,
+    type DemoTableRow,
+  } from '../../lib/showcase-demo';
+
+  /**
+   * Interactive demo pane driver. Progressive enhancement over a complete
+   * server-rendered initial state (see the component docblock). Re-runs on
+   * `astro:page-load` (View Transitions) with a per-pane init guard, and
+   * clears every interval/timeout/rAF on `astro:before-swap` — same
+   * lifecycle pattern as `TerminalPane.astro`/`Reveal.astro`, extended with
+   * explicit teardown since this pane, unlike those, owns timers.
+   */
+
+  const RATES = [3, 2, 1];
+  const TICK_MS = 1000;
+  const PDF_STEP_MS = 110;
+  const PDF_STEP_PCT = 10;
+  const PDF_DONE_HOLD_MS = 1600;
+  const TWEEN_MS = 450;
+
+  const activeCleanups: Array<() => void> = [];
+
+  function prefersReducedMotion(): boolean {
+    return (
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
+  function isRoughlyInViewport(el: HTMLElement): boolean {
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.top < viewportHeight && rect.bottom > 0;
+  }
+
+  function setupDemoPane(root: HTMLElement): void {
+    if (root.dataset.demoInit) return;
+    root.dataset.demoInit = '1';
+
+    const lang = root.dataset.lang === 'en' ? 'en' : 'es';
+    const fmtCurrency = (n: number) => (lang === 'es' ? `${formatThousands(n)} €` : `€${formatThousands(n)}`);
+    const fmtMeters = (n: number) => `${formatThousands(n)} m`;
+
+    /* ---------------------------------------------------------------- */
+    /* Panel 1 — machines: toggle, live per-second counters, summary.     */
+    /* ---------------------------------------------------------------- */
+    const baseProduction = Number(root.dataset.baseProduction) || 0;
+    const baseStops = Number(root.dataset.baseStops) || 0;
+    const machineEls = Array.from(root.querySelectorAll<HTMLElement>('[data-machine]'));
+    const running = machineEls.map((el) => el.dataset.state === 'running');
+    const counts = machineEls.map((el) => Number(el.dataset.meters) || 0);
+    const productionEl = root.querySelector<HTMLElement>('[data-production]');
+    const stopsEl = root.querySelector<HTMLElement>('[data-stops]');
+
+    function paintMachines(): void {
+      machineEls.forEach((el, i) => {
+        const metersEl = el.querySelector<HTMLElement>('[data-machine-meters]');
+        if (metersEl) metersEl.textContent = fmtMeters(counts[i] ?? 0);
+      });
+      if (productionEl) productionEl.textContent = fmtMeters(productionTotal(counts, baseProduction));
+      if (stopsEl) stopsEl.textContent = String(stopsCount(running, baseStops));
+    }
+
+    machineEls.forEach((el, i) => {
+      const toggle = el.querySelector<HTMLButtonElement>('[data-machine-toggle]');
+      const barFill = el.querySelector<HTMLElement>('[data-machine-bar-fill]');
+      const ledEl = el.querySelector<HTMLElement>('.demo-machine__led');
+      toggle?.addEventListener('click', () => {
+        running[i] = !running[i];
+        el.dataset.state = running[i] ? 'running' : 'stopped';
+        toggle.setAttribute('aria-pressed', String(running[i]));
+        toggle.textContent = running[i]
+          ? (toggle.dataset.labelStop ?? '')
+          : (toggle.dataset.labelStart ?? '');
+        barFill?.classList.toggle('t-stripes', running[i]);
+        ledEl?.classList.toggle('t-led', running[i]);
+        paintMachines();
+      });
+    });
+
+    let tickTimer: number | undefined;
+    function startTicking(): void {
+      if (tickTimer !== undefined) return;
+      tickTimer = window.setInterval(() => {
+        const next = tickCounts(counts, running, RATES);
+        for (let i = 0; i < counts.length; i += 1) {
+          const value = next[i];
+          if (value !== undefined) counts[i] = value;
+        }
+        paintMachines();
+      }, TICK_MS);
+    }
+    function stopTicking(): void {
+      if (tickTimer === undefined) return;
+      window.clearInterval(tickTimer);
+      tickTimer = undefined;
+    }
+
+    let paneInViewport = isRoughlyInViewport(root);
+    function refreshTicking(): void {
+      if (paneInViewport && !document.hidden) startTicking();
+      else stopTicking();
+    }
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) paneInViewport = entry.isIntersecting;
+          refreshTicking();
+        },
+        { threshold: 0.1 }
+      );
+      io.observe(root);
+      activeCleanups.push(() => io.disconnect());
+    }
+    const onVisibilityChange = () => refreshTicking();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    activeCleanups.push(() => document.removeEventListener('visibilitychange', onVisibilityChange));
+    refreshTicking();
+    activeCleanups.push(stopTicking);
+
+    /* ---------------------------------------------------------------- */
+    /* Panel 2 — quote lines: checkbox -> eased total tween, PDF button.  */
+    /* ---------------------------------------------------------------- */
+    const docLines = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-line]'));
+    const totalEl = root.querySelector<HTMLElement>('[data-doc-total]');
+    let shownTotal = docLines.reduce(
+      (sum, line) => sum + (line.querySelector<HTMLInputElement>('input')?.checked ? Number(line.dataset.amount) || 0 : 0),
+      0
+    );
+    let tweenRaf: number | undefined;
+
+    function currentAmounts(): number[] {
+      return docLines.map((line) => Number(line.dataset.amount) || 0);
+    }
+    function currentChecked(): boolean[] {
+      return docLines.map((line) => line.querySelector<HTMLInputElement>('input')?.checked ?? false);
+    }
+
+    function tweenTotalTo(target: number): void {
+      if (tweenRaf !== undefined) {
+        window.cancelAnimationFrame(tweenRaf);
+        tweenRaf = undefined;
+      }
+      if (prefersReducedMotion()) {
+        shownTotal = target;
+        if (totalEl) totalEl.textContent = fmtCurrency(shownTotal);
+        return;
+      }
+      const from = shownTotal;
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / TWEEN_MS);
+        shownTotal = tweenValue(from, target, t);
+        if (totalEl) totalEl.textContent = fmtCurrency(shownTotal);
+        tweenRaf = t < 1 ? window.requestAnimationFrame(step) : undefined;
+      };
+      tweenRaf = window.requestAnimationFrame(step);
+    }
+
+    docLines.forEach((line) => {
+      const checkbox = line.querySelector<HTMLInputElement>('input[type="checkbox"]');
+      checkbox?.addEventListener('change', () => {
+        line.classList.toggle('is-excluded', !checkbox.checked);
+        tweenTotalTo(docTotal(currentAmounts(), currentChecked()));
+      });
+    });
+    activeCleanups.push(() => {
+      if (tweenRaf !== undefined) window.cancelAnimationFrame(tweenRaf);
+    });
+
+    const pdfButton = root.querySelector<HTMLButtonElement>('[data-pdf-button]');
+    let pdfTimer: number | undefined;
+    let pdfHoldTimer: number | undefined;
+    pdfButton?.addEventListener('click', () => {
+      if (pdfButton.disabled) return;
+      pdfButton.disabled = true;
+      let pct = 0;
+      pdfButton.textContent = pdfProgressLabel(pct);
+      pdfTimer = window.setInterval(() => {
+        pct += PDF_STEP_PCT;
+        if (pct >= 100) {
+          window.clearInterval(pdfTimer);
+          pdfTimer = undefined;
+          pdfButton.textContent = pdfButton.dataset.labelDone ?? '';
+          pdfHoldTimer = window.setTimeout(() => {
+            pdfButton.textContent = pdfButton.dataset.labelIdle ?? '';
+            pdfButton.disabled = false;
+            pdfHoldTimer = undefined;
+          }, PDF_DONE_HOLD_MS);
+        } else {
+          pdfButton.textContent = pdfProgressLabel(pct);
+        }
+      }, PDF_STEP_MS);
+    });
+    activeCleanups.push(() => {
+      if (pdfTimer !== undefined) window.clearInterval(pdfTimer);
+      if (pdfHoldTimer !== undefined) window.clearTimeout(pdfHoldTimer);
+    });
+
+    /* ---------------------------------------------------------------- */
+    /* Panel 3 — Excel/App segmented toggle + table search/date filter.   */
+    /* ---------------------------------------------------------------- */
+    const segmentButtons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-view-toggle]')
+    );
+    const indicator = root.querySelector<HTMLElement>('[data-view-indicator]');
+    const appViewEl = root.querySelector<HTMLElement>('[data-view="app"]');
+    const excelViewEl = root.querySelector<HTMLElement>('[data-view="excel"]');
+    const excelTemplate = excelViewEl?.querySelector<HTMLTemplateElement>('[data-excel-template]');
+
+    function setView(target: string): void {
+      for (const button of segmentButtons) {
+        button.setAttribute('aria-pressed', String(button.dataset.viewToggle === target));
+      }
+      if (indicator) indicator.style.transform = target === 'app' ? 'translateX(100%)' : 'translateX(0%)';
+      if (appViewEl) appViewEl.hidden = target !== 'app';
+      if (excelViewEl) {
+        excelViewEl.hidden = target !== 'excel';
+        if (target === 'excel' && excelTemplate && !excelViewEl.dataset.populated) {
+          excelViewEl.appendChild(excelTemplate.content.cloneNode(true));
+          excelViewEl.dataset.populated = '1';
+        }
+      }
+    }
+
+    for (const button of segmentButtons) {
+      button.addEventListener('click', () => setView(button.dataset.viewToggle ?? 'app'));
+    }
+
+    const searchInput = root.querySelector<HTMLInputElement>('[data-search-input]');
+    const dateSelect = root.querySelector<HTMLSelectElement>('[data-date-select]');
+    const tableRows = Array.from(root.querySelectorAll<HTMLElement>('[data-table-row]'));
+    const emptyRow = root.querySelector<HTMLElement>('[data-table-empty]');
+    const allRows: DemoTableRow[] = tableRows.map((row) => ({
+      client: row.dataset.client ?? '',
+      product: row.dataset.product ?? '',
+      date: row.dataset.date ?? '',
+      amount: Number(row.dataset.amount) || 0,
+      status: row.dataset.status ?? '',
+    }));
+
+    function applyTableFilter(): void {
+      const query = searchInput?.value ?? '';
+      const date = dateSelect?.value ?? 'all';
+      const visible = filterRows(allRows, query, date);
+      tableRows.forEach((row, i) => {
+        row.hidden = !visible.includes(allRows[i] as DemoTableRow);
+      });
+      if (emptyRow) emptyRow.hidden = visible.length > 0;
+    }
+
+    searchInput?.addEventListener('input', applyTableFilter);
+    dateSelect?.addEventListener('change', applyTableFilter);
+  }
+
+  function initAllDemoPanes(): void {
+    document.querySelectorAll<HTMLElement>('[data-demo]').forEach(setupDemoPane);
+  }
+
+  initAllDemoPanes();
+  document.addEventListener('astro:page-load', initAllDemoPanes);
+  document.addEventListener('astro:before-swap', () => {
+    activeCleanups.forEach((cleanup) => cleanup());
+    activeCleanups.length = 0;
+  });
+</script>
+
+<style>
+  .demo-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 15px;
+  }
+
+  .demo-pane__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* --- Heading block — same grid shape as ServicesPane.astro's own
+     `.services-pane__heading-block` (minmax(0,1fr) 420px, align-items:end). */
+  .demo-pane__heading-block {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+
+  @media (min-width: 901px) {
+    .demo-pane__heading-block {
+      grid-template-columns: minmax(0, 1fr) 420px;
+    }
+  }
+
+  .demo-pane__heading-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demo-pane__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+  }
+
+  .demo-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .demo-pane__heading {
+      font-size: 26px;
+    }
+  }
+
+  .demo-pane__sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  /* --- Panels grid ------------------------------------------------------ */
+  .demo-pane__panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .demo-pane__panels {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .demo-panel--wide {
+    grid-column: 1 / -1;
+  }
+
+  .demo-panel {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+
+  .demo-panel__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .demo-panel__bar-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .demo-panel__bar-status--accent {
+    color: var(--accent-300);
+  }
+
+  .demo-panel__body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 20px;
+  }
+
+  @media (max-width: 640px) {
+    .demo-panel__bar {
+      padding: 10px 12px;
+    }
+
+    .demo-panel__body {
+      padding: 16px 12px;
+    }
+
+    .demo-panel__footer {
+      padding: 12px;
+    }
+  }
+
+  .demo-panel__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-0);
+  }
+
+  .demo-panel__footer {
+    margin: 0;
+    padding: 12px 20px 14px;
+    border-top: 1px dashed var(--border);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  /* --- Panel 1: machines -------------------------------------------------- */
+  .demo-machines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demo-machine {
+    display: grid;
+    grid-template-columns: 10px 110px minmax(0, 1fr) 90px 118px;
+    grid-template-areas: 'led name bar meters toggle';
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+  }
+
+  @media (max-width: 640px) {
+    .demo-machine {
+      grid-template-columns: 10px minmax(0, 1fr) auto;
+      grid-template-areas:
+        'led name meters'
+        'bar bar toggle';
+      row-gap: 8px;
+    }
+  }
+
+  .demo-machine__led {
+    grid-area: led;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-status-paused);
+  }
+
+  .demo-machine__led.t-led {
+    background: var(--color-status-success);
+  }
+
+  .demo-machine__name {
+    grid-area: name;
+    font-size: var(--text-sm);
+    color: var(--text-0);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-machine__bar {
+    grid-area: bar;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--text-sm);
+    color: var(--text-3);
+  }
+
+  .demo-machine__bar-fill {
+    flex: 1 1 auto;
+    height: 10px;
+    /* background-color only: the shorthand would wipe the `.t-stripes`
+       background-image, since this scoped rule wins on specificity. */
+    background-color: var(--border);
+  }
+
+  .demo-machine__bar-fill.t-stripes {
+    background-color: transparent;
+  }
+
+  .demo-machine__meters {
+    grid-area: meters;
+    text-align: right;
+    font-size: var(--text-sm);
+    color: var(--text-0);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demo-machine__toggle {
+    grid-area: toggle;
+    min-height: 36px;
+    padding-inline: 8px;
+    color: var(--text-0);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .demo-machine__toggle:hover {
+    background: var(--accent-400);
+    border-color: var(--accent-400);
+    color: var(--bg-0);
+  }
+
+  .demo-machine__toggle:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .demo-machine__toggle {
+      min-height: 44px;
+      min-width: 116px;
+    }
+  }
+
+  .demo-machines__summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: auto;
+    border: 1px solid var(--border);
+  }
+
+  .demo-machines__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .demo-machines__stat:last-child {
+    border-right: 0;
+  }
+
+  .demo-machines__stat-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .demo-machines__stat-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-0);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Panel 2: document -------------------------------------------------- */
+  .demo-doc__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: var(--text-sm);
+  }
+
+  .demo-doc__name {
+    color: var(--text-0);
+  }
+
+  .demo-doc__status {
+    font-weight: 600;
+    color: var(--accent-400);
+  }
+
+  .demo-doc__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demo-doc__line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .demo-doc__line:hover {
+    background: var(--bg-1);
+  }
+
+  .demo-doc__line input {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--accent-400);
+    cursor: pointer;
+  }
+
+  .demo-doc__label,
+  .demo-doc__amount {
+    font-size: var(--text-sm);
+    color: var(--text-0);
+  }
+
+  .demo-doc__line.is-excluded .demo-doc__label,
+  .demo-doc__line.is-excluded .demo-doc__amount {
+    color: var(--text-3);
+  }
+
+  .demo-doc__leader {
+    flex: 1 1 auto;
+    height: 0;
+    border-bottom: 1px dotted var(--border-strong);
+  }
+
+  .demo-doc__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .demo-doc__total-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .demo-doc__total-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-0);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demo-doc__pdf {
+    margin-top: auto;
+    min-height: 46px;
+    padding-inline: 16px;
+    color: var(--text-0);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .demo-doc__pdf:hover:not(:disabled) {
+    background: var(--accent-400);
+    border-color: var(--accent-400);
+    color: var(--bg-0);
+  }
+
+  .demo-doc__pdf:disabled {
+    opacity: 0.85;
+    cursor: default;
+  }
+
+  .demo-doc__pdf:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  /* --- Panel 3: Excel → App ------------------------------------------------ */
+  .demo-data__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .demo-segment {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+  }
+
+  .demo-segment__indicator {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    box-sizing: border-box;
+    background: color-mix(in srgb, var(--accent-400) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-400) 55%, transparent);
+    /* "App" (the 2nd/right segment) is the default active view — see the
+       `demo-view[data-view="app"]` default-visible state above — so the
+       indicator's resting position must be under it (100%), not the 1st
+       segment. The client script flips this to 0% when Excel is selected. */
+    transform: translateX(100%);
+    transition: transform 320ms var(--motion-ease-out);
+  }
+
+  .demo-segment button {
+    position: relative;
+    min-height: 36px;
+    min-width: 140px;
+    padding-inline: 14px;
+    border: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 200ms var(--motion-ease-out);
+  }
+
+  .demo-segment button[aria-pressed='true'] {
+    color: var(--text-0);
+  }
+
+  @media (max-width: 640px) {
+    .demo-segment button {
+      /* Desktop's `min-width: 140px` (set above) is dropped here — two
+         140px segments plus the group's own border/padding does not
+         reliably fit a 360px viewport once the pane/panel gutters are
+         subtracted. `minmax(0, 1fr)` on `.demo-segment` already gives
+         each button an equal share of the available width; letting the
+         label wrap to 2 lines on the narrowest phones beats overflow. */
+      min-height: 44px;
+      min-width: 0;
+      padding-inline: 8px;
+      white-space: normal;
+      text-align: center;
+    }
+  }
+
+  .demo-view[hidden] {
+    display: none;
+  }
+
+  .demo-app {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  @media (min-width: 641px) {
+    .demo-app {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-areas:
+        'stats controls'
+        'chart controls'
+        'chart table';
+      align-items: start;
+      column-gap: 16px;
+      row-gap: 14px;
+    }
+
+    .demo-app__stats {
+      grid-area: stats;
+    }
+
+    .demo-app__chart {
+      grid-area: chart;
+    }
+  }
+
+  .demo-app__stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .demo-app__stat {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: var(--text-sm);
+  }
+
+  .demo-app__stat-label {
+    color: var(--text-2);
+  }
+
+  .demo-app__stat-leader {
+    flex: 1 1 auto;
+    height: 0;
+    border-bottom: 1px dotted var(--border-strong);
+  }
+
+  .demo-app__stat-value {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-0);
+  }
+
+  .demo-app__stats .demo-app__stat:last-child .demo-app__stat-value {
+    color: var(--accent-400);
+  }
+
+  .demo-app__chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .demo-app__chart-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .demo-app__bars {
+    /* A definite height, not min-height: the bars size themselves with a
+       percentage height, which resolves to 0 against an indefinite parent. */
+    flex: 0 0 auto;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .demo-app__bar {
+    flex: 1 1 auto;
+    height: var(--bar-value);
+    transform-origin: center bottom;
+    background-image: repeating-linear-gradient(
+      0deg,
+      var(--accent-400) 0 6px,
+      color-mix(in srgb, var(--accent-400) 25%, transparent) 6px 8px
+    );
+  }
+
+  .demo-app__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  @media (min-width: 641px) {
+    .demo-app__controls {
+      grid-area: controls;
+      flex-direction: row;
+    }
+  }
+
+  .demo-app__search {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-inline: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-0);
+    transition: border-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .demo-app__search:focus-within {
+    border-color: var(--accent-400);
+  }
+
+  .demo-app__search-glyph {
+    flex-shrink: 0;
+    font-size: var(--text-sm);
+    color: var(--accent-400);
+  }
+
+  .demo-app__search input {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-0);
+  }
+
+  .demo-app__search input::placeholder {
+    color: var(--text-3);
+  }
+
+  .demo-app__date select {
+    min-height: 44px;
+    padding-inline: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-0);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-0);
+  }
+
+  @media (min-width: 641px) {
+    .demo-table {
+      grid-area: table;
+    }
+  }
+
+  .demo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .demo-table th,
+  .demo-table td {
+    padding: 8px 10px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-table td:nth-of-type(4),
+  .demo-table td:nth-of-type(5) {
+    text-align: right;
+  }
+
+  .demo-table thead th {
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .demo-table tbody td {
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    color: var(--text-2);
+  }
+
+  .demo-table tbody td:first-of-type {
+    color: var(--text-0);
+  }
+
+  .demo-table tbody td:nth-of-type(4) {
+    color: var(--text-0);
+  }
+
+  .demo-table tr[data-table-empty] td {
+    color: var(--text-3);
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .demo-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    .demo-table,
+    .demo-table tbody,
+    .demo-table tr {
+      display: block;
+    }
+
+    /* `:not([hidden])` on both rules below is load-bearing: `[hidden]`'s
+       UA-stylesheet `display: none` has LOWER specificity than a
+       class+element author rule, so an unscoped `display: grid`/`block`
+       here would win the cascade and make a filtered-out or the empty
+       "no results" row visible again at this breakpoint despite its
+       `hidden` attribute (set by this component's own client script). */
+    .demo-table tbody tr:not([hidden]) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      grid-template-areas:
+        'client client total'
+        'product date status';
+      column-gap: 12px;
+      row-gap: 2px;
+      padding: 10px 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    .demo-table tbody tr[data-table-empty]:not([hidden]) {
+      display: block;
+    }
+
+    .demo-table td {
+      display: block;
+      padding: 0;
+      border-bottom: 0;
+      white-space: normal;
+    }
+
+    .demo-table td:nth-of-type(1) {
+      grid-area: client;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+
+    .demo-table td:nth-of-type(2) {
+      grid-area: product;
+    }
+
+    .demo-table td:nth-of-type(3) {
+      grid-area: date;
+    }
+
+    .demo-table td:nth-of-type(3)::before {
+      content: '· ';
+      color: var(--text-3);
+    }
+
+    .demo-table td:nth-of-type(4) {
+      grid-area: total;
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+
+    .demo-table td:nth-of-type(5) {
+      grid-area: status;
+      text-align: right;
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+
+    .demo-table tr[data-table-empty] td {
+      grid-area: unset;
+      text-align: left;
+      font-weight: 400;
+      color: var(--text-3);
+      font-style: italic;
+    }
+  }
+
+  /* --- Panel 3: Excel view (decorative, cloned from <template>) --------- */
+  .demo-excel {
+    display: grid;
+    grid-template-columns:
+      minmax(8rem, 1.5fr) minmax(6.5rem, 1.2fr) minmax(3.25rem, 0.6fr)
+      minmax(4.5rem, 0.75fr) minmax(5.5rem, 1fr);
+    border-top: 1px solid var(--border-strong);
+    border-left: 1px solid var(--border-strong);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .demo-excel__cell {
+    padding: 8px;
+    overflow: hidden;
+    border-right: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-excel__cell--header {
+    background: var(--bg-inset);
+    color: var(--text-0);
+    font-weight: 600;
+  }
+
+  .demo-excel__cell--error {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+
+  .demo-excel__cell--duplicate {
+    background: color-mix(in srgb, var(--warning) 10%, transparent);
+    color: var(--warning);
+  }
+
+  @media (max-width: 640px) {
+    .demo-excel {
+      grid-template-columns: 1.35fr 1.05fr 0.7fr 0.95fr 1fr;
+    }
+
+    .demo-excel__cell {
+      padding: 6px 4px;
+      font-size: 10px;
+      line-height: 1.35;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+</style>
