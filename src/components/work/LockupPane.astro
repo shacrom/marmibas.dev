@@ -1,0 +1,467 @@
+---
+/**
+ * LockupPane.astro — reusable "Marmibas × partner" lock-up pane.
+ *
+ * Extracted from `FactorySoftwarePane.astro` (the original "Software para
+ * fábricas" pane, owner request 2026-09-25) so the same effect — logo
+ * lock-up joined by an animated dashed connector with a violet "×" badge,
+ * intro copy, and a list of shipped projects with a pulsing `.t-led` +
+ * status label — can be reused for a second pane (Marmibas × Voxye) without
+ * duplicating ~450 lines of markup/styles/motion. Both current consumers
+ * (`FactorySoftwarePane.astro`, `VoxyePane.astro`) are data-only: they hold
+ * their own copy and provenance docblocks and render this component with
+ * resolved strings.
+ *
+ * The left tile of the lock-up is always the Marmibas wordmark — every
+ * consumer of this component is a "Marmibas × X" pane by construction, so
+ * that logo/alt/tile treatment is hardcoded here rather than threaded
+ * through as a prop. Only the right-hand partner tile is configurable,
+ * including whether it needs the wide wordmark treatment (e.g. Plazasys, a
+ * wide logotype) or the square icon-mark treatment (e.g. Voxye, a near-
+ * square mark) — pick by checking the source SVG's `viewBox` aspect ratio.
+ *
+ * Visual — a `TerminalPane` (`path={path}`, no `index`: a one-off pane, same
+ * convention `Footer.astro` uses for `path="contacto"`):
+ *   1. `Prompt` decorative command.
+ *   2. Eyebrow + `<h2>` heading, centered.
+ *   3. The lock-up: the Marmibas wordmark tile × the partner tile, joined by
+ *      an animated dashed connector with a violet "×" badge on top. Desktop:
+ *      horizontal `.t-flow` bar. Mobile (≤640px): the lock-up stacks and
+ *      swaps to `.t-flow-v` — same dual-bar convention as `ProcessPane.astro`.
+ *      Both utilities are already neutralised by the single reduced-motion
+ *      block in `motion.css`.
+ *   4. The intro sentence, then a "rows intro" line, then each row as a
+ *      small link out with its own logo and a pulsing `.t-led` + status
+ *      label.
+ *
+ * Entrance motion: every entrance `--t-delay` (and the `Prompt`'s own typing
+ * delay) adds `delayOffset` (ms, default `0`) so a second pane rendered
+ * right after a first one can stagger its entrance instead of animating in
+ * lockstep with it.
+ *
+ * Layout: assumes it is rendered INSIDE a container that already owns its
+ * own max-width and inline padding (e.g. `/experiencia`'s `.experience`
+ * wrapper, max-width 1080px) — NOT the home panes' full-bleed `.t-pane-gutter`
+ * (that utility's own docblock says it's for a pane placed directly in the
+ * page flow, not already inside a padded container). Top spacing is the
+ * pane's own concern (`topSpacingDesktop`/`topSpacingMobile`, default 64/48
+ * matching DESIGN.md §5's spacing scale) via a local, non-global wrapper div
+ * — the caller decides the value per placement, the component owns the
+ * mechanism.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+
+export interface LockupRow {
+  slug: string;
+  title: string;
+  desc: string;
+  /** Public path to the row's logo (e.g. `/logos/voxye.svg`). */
+  logo: string;
+  href: string;
+}
+
+export interface Props {
+  /** Decorative path shown in the pane bar (`~/{path}`). */
+  path: string;
+  /** Decorative command typed by `Prompt`. */
+  promptCommand: string;
+  /** `id` for the `<h2>`, wired to `aria-labelledby` on the pane root. */
+  headingId: string;
+  eyebrow: string;
+  heading: string;
+  partnerLogo: {
+    src: string;
+    alt: string;
+    /** Wide wordmark tile (e.g. Plazasys) vs. a square icon-mark tile (e.g. Voxye). */
+    wide: boolean;
+  };
+  intro: string;
+  fruitsIntro: string;
+  statusLabel: string;
+  rows: readonly LockupRow[];
+  /** Added to every entrance `--t-delay`, ms. Defaults to `0`. */
+  delayOffset?: number;
+  /** Top margin above the pane, desktop px. Defaults to `64`. */
+  topSpacingDesktop?: number;
+  /** Top margin above the pane, ≤640px px. Defaults to `48`. */
+  topSpacingMobile?: number;
+}
+
+const {
+  path,
+  promptCommand,
+  headingId,
+  eyebrow,
+  heading,
+  partnerLogo,
+  intro,
+  fruitsIntro,
+  statusLabel,
+  rows,
+  delayOffset = 0,
+  topSpacingDesktop = 64,
+  topSpacingMobile = 48,
+} = Astro.props as Props;
+
+const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mobile: ${topSpacingMobile}px;`;
+---
+
+<div class="lockup-pane-wrap" style={wrapStyle}>
+  <TerminalPane path={path} labelledby={headingId}>
+    <div class="lockup-pane">
+      <Prompt command={promptCommand} delay={200 + delayOffset} />
+
+      <div class="lockup-pane__heading-block t-show" style={`--t-delay: ${500 + delayOffset}ms;`}>
+        <p class="t-comment lockup-pane__eyebrow"># {eyebrow}</p>
+        <h2 id={headingId} class="lockup-pane__heading">{heading}</h2>
+      </div>
+
+      <div class="lockup-pane__lockup t-show" style={`--t-delay: ${800 + delayOffset}ms;`}>
+        <img
+          class="lockup-pane__logo lockup-pane__logo--wordmark"
+          src="/marmibas-logo.png"
+          alt="Logo de Marmibas"
+          width="48"
+          height="48"
+          loading="lazy"
+        />
+
+        <span class="lockup-pane__connector" aria-hidden="true">
+          <span class="lockup-pane__connector-bar lockup-pane__connector-bar--h t-flow"></span>
+          <span class="lockup-pane__connector-bar lockup-pane__connector-bar--v t-flow-v"></span>
+          <span class="lockup-pane__connector-x">×</span>
+        </span>
+
+        <img
+          class:list={['lockup-pane__logo', partnerLogo.wide && 'lockup-pane__logo--wide']}
+          src={partnerLogo.src}
+          alt={partnerLogo.alt}
+          width="48"
+          height="48"
+          loading="lazy"
+        />
+      </div>
+
+      <p class="lockup-pane__copy t-fade" style={`--t-delay: ${1100 + delayOffset}ms;`}>{intro}</p>
+
+      <p class="lockup-pane__fruits-intro t-fade" style={`--t-delay: ${1300 + delayOffset}ms;`}>
+        {fruitsIntro}
+      </p>
+
+      <ul class="lockup-pane__fruits" role="list">
+        {
+          rows.map((row, i) => (
+            <li>
+              <a
+                class="lockup-pane__fruit t-show"
+                style={`--t-delay: ${1450 + delayOffset + i * 150}ms;`}
+                href={row.href}
+              >
+                <span class="lockup-pane__fruit-logo">
+                  <img src={row.logo} alt="" width="28" height="28" loading="lazy" />
+                </span>
+                <span class="lockup-pane__fruit-text">
+                  <span class="lockup-pane__fruit-title">{row.title}</span>
+                  <span class="lockup-pane__fruit-desc">{row.desc}</span>
+                </span>
+                <span class="lockup-pane__fruit-status">
+                  <span
+                    class="t-led"
+                    aria-hidden="true"
+                    style={i > 0 ? `animation-delay: ${i * -600}ms;` : undefined}
+                  />
+                  {statusLabel}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </TerminalPane>
+</div>
+
+<style>
+  /* Top spacing only — see docblock. A plain wrapper div owned by this
+     component's own scoped style (no `:global()` needed, unlike the
+     original `FactorySoftwarePane` which had to reach into the child
+     `TerminalPane`'s own root element). */
+  .lockup-pane-wrap {
+    margin-top: var(--lockup-top-desktop, 64px);
+  }
+
+  @media (max-width: 640px) {
+    .lockup-pane-wrap {
+      margin-top: var(--lockup-top-mobile, 48px);
+    }
+  }
+
+  .lockup-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    font-size: 15px;
+  }
+
+  /* --- Heading ------------------------------------------------------- */
+  .lockup-pane__heading-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .lockup-pane__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+  }
+
+  .lockup-pane__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 640px) {
+    .lockup-pane__heading {
+      font-size: 24px;
+    }
+  }
+
+  /* --- Lock-up: Marmibas × partner ------------------------------------ */
+  .lockup-pane__lockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+
+  @media (max-width: 640px) {
+    .lockup-pane__lockup {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  /* Official logos are meant for light backgrounds; the light pill
+     preserves brand colours over the dark theme (same rationale as
+     `timeline__logo` in `experience/index.astro`). */
+  .lockup-pane__logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--text-0);
+    border: 1px solid var(--border);
+  }
+
+  /* White Marmibas wordmark: dark wide pill so it stays visible. */
+  .lockup-pane__logo--wordmark {
+    width: auto;
+    max-width: 140px;
+    padding: 12px 14px;
+    background: var(--bg-0);
+  }
+
+  /* Wide partner wordmark on the standard light pill. */
+  .lockup-pane__logo--wide {
+    width: auto;
+    max-width: 140px;
+    padding: 8px 12px;
+  }
+
+  .lockup-pane__connector {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 64px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (max-width: 640px) {
+    .lockup-pane__connector {
+      flex: 0 0 auto;
+      min-width: 0;
+      width: 32px;
+      height: 56px;
+    }
+  }
+
+  /* Dual bar: only one of the two is shown per breakpoint (no background
+     shorthand here — `.t-flow`/`.t-flow-v` supply `background-image`). */
+  .lockup-pane__connector-bar {
+    display: none;
+    position: absolute;
+  }
+
+  .lockup-pane__connector-bar--h {
+    display: block;
+    inset-inline: 0;
+    top: 50%;
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  @media (max-width: 640px) {
+    .lockup-pane__connector-bar--h {
+      display: none;
+    }
+
+    .lockup-pane__connector-bar--v {
+      display: block;
+      inset-block: 0;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+    }
+  }
+
+  .lockup-pane__connector-x {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--text-base);
+  }
+
+  /* --- Copy ------------------------------------------------------------ */
+  .lockup-pane__copy,
+  .lockup-pane__fruits-intro {
+    margin: 0;
+    max-width: 640px;
+    margin-inline: auto;
+    text-align: center;
+    line-height: 1.65;
+  }
+
+  .lockup-pane__copy {
+    color: var(--text-1);
+  }
+
+  .lockup-pane__fruits-intro {
+    color: var(--text-2);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Rows -------------------------------------------------------------- */
+  .lockup-pane__fruits {
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lockup-pane__fruit {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      box-shadow var(--motion-base) var(--motion-ease-out);
+  }
+
+  .lockup-pane__fruit:hover,
+  .lockup-pane__fruit:focus-visible {
+    border-color: var(--accent-400);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .lockup-pane__fruit:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 480px) {
+    .lockup-pane__fruit {
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+  }
+
+  .lockup-pane__fruit-logo {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border-radius: var(--radius-sm);
+  }
+
+  .lockup-pane__fruit-logo img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  .lockup-pane__fruit-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+  }
+
+  .lockup-pane__fruit-title {
+    font-weight: 600;
+    color: var(--text-0);
+  }
+
+  .lockup-pane__fruit-desc {
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .lockup-pane__fruit-status {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-xs);
+    color: var(--accent-300);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .lockup-pane__fruit-status {
+      flex: 1 0 100%;
+      padding-left: 52px;
+    }
+  }
+</style>
