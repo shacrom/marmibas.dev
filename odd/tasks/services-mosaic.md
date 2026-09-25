@@ -44,7 +44,7 @@ opening a module, the drawer (E4).
 | S1 | Services data: add the 4 "incluye" items + keyword/icon per service in `src/lib/services.ts` (tested) | delegated writer | [x] |
 | S2 | `/servicios` mosaic + drawer (E4), hash deep links, crawlable content | delegated writer (same) | [x] |
 | S3 | Remove the 7 detail pages, 301 redirects to `/servicios/#<slug>` (tested), update internal links, sitemap, `llms.txt`, SEO verify script | delegated writer (same) | [x] |
-| S4 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
+| S4 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [x] |
 | S5 | Owner adjustments: drop the `cat idea.txt` CTA pane on `/trabajos` (footer already closes the page); compact single-row service modules on mobile | direct inline (2 small edits) | [x] |
 | S6 | Mobile pass on every page (390 / 768): home, servicios, trabajos, case studies, experiencia, contacto — fix what breaks | parent QA + delegated writer if 2+ files | [x] |
 
@@ -90,7 +90,11 @@ Route evidence: S1–S3 touch 4+ non-trivial files → writer trigger.
   pages OK. Checks: `npm test` 154/154, `npm run check` 0 errors, eslint + prettier clean, build OK. Parent spot
   check: `npm test` 154/154; `/trabajos` and `/servicios/#tiendas-online` at 768 OK.
 
+- Owner reviewed the mobile artboards added to the canvas ("Móvil (390 px)") and approved shipping.
+- Delivered 2026-09-25: local integration of `fix/og-logo-only` + this branch on `origin/main` passed (`npm test`
+  152/152, build, `test:seo`); PR #9 (logo-only OG image) merged, PR #10 (work pages) merged as `5746d3c`, then this
+  branch as PR #11 (`type:feature`, `size:exception`) once its Vercel preview check passed.
+
 ## Next step
 
-Delivery after the owner's OK: PRs `fix/og-logo-only`, `feature/work-terminal`, `feature/services-mosaic`
-(stacked; retarget to `main` after the work PR merges).
+Verify production (live `/servicios`, redirects, `/trabajos`, OG image).
