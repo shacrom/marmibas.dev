@@ -55,7 +55,7 @@ industrial work only as the page's closing section, the owner missed it when rev
 | P2 | Marmibas × Voxye pane + both panes at the top + drop Marmibas from the timeline | delegated writer (same) | [x] |
 | P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
 | P4 | Owner feedback: swap pane order; Marmibas pane without connector/partner logo (partner optional in `LockupPane`) | direct inline (3 small edits in understood files) | [x] |
-| P5 | Past roles as terminal panes: generalise `LockupPane` (primary logo, role line, tags, body slot, optional rows) without visual change to the top panes, then replace the timeline with one pane per role | delegated writer | [ ] |
+| P5 | Past roles as terminal panes: generalise `LockupPane` (primary logo, role line, tags, body slot, optional rows) without visual change to the top panes, then replace the timeline with one pane per role | delegated writer | [x] |
 
 Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page, content file) → writer trigger.
 
@@ -104,7 +104,16 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
 - Owner tweak — `feat(experience): retitle the Marmibas pane "Software a medida"`: the pane now covers Marmibas as a
   whole (Voxye is one project row), so "Software para reformas" was too narrow; the new heading matches the home
   hero. Verified in the dev server HTML.
+- P5 done — `44d7fc5 refactor(experience): generalise the lock-up pane for single-logo panes` (`LockupPane`: optional
+  primary `logo {src, alt, variant, href?}` defaulting to the Marmibas wordmark, `subheading`, `tags`, optional
+  intro/rows, default slot in `.lockup-pane__body` styling MD `p` as intro and `li` as ✓ rows; `motion.css` covers
+  the new entrance) and `0fb2fcf feat(experience): show every past role as a terminal pane` (timeline replaced by
+  one pane per role: `~/<slug>`, `ls <slug>/`, period eyebrow, company h2 + role line, square logo tile linking to
+  the company site, stack badges, MD body; dead timeline markup/CSS removed). Top panes: only whitespace-level HTML
+  diff. Checks (writer): `npm test` 94/94, `npm run check` 0 errors, eslint + prettier on changed files clean,
+  build OK, `test:seo` passed, whole-repo lint = the 7 known base errors only. Parent spot check `npm test` 94/94;
+  visual QA 1440/390 (reduced motion) OK.
 
 ## Next step
 
-P5, then owner review; push/PR only after explicit OK.
+Owner review; push/PR only after explicit OK.
