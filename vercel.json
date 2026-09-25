@@ -18,6 +18,26 @@
       "permanent": true
     },
     {
+      "source": "/proyectos/jinba",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/proyectos/jinba/",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/proyectos/acompana",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/proyectos/acompana/",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
       "source": "/en/case-studies/voxye",
       "destination": "/case-studies/voxye/",
       "permanent": true

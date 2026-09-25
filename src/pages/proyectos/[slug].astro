@@ -8,10 +8,10 @@
  *
  * Convención de slug:
  *   El glob loader genera IDs con el prefijo de la subcarpeta (ej.
- *   `es/jinba` para `src/content/projects/es/jinba.mdx`). Como la página
+ *   `es/mi-proyecto` para `src/content/projects/es/mi-proyecto.mdx`). Como la página
  *   vive bajo `/proyectos/` y ya filtramos por `lang === 'es'`, usamos el
- *   basename del id (`jinba`) como slug — eso da URLs limpias
- *   `/proyectos/jinba` en vez de `/proyectos/es/jinba`.
+ *   basename del id (`mi-proyecto`) como slug — eso da URLs limpias
+ *   `/proyectos/mi-proyecto` en vez de `/proyectos/es/mi-proyecto`.
  *
  * MDX components:
  *   `<Callout>` se inyecta vía `components={{ Callout }}` para que los

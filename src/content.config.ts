@@ -81,7 +81,7 @@ const caseStudies = defineCollection({
 });
 
 /**
- * Projects — owned products and side projects (Jinba, Acompaña, Feed Me, Puro Padel).
+ * Projects — owned products and side projects (none published at the moment).
  * Distinct from case-studies: they ship under my own name, may be in flux.
  */
 const projects = defineCollection({

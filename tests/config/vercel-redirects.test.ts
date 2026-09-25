@@ -75,6 +75,10 @@ describe('vercel.json redirects', () => {
     ['/en/projects/some-project/', '/trabajos/'],
     ['/en/blog/', '/'],
     ['/en/anything/else/', '/'],
+    ['/proyectos/jinba', '/trabajos/'],
+    ['/proyectos/jinba/', '/trabajos/'],
+    ['/proyectos/acompana', '/trabajos/'],
+    ['/proyectos/acompana/', '/trabajos/'],
   ])('permanently redirects %s to %s', (from, to) => {
     const resolved = resolveRedirect(from);
     expect(resolved).not.toBeNull();
