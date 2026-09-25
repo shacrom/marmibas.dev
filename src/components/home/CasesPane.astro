@@ -2,38 +2,37 @@
 /**
  * CasesPane.astro — Home "case studies" pane (T6 terminal redesign).
  *
- * Renders the FOURTH home `TerminalPane` (`~/casos-de-exito` | `~/case-
- * studies`, `[4/7]`), replacing the pre-terminal `MidCta.astro` +
- * `FeaturedProjects.astro` pair (both rendered as ONE pane here, matching
- * `CasosTerminal.dc.html` (desktop 1440) / `CasosTerminalMovil.dc.html`
- * (mobile 390) — the read-only visual + timing spec under the design
- * scratchpad, which puts the "idea?" prompt and the case grid in the same
- * window separated only by a dashed rule).
+ * Renders the FOURTH home `TerminalPane` (`~/casos-de-exito`, `[4/7]`),
+ * replacing the pre-terminal `MidCta.astro` + `FeaturedProjects.astro` pair
+ * (both rendered as ONE pane here, matching `CasosTerminal.dc.html`
+ * (desktop 1440) / `CasosTerminalMovil.dc.html` (mobile 390) — the
+ * read-only visual + timing spec under the design scratchpad, which puts
+ * the "idea?" prompt and the case grid in the same window separated only
+ * by a dashed rule).
  *
  * Copy is reused VERBATIM:
- *   - The top block's sentence/CTA/href are exactly what `index.astro` /
- *     `en/index.astro` passed to the old `<MidCta>` (`midCtaText`/
- *     `midCtaLink`/`getRoutePath('contact', lang)`) — moved INTO this
- *     component's own per-lang copy (this task's brief explicitly allows
- *     either; keeping copy inside the pane component is the established
- *     convention every other T4–T5 pane already follows, so index.astro
- *     goes back to only passing `lang`).
+ *   - The top block's sentence/CTA/href are exactly what `index.astro`
+ *     passed to the old `<MidCta>` (`midCtaText`/`midCtaLink`/
+ *     `getRoutePath('contact', lang)`) — moved INTO this component's own
+ *     local copy (this task's brief explicitly allows either; keeping
+ *     copy inside the pane component is the established convention every
+ *     other T4–T5 pane already follows, so index.astro goes back to only
+ *     passing `lang`).
  *   - `featuredCases` (title/tagline/client/attribution/logo/year/stack/
  *     href/externalUrl/externalLabel) is the exact array `FeaturedProjects.
  *     astro` hardcoded (T-30) — copied as-is, nothing added or reworded.
- *   - `eyebrow` ("Prueba real"/"Real proof") mirrors `FeaturedProjects.
- *     astro`'s own inline ternary (never lived in `ui.ts`).
+ *   - `eyebrow` ("Prueba real") mirrors `FeaturedProjects.astro`'s own
+ *     inline value (never lived in `ui.ts`).
  *   - `heading`/`sub`/final link text still come from `ui.ts`
  *     (`featured.heading`/`featured.sub`/`featured.viewAll`, unchanged —
  *     `featured.viewAll` already embeds its own `→`, so the final link
  *     renders it with no extra markup).
  *
- * New copy: only the decorative `cat idea.txt` / `ls casos-de-exito/` (EN
- * `ls case-studies/`) prompts and the "en funcionamiento"/"in production"
- * status framing on each card's title bar — the section subtitle already
- * states these are live products, so this is framing, not a new claim.
- * Per-lang consts local to this component, same convention as every prior
- * pane (`HeroPane`/`ServicesPane`/`DemoPane`).
+ * New copy: only the decorative `cat idea.txt` / `ls casos-de-exito/`
+ * prompts and the "en funcionamiento" status framing on each card's title
+ * bar — the section subtitle already states these are live products, so
+ * this is framing, not a new claim. Consts local to this component, same
+ * convention as every prior pane (`HeroPane`/`ServicesPane`/`DemoPane`).
  *
  * Tag formatting (`#gestión-de-clientes` from `'Gestión de clientes'`) is
  * pure logic, so it lives in `src/lib/case-tags.ts` (TDD, no DOM) and is
@@ -71,24 +70,18 @@ export interface Props {
 const { lang } = Astro.props as Props;
 const t = useTranslations(lang);
 
-const panePath = lang === 'es' ? 'casos-de-exito' : 'case-studies';
+const panePath = 'casos-de-exito';
 const catCommand = 'cat idea.txt';
-const lsCommand = lang === 'es' ? 'ls casos-de-exito/' : 'ls case-studies/';
-const eyebrow = lang === 'es' ? 'Prueba real' : 'Real proof';
-const statusLabel = lang === 'es' ? 'en funcionamiento' : 'in production';
-const metaLabels =
-  lang === 'es'
-    ? { client: 'cliente', year: 'año', by: 'autoría' }
-    : { client: 'client', year: 'year', by: 'by' };
+const lsCommand = 'ls casos-de-exito/';
+const eyebrow = 'Prueba real';
+const statusLabel = 'en funcionamiento';
+const metaLabels = { client: 'cliente', year: 'año', by: 'autoría' };
 
-// Top block — moved verbatim from what index.astro/en/index.astro passed
-// to the old <MidCta> (see docblock above).
+// Top block — moved verbatim from what index.astro passed to the old
+// <MidCta> (see docblock above).
 const midCta = {
-  text:
-    lang === 'es'
-      ? '¿Tienes una idea o un problema que quieres resolver?'
-      : 'Have an idea or a problem you want to solve?',
-  cta: lang === 'es' ? 'Escríbeme' : "Let's talk",
+  text: '¿Tienes una idea o un problema que quieres resolver?',
+  cta: 'Escríbeme',
 };
 const contactHref = getRoutePath('contact', lang);
 
@@ -99,62 +92,47 @@ const featuredCases = [
     slug: 'voxye',
     title: 'Voxye',
     tagline:
-      lang === 'es'
-        ? 'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.'
-        : 'The application that replaces Word and Excel for quotes and invoices in renovation companies. Fewer errors, more time, all branded with your identity.',
-    client: lang === 'es' ? 'Empresas de reformas' : 'Renovation companies',
-    attribution: lang === 'es' ? 'Producto propio' : 'Own product',
+      'La aplicación que reemplaza Word y Excel para hacer presupuestos y facturas en empresas de reformas. Menos errores, más tiempo, y todo con la imagen de tu marca.',
+    client: 'Empresas de reformas',
+    attribution: 'Producto propio',
     logo: '/logos/voxye.svg',
     year: 2025,
-    stack:
-      lang === 'es'
-        ? ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos']
-        : ['Quotes', 'Invoices', 'Client management', 'Automated emails'],
-    href: lang === 'es' ? '/case-studies/voxye' : '/en/case-studies/voxye',
+    stack: ['Presupuestos', 'Facturas', 'Gestión de clientes', 'Emails automáticos'],
+    href: '/case-studies/voxye',
     externalUrl: 'https://voxye.es',
-    externalLabel: lang === 'es' ? 'Ir al proyecto' : 'Open project',
+    externalLabel: 'Ir al proyecto',
   },
   {
     slug: 'recetas-novatex',
     title: 'Recetas Novatex',
     tagline:
-      lang === 'es'
-        ? 'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.'
-        : 'A digital notebook that replaces paper logs where machine settings are written down. The know-how of your best employees, preserved forever.',
-    client: lang === 'es' ? 'Industria textil' : 'Textile industry',
-    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+      'Una libreta digital que sustituye los cuadernos de papel donde se apuntan los ajustes de las máquinas. El conocimiento de tus mejores empleados, guardado para siempre.',
+    client: 'Industria textil',
+    attribution: 'Con Plazasys',
     logo: '/logos/novatex.jpg',
     year: 2026,
-    stack:
-      lang === 'es'
-        ? ['Industria textil', 'Búsqueda rápida', 'Multi-empresa']
-        : ['Textile industry', 'Fast search', 'Multi-company'],
-    href: lang === 'es' ? '/case-studies/recetas-novatex' : '/en/case-studies/recetas-novatex',
+    stack: ['Industria textil', 'Búsqueda rápida', 'Multi-empresa'],
+    href: '/case-studies/recetas-novatex',
     externalUrl: 'https://www.novatex.es/',
-    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
+    externalLabel: 'Web de la empresa',
   },
   {
     slug: 'visomos',
     title: "Visomo's",
     tagline:
-      lang === 'es'
-        ? 'El panel de control de una fábrica textil: producción, paradas y pedidos en tiempo real, sin depender de una hoja de cálculo gigante.'
-        : 'The control panel of a textile factory: production, downtime and orders in real time, without depending on a giant spreadsheet.',
-    client: lang === 'es' ? 'Envases para fruta' : 'Fruit packaging',
-    attribution: lang === 'es' ? 'Con Plazasys' : 'With Plazasys',
+      'El panel de control de una fábrica textil: producción, paradas y pedidos en tiempo real, sin depender de una hoja de cálculo gigante.',
+    client: 'Envases para fruta',
+    attribution: 'Con Plazasys',
     logo: '/logos/visomos.svg',
     year: 2026,
-    stack:
-      lang === 'es'
-        ? ['Producción en tiempo real', 'Trazabilidad', 'Registro en planta']
-        : ['Real-time production', 'Traceability', 'Shop-floor logging'],
-    href: lang === 'es' ? '/case-studies/visomos' : '/en/case-studies/visomos',
+    stack: ['Producción en tiempo real', 'Trazabilidad', 'Registro en planta'],
+    href: '/case-studies/visomos',
     externalUrl: 'https://visomos.com',
-    externalLabel: lang === 'es' ? 'Web de la empresa' : 'Company website',
+    externalLabel: 'Web de la empresa',
   },
 ];
 
-const viewAllHref = lang === 'es' ? '/trabajos' : '/en/work';
+const viewAllHref = '/trabajos';
 const headingId = 'cases-heading';
 ---
 

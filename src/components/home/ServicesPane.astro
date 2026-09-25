@@ -2,8 +2,8 @@
 /**
  * ServicesPane.astro — Home services pane (T4 terminal redesign).
  *
- * Renders the SECOND home `TerminalPane` (`~/servicios` | `~/services`,
- * `[2/7]`) — a pane SEPARATE from `HeroPane`, so its own reveal animations
+ * Renders the SECOND home `TerminalPane` (`~/servicios`, `[2/7]`) — a pane
+ * SEPARATE from `HeroPane`, so its own reveal animations
  * only start once IT scrolls into view (TerminalPane's run-on-view driver,
  * T2). Replaces the pre-terminal `ServicesSection.astro`. Matches
  * `Terminal.dc.html` (desktop 1440) / `TerminalMovil.dc.html` (mobile 390)
@@ -28,11 +28,10 @@
  * icon for that row, per T4's brief: "reuse the icon paths/mapping the
  * current ServicesSection uses".
  *
- * New copy: only the decorative `ls servicios/`/`ls services/` command and
- * the `→ ver servicio` hover affordance (ES only — EN mirrors the current
- * non-link row behaviour, so it never renders an arrow). Kept as per-lang
- * consts local to this component, consistent with `HeroPane.astro`'s same
- * choice (see its docblock) rather than `ui.ts`.
+ * New copy: only the decorative `ls servicios/` command and the
+ * `→ ver servicio` hover affordance. Kept as consts local to this
+ * component, consistent with `HeroPane.astro`'s same choice (see its
+ * docblock) rather than `ui.ts`.
  *
  * Row layout: a flat set of children (bar / index / icon / title /
  * description / arrow) laid out with named CSS grid-template-areas that
@@ -43,11 +42,11 @@
  * both rows). Named areas let one flat DOM regroup visually per
  * breakpoint without duplicating markup.
  *
- * ES rows render as the row's own `<a href>` (linking to `/servicios/
- * <slug>`, exactly as `ServicesSection.astro` did); EN rows render as a
- * plain `<div>` (no href) — hover/focus visuals below are scoped to
- * `a.services-row` specifically, so the EN variant never picks them up
- * even though a browser still fires `:hover` on a plain `<div>`.
+ * Rows render as the row's own `<a href>` (linking to `/servicios/<slug>`,
+ * exactly as `ServicesSection.astro` did) — hover/focus visuals below are
+ * scoped to `a.services-row` specifically. `isLink`/`RowTag` stay in place
+ * (rather than hardcoding an `<a>`) so a future non-linking locale can drop
+ * in without restructuring this component.
  */
 
 import TerminalPane from '../terminal/TerminalPane.astro';
@@ -65,14 +64,13 @@ export interface Props {
 const { lang } = Astro.props as Props;
 const t = useTranslations(lang);
 
-const panePath = lang === 'es' ? 'servicios' : 'services';
-const lsCommand = lang === 'es' ? 'ls servicios/' : 'ls services/';
+const panePath = 'servicios';
+const lsCommand = 'ls servicios/';
 
-// New decorative copy (ES only renders it — see docblock). Kept local per
-// T4's per-component-consts choice, consistent with HeroPane.astro.
+// New decorative copy. Kept local per T4's per-component-consts choice,
+// consistent with HeroPane.astro.
 const arrowLabel: Record<Language, string> = {
   es: 'ver servicio',
-  en: 'view service',
 };
 
 // Verbatim from ServicesSection.astro's inline SVG switch (viewBox 0 0 24

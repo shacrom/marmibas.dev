@@ -1,31 +1,32 @@
 /**
  * Tests del helper i18n (`src/i18n/helpers.ts`).
  *
- * Plan de tests (ver TASKS.md T-54):
- *   1. getLangFromUrl retorna 'en' para URL con prefijo /en/
- *   2. getLangFromUrl retorna 'es' (default) para URL sin prefijo lang
+ * Spanish is now the only locale (the English version was removed — see
+ * `odd/tasks/site-cleanup.md` C2). `getLangFromUrl` always resolves to the
+ * default locale; there is no more `/en` prefix to detect, and
+ * `getAlternateUrl`/`localePath` were removed as dead code (their only
+ * consumer, `LangSwitcher.astro`, was deleted with the English locale).
+ *
+ * Plan de tests:
+ *   1. getLangFromUrl siempre retorna 'es', incluso para un path que antes
+ *      habría sido detectado como EN (no queda ningún prefijo de idioma).
+ *   2. getLangFromUrl retorna 'es' (default) para URL sin prefijo lang.
  *   3. useTranslations resuelve key existente en ES y maneja fallback
- *      cuando una key no existe en el dict (devuelve la key como último recurso)
- *   4. getRoutePath('contact', 'es')='/contacto' y ('contact','en')='/en/contact'
- *   5. getAlternateUrl swap del prefijo ES→EN para una ruta declarada
+ *      cuando una key no existe en el dict (devuelve la key como último recurso).
+ *   4. getRoutePath('contact', 'es')='/contacto'.
  */
 
 import { describe, expect, it } from 'vitest';
-import {
-  getAlternateUrl,
-  getLangFromUrl,
-  getRoutePath,
-  useTranslations,
-} from '../../src/i18n/helpers';
+import { getLangFromUrl, getRoutePath, useTranslations } from '../../src/i18n/helpers';
 import type { UIKey } from '../../src/i18n/ui';
 
 describe('i18n helpers', () => {
   // -------------------------------------------------------------------------
-  // Test 1: getLangFromUrl detecta prefijo /en/
+  // Test 1: getLangFromUrl siempre resuelve al idioma único (ES)
   // -------------------------------------------------------------------------
-  it("getLangFromUrl returns 'en' for URLs under /en/ prefix", () => {
+  it("getLangFromUrl always returns 'es', even for a path that used to be the EN prefix", () => {
     const url = new URL('https://marmibas.dev/en/trabajos');
-    expect(getLangFromUrl(url)).toBe('en');
+    expect(getLangFromUrl(url)).toBe('es');
   });
 
   // -------------------------------------------------------------------------
@@ -44,16 +45,11 @@ describe('i18n helpers', () => {
     expect(tEs('nav.home')).toBe('Inicio');
     expect(tEs('nav.work')).toBe('Trabajos');
 
-    // EN dict cubre todas las keys (garantizado por el `satisfies` en ui.ts).
-    // Esta es la rama "happy path" en EN.
-    const tEn = useTranslations('en');
-    expect(tEn('nav.home')).toBe('Home');
-
-    // Fallback final: una key que no existe en ningún dict devuelve la key
-    // misma (último recurso, ver helpers.ts línea 87).
+    // Fallback final: una key que no existe en el dict devuelve la key
+    // misma (último recurso, ver helpers.ts).
     // Forzamos un cast para simular un dict incompleto.
     const fakeKey = 'nav.nonexistent.key' as unknown as UIKey;
-    expect(tEn(fakeKey)).toBe('nav.nonexistent.key');
+    expect(tEs(fakeKey)).toBe('nav.nonexistent.key');
   });
 
   // -------------------------------------------------------------------------
@@ -61,14 +57,5 @@ describe('i18n helpers', () => {
   // -------------------------------------------------------------------------
   it('getRoutePath returns the localized path for a RouteKey', () => {
     expect(getRoutePath('contact', 'es')).toBe('/contacto');
-    expect(getRoutePath('contact', 'en')).toBe('/en/contact');
-  });
-
-  // -------------------------------------------------------------------------
-  // Test 5: getAlternateUrl traduce el prefijo ES → EN para rutas declaradas
-  // -------------------------------------------------------------------------
-  it('getAlternateUrl swaps the lang prefix correctly for declared routes', () => {
-    const url = new URL('https://marmibas.dev/trabajos');
-    expect(getAlternateUrl(url, 'en')).toBe('/en/work');
   });
 });

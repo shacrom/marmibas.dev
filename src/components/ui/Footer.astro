@@ -9,20 +9,28 @@
  * no index, no scan band — this pane is the last thing on the page, not
  * one of the home's numbered sections) with the shared `.t-pane-gutter`
  * spacing (T2/T3 convention — see `src/styles/terminal.css`):
- *   1. Capture band: violet eyebrow comment, `.t-print` heading, sub copy,
- *      and a prompt line ending in a primary `TerminalButton` + `.t-cursor`.
- *      Copy is reused verbatim from the pre-terminal `Footer.astro`'s
- *      `ctaSection`/tagline — nothing invented.
+ *   1. Capture band: violet eyebrow comment, `.t-print` heading (with the
+ *      same violet glow as the hero `h1` — C4, `odd/tasks/site-cleanup.md`),
+ *      sub copy, and a prompt line ending in a primary `TerminalButton` +
+ *      `.t-cursor`. Copy is reused verbatim from the pre-terminal
+ *      `Footer.astro`'s `ctaSection`/tagline — nothing invented.
  *   2. `<Prompt command="tree marmibas.dev" />` (T2 component).
  *   3. 3 tree columns (`site`/`social`/`more`) from `getFooterTree(lang)`
  *      (T3, `src/lib/footer.ts`) — `├── `/`└── ` connectors, real links,
- *      `external` items keep `target="_blank" rel="noopener"`.
+ *      `external` items keep `target="_blank" rel="noopener"`. Rows enter
+ *      staggered via `.t-show` (C4): base delay = the `tree` prompt's own
+ *      typing end + 150ms, +40ms per row, counting across columns in
+ *      reading order (site rows, then social rows, then more rows — the
+ *      DOM order the 3 `<nav>` columns already render in). The pane is a
+ *      `TerminalPane`, so `terminal.css`'s run-on-view pause already
+ *      applies to `.t-show` — no extra wiring needed.
  *   4. A violet status bar rendered through `TerminalPane`'s `after` slot
  *      (extended in T3): `© {year} marmibas` + tagline, stacked on mobile.
  *
- * Only `h2`/`.t-print` and the trailing `.t-cursor` carry animation classes,
- * exactly as scoped by the T3 task brief — the eyebrow/sub/tree rows are
- * plain server-rendered text (no invented extra motion).
+ * Only `h2`/`.t-print`, the trailing `.t-cursor` and the tree rows
+ * (`.t-show`, C4) carry animation classes — the eyebrow/sub are plain
+ * server-rendered text (no invented extra motion beyond what the task
+ * briefs asked for).
  */
 import TerminalPane from '../terminal/TerminalPane.astro';
 import Prompt from '../terminal/Prompt.astro';
@@ -40,29 +48,45 @@ const t = useTranslations(lang);
 
 const year = new Date().getFullYear();
 const contactHref = getRoutePath('contact', lang);
-const panePath = lang === 'es' ? 'contacto' : 'contact';
-const footerLabel = lang === 'es' ? 'Pie de página' : 'Footer';
+const panePath = 'contacto';
+const footerLabel = 'Pie de página';
 
 // Capture band copy — reused verbatim from the pre-terminal Footer.astro's
 // `ctaSection` (eyebrow/heading/sub) and `tagline`. Only the CTA button
 // label changes source: it now reads `cta.contact` (the shared i18n key
 // the Header CTA also uses) instead of a footer-local `ctaSection.cta`
-// string, since both said the exact same thing ("Hablemos" / "Let's talk").
+// string, since both said the exact same thing ("Hablemos").
 const capture = {
-  eyebrow: lang === 'es' ? '# ¿Empezamos?' : '# Shall we start?',
-  heading: lang === 'es' ? 'Cuéntame qué necesitas' : 'Tell me what you need',
-  sub:
-    lang === 'es'
-      ? 'La primera llamada es gratis y sin compromiso.'
-      : 'First call is free, no strings attached.',
+  eyebrow: '# ¿Empezamos?',
+  heading: 'Cuéntame qué necesitas',
+  sub: 'La primera llamada es gratis y sin compromiso.',
 };
 
-const tagline =
-  lang === 'es'
-    ? 'Construyo software que tu negocio necesita.'
-    : 'I build the software your business needs.';
+const tagline = 'Construyo software que tu negocio necesita.';
 
 const tree = getFooterTree(lang);
+
+// Staggered tree-row entrance (C4, odd/tasks/site-cleanup.md): rows start
+// after the "tree marmibas.dev" prompt finishes typing (its own typing
+// duration mirrors `Prompt.astro`'s default: `max(220, command.length * 38)`
+// at `--t-delay: 0`, since this call passes neither `delay` nor `duration`),
+// plus a fixed pause, then +40ms per row counting across columns in
+// reading order (site rows, then social rows, then more rows).
+const TREE_PROMPT_COMMAND = 'tree marmibas.dev';
+const TREE_PROMPT_DURATION = Math.max(220, TREE_PROMPT_COMMAND.length * 38);
+const TREE_ROW_BASE_DELAY = TREE_PROMPT_DURATION + 150;
+const TREE_ROW_STEP = 40;
+
+// Running row-count offset per group, so row delays count continuously
+// across all 3 columns instead of restarting at 0 in each one.
+const treeGroupStartIndex: number[] = [];
+{
+  let running = 0;
+  for (const group of tree) {
+    treeGroupStartIndex.push(running);
+    running += group.items.length;
+  }
+}
 ---
 
 <footer aria-label={footerLabel}>
@@ -89,25 +113,30 @@ const tree = getFooterTree(lang);
 
       <div class="footer-tree">
         {
-          tree.map((group) => (
+          tree.map((group, groupIndex) => (
             <nav aria-label={group.ariaLabel} class="footer-tree__group">
               <span class="footer-tree__heading">{group.heading}</span>
-              {group.items.map((item, index) => (
-                <span class="footer-tree__row">
-                  <span aria-hidden="true" class="footer-tree__connector">
-                    {index === group.items.length - 1 ? '└── ' : '├── '}
+              {group.items.map((item, index) => {
+                const rowDelay =
+                  TREE_ROW_BASE_DELAY +
+                  TREE_ROW_STEP * ((treeGroupStartIndex[groupIndex] ?? 0) + index);
+                return (
+                  <span class="footer-tree__row t-show" style={`--t-delay: ${rowDelay}ms;`}>
+                    <span aria-hidden="true" class="footer-tree__connector">
+                      {index === group.items.length - 1 ? '└── ' : '├── '}
+                    </span>
+                    <a
+                      class="footer-tree__link"
+                      href={item.href}
+                      target={item.external ? '_blank' : undefined}
+                      rel={item.external ? 'noopener' : undefined}
+                      aria-label={item.ariaLabel}
+                    >
+                      {item.label}
+                    </a>
                   </span>
-                  <a
-                    class="footer-tree__link"
-                    href={item.href}
-                    target={item.external ? '_blank' : undefined}
-                    rel={item.external ? 'noopener' : undefined}
-                    aria-label={item.ariaLabel}
-                  >
-                    {item.label}
-                  </a>
-                </span>
-              ))}
+                );
+              })}
             </nav>
           ))
         }
@@ -163,6 +192,8 @@ const tree = getFooterTree(lang);
     line-height: 1.1;
     letter-spacing: var(--tracking-tight);
     color: var(--text-0);
+    /* Same violet glow as the hero h1 (HeroPane.astro .hero-pane__title). */
+    text-shadow: 0 0 24px rgba(167, 139, 250, 0.25);
   }
 
   @media (min-width: 641px) {

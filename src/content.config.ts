@@ -7,9 +7,13 @@
  * Per-collection content lives under `src/content/<collection>/<lang>/`.
  * The `lang` frontmatter field is the canonical source of truth (helpers in
  * `src/lib/content.ts` filter by it); the folder split is purely organizational.
+ * ES is the only published locale (the English version was removed — see
+ * `odd/tasks/site-cleanup.md` C2); `LANGS` stays an array rather than a
+ * literal so a future locale is a one-line addition, and every collection
+ * keeps its `<lang>/` subfolder split ready to receive it.
  *
  * Schemas follow TASKS.md T-15 as the canonical spec (case-studies / projects
- * / experience / posts) plus the project-wide shared fields (lang, draft,
+ * / experience) plus the project-wide shared fields (lang, draft,
  * featured, order, heroImage, ogImage) layered on top via `sharedBase`.
  *
  * Note on the `image()` helper: Astro injects it via `schema: ({ image }) =>`.
@@ -21,7 +25,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
-const LANGS = ["es", "en"] as const;
+const LANGS = ["es"] as const;
 
 /**
  * Project-wide frontmatter every collection inherits — except for the image
@@ -142,30 +146,8 @@ const experience = defineCollection({
     }),
 });
 
-/**
- * Posts — blog entries. Empty initially; grows over time.
- * `publishedAt` is required (sort key); `updatedAt` optional (article meta).
- */
-const posts = defineCollection({
-  loader: glob({
-    base: "./src/content/posts",
-    pattern: "**/*.{md,mdx}",
-  }),
-  schema: ({ image }) =>
-    sharedBase.extend({
-      heroImage: image().optional(),
-      ogImage: image().optional(),
-      publishedAt: z.coerce.date(),
-      updatedAt: z.coerce.date().optional(),
-      tags: z.array(z.string()).optional(),
-      readingTime: z.number().optional(),
-      canonical: z.string().url().optional(),
-    }),
-});
-
 export const collections = {
   "case-studies": caseStudies,
   projects,
   experience,
-  posts,
 };

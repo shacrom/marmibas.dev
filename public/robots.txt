@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /en/
 
 Sitemap: https://marmibas.dev/sitemap-index.xml

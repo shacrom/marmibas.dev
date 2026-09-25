@@ -70,29 +70,20 @@ const {
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
-const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
-const analyticsConsentCopy =
-  lang === 'es'
-    ? {
-        title: 'Privacidad y mejora del sitio',
-        body: 'Usamos cookies de análisis solo si las aceptas. Nos ayudan a entender cómo se utiliza la web y a mejorarla.',
-        policy: 'Ver política de cookies',
-        accept: 'Aceptar',
-        reject: 'Rechazar',
-      }
-    : {
-        title: 'Privacy and site improvement',
-        body: 'We use analytics cookies only if you accept them. They help us understand how the website is used and improve it.',
-        policy: 'View cookie policy',
-        accept: 'Accept',
-        reject: 'Reject',
-      };
+const cookiePolicyHref = '/politica-cookies';
+const analyticsConsentCopy = {
+  title: 'Privacidad y mejora del sitio',
+  body: 'Usamos cookies de análisis solo si las aceptas. Nos ayudan a entender cómo se utiliza la web y a mejorarla.',
+  policy: 'Ver política de cookies',
+  accept: 'Aceptar',
+  reject: 'Rechazar',
+};
 
-// English content is currently hidden from the public UI (no switcher, not in
-// sitemap, blocked in robots.txt). Force `noindex` on every EN page so search
-// engines that discover them via external links do not index them. Explicit
-// `noindex` prop still wins (always-noindex pages stay noindex regardless).
-const effectiveNoindex = noindex || lang === 'en';
+// The English version was removed (site is Spanish-only — see
+// `odd/tasks/site-cleanup.md` C2), so there is no more EN-forced noindex
+// branch here. The explicit `noindex` prop still wins for pages that opt in
+// (e.g. contact, cookie policy).
+const effectiveNoindex = noindex;
 ---
 
 <!doctype html>

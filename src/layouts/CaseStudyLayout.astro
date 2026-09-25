@@ -107,9 +107,9 @@ interface Props {
 const { frontmatter, headings, lang: langProp, prev = null, next = null } =
   Astro.props;
 
-// Derive language from URL if the page didn't pass an explicit prop.
-// Both case-studies/<es|en> live under `/trabajos` or `/en/work` — the URL
-// is authoritative.
+// Derive language from URL if the page didn't pass an explicit prop
+// (always resolves to 'es' — the only published locale, see
+// `odd/tasks/site-cleanup.md` C2).
 const lang: Language = langProp ?? getLangFromUrl(Astro.url);
 
 // Convert ImageMetadata → string URL for SeoHead's ogImage prop. SeoHead

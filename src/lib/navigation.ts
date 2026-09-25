@@ -3,8 +3,8 @@
  * (T2 terminal redesign, `odd/tasks/terminal-redesign.md` T2).
  *
  * Extracts, as pure data, exactly what `src/components/ui/Header.astro`
- * builds inline today: the 5 `RouteKey` nav items (home, work, experience,
- * blog, contact) via `getRoutePath` + `t('nav.*')`, with ES injecting a
+ * builds inline today: the 4 `RouteKey` nav items (home, work, experience,
+ * contact) via `getRoutePath` + `t('nav.*')`, with ES injecting a
  * decorative `services` entry at index 1 (hardcoded `/servicios` href —
  * `services` is not a `RouteKey` in `src/i18n/routes.ts`) whose `current`
  * state mirrors the Header's own dedicated check
@@ -39,12 +39,11 @@ export interface PrimaryNavItem {
 /** Route keys + their label key, in the exact order Header.astro renders them. */
 const PRIMARY_ROUTE_NAV: {
   key: RouteKey;
-  labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.blog' | 'nav.contact';
+  labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.contact';
 }[] = [
   { key: 'home', labelKey: 'nav.home' },
   { key: 'work', labelKey: 'nav.work' },
   { key: 'experience', labelKey: 'nav.experience' },
-  { key: 'blog', labelKey: 'nav.blog' },
   { key: 'contact', labelKey: 'nav.contact' },
 ];
 

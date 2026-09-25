@@ -31,7 +31,8 @@
  *   enhancement: a `<noscript>` override forces the panel visible as a
  *   static list and hides the (otherwise non-functional) toggle button.
  *
- * i18n: EN stays hidden (no language switcher here — DESIGN.md §13).
+ * i18n: Spanish is the only locale (no language switcher — the English
+ * version was removed, see `odd/tasks/site-cleanup.md` C2).
  */
 import BrandLogo from './BrandLogo.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
@@ -49,8 +50,8 @@ const t = useTranslations(currentLang);
 
 const homeHref = getRoutePath('home', currentLang);
 const contactHref = getRoutePath('contact', currentLang);
-const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
-const brandLabel = currentLang === 'es' ? 'marmibas — inicio' : 'marmibas — home';
+const navAriaLabel = 'Navegación principal';
+const brandLabel = 'marmibas — inicio';
 
 const navItems = getPrimaryNav(currentLang, currentUrl.pathname);
 
@@ -62,7 +63,9 @@ const menuLabelClose = t('header.menu.close');
   <div class="t-header__bar">
     <div class="t-header__inner">
       <a class="t-header__brand" href={homeHref} aria-label={brandLabel}>
-        <BrandLogo src="/marmibas-logo.png" width="132px" height="22px" />
+        <!-- Fluid width: full 132px from ~370px up, shrinking on very narrow phones so
+             logo + clock + menu button still fit (≈112px at 310px). -->
+        <BrandLogo src="/marmibas-logo.png" width="clamp(104px, 36vw, 132px)" height="22px" />
       </a>
 
       <nav class="t-header__tabs" aria-label={navAriaLabel}>
@@ -389,7 +392,7 @@ const menuLabelClose = t('header.menu.close');
 
     .t-header__inner {
       padding-inline: 16px 8px;
-      gap: 12px;
+      gap: 14px;
     }
 
     /* The mobile bar has no cell dividers: dropping the brand cell's padding
@@ -407,10 +410,19 @@ const menuLabelClose = t('header.menu.close');
 
     .t-header__mobile-clock {
       display: flex;
+      /* `.t-header__inner` stretches this item to the full 56px bar height;
+         without this the label/time stack (an auto-height column) sits at
+         the top of that box instead of centred in it. */
+      justify-content: center;
     }
 
     .t-header__menu-btn {
       display: inline-flex;
+      /* Fixed 44×44 size means `align-items: stretch` on `.t-header__inner`
+         falls back to flex-start (top) for this item's cross-axis position
+         — centre it explicitly so it sits mid-bar with equal space above
+         and below, matching the clock block. */
+      align-self: center;
     }
 
     .t-header__menu[data-open] {

@@ -14,26 +14,21 @@
  *
  * New content — the `neofetch` block's `<dl>` — is a set of FACTS DERIVED
  * from the existing bio copy (task brief gives the exact ES label/value
- * pairs, lifted straight from the ES bio sentences already in `ui.ts`; the
- * EN pairs below are the same derivation applied to the EN bio, quoting it
- * directly rather than re-translating the ES values):
+ * pairs, lifted straight from the ES bio sentences already in `ui.ts`):
  *   - Nombre/Rol/Experiencia/Clientes: `about.bio.p1` ("Soy Marcos... 5 años
- *     ... startups, pymes y grandes compañías" / EN: "I'm marmibas... 5
- *     years... startups to large enterprises" — EN literally introduces
- *     itself as "marmibas", not "Marcos", so the EN `Name` fact quotes
- *     that rather than importing the ES name).
+ *     ... startups, pymes y grandes compañías").
  *   - Hoy/Para/Socio industrial: `about.bio.p2` ("trabajo de forma
  *     independiente... emprendedores, autónomos y pequeñas empresas...
- *     Plazasys" / EN: "I work independently... entrepreneurs, freelancers
- *     and small businesses... Plazasys").
+ *     Plazasys").
  *   - Base/Primera llamada: `about.bio.p3` ("España, en remoto... gratis y
- *     sin compromiso" / EN: "remotely from Spain... free and no-strings-
- *     attached").
- *   - `Experiencia`/`Experience` reuses the existing `about.stats.
- *     yearsValue` ("5+") rather than re-deriving a new number.
- * Framing strings (`neofetch`, `cat sobre-mi.txt`/`cat about.txt`, the
- * `marcos@marmibas` header + rule) are new, decorative, per-lang consts —
- * same convention as every prior pane.
+ *     sin compromiso").
+ *   - `Experiencia` reuses the "5+" figure from the bio rather than
+ *     re-deriving a new number (the old `about.stats.*` i18n keys this once
+ *     matched were dropped as unused — see `odd/tasks/site-cleanup.md` C3).
+ * Framing strings (`neofetch`, `cat sobre-mi.txt`, the `marcos@marmibas`
+ * header + rule) are new, decorative consts — same convention as every
+ * prior pane. English was removed (site is Spanish-only — see
+ * `odd/tasks/site-cleanup.md` C2); `lang` stays typed for a future locale.
  *
  * Timing: the mockup gives DIFFERENT delays per breakpoint for the right
  * column (desktop runs it in parallel with the left column; mobile
@@ -65,8 +60,8 @@ export interface Props {
 const { lang } = Astro.props as Props;
 const t = useTranslations(lang);
 
-const panePath = lang === 'es' ? 'sobre-mi' : 'about';
-const catCommand = lang === 'es' ? 'cat sobre-mi.txt' : 'cat about.txt';
+const panePath = 'sobre-mi';
+const catCommand = 'cat sobre-mi.txt';
 
 const facts: Record<Language, Array<{ label: string; value: string }>> = {
   es: [
@@ -79,17 +74,6 @@ const facts: Record<Language, Array<{ label: string; value: string }>> = {
     { label: 'Socio industrial', value: 'Plazasys' },
     { label: 'Base', value: 'España · en remoto' },
     { label: 'Primera llamada', value: 'gratis y sin compromiso' },
-  ],
-  en: [
-    { label: 'Name', value: 'marmibas' },
-    { label: 'Role', value: 'Software engineer' },
-    { label: 'Experience', value: '5+ years' },
-    { label: 'Clients', value: 'startups to large enterprises' },
-    { label: 'Today', value: 'independently' },
-    { label: 'For', value: 'entrepreneurs, freelancers and small businesses' },
-    { label: 'Industrial partner', value: 'Plazasys' },
-    { label: 'Base', value: 'Spain · remote' },
-    { label: 'First call', value: 'free and no-strings-attached' },
   ],
 };
 

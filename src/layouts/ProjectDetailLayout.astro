@@ -83,13 +83,13 @@ const pillStatus: PillStatus = frontmatter.status;
 const canonicalLinks: ProjectLink[] = [];
 if (frontmatter.liveUrl) {
   canonicalLinks.push({
-    label: lang === 'es' ? 'Ver en vivo' : 'View live',
+    label: 'Ver en vivo',
     url: frontmatter.liveUrl,
   });
 }
 if (frontmatter.repo) {
   canonicalLinks.push({
-    label: lang === 'es' ? 'Repositorio' : 'Repository',
+    label: 'Repositorio',
     url: frontmatter.repo,
   });
 }
@@ -132,9 +132,7 @@ if (frontmatter.links) {
     {
       canonicalLinks.length > 0 && (
         <footer class="project-detail__footer">
-          <h2 class="project-detail__links-title">
-            {lang === 'es' ? 'Enlaces' : 'Links'}
-          </h2>
+          <h2 class="project-detail__links-title">Enlaces</h2>
           <ul class="project-detail__links">
             {canonicalLinks.map((link) => (
               <li>
@@ -153,7 +151,7 @@ if (frontmatter.links) {
             ))}
           </ul>
           <p class="project-detail__back-row">
-            <a class="project-detail__back" href={lang === 'es' ? '/trabajos' : '/en/work'}>
+            <a class="project-detail__back" href="/trabajos">
               <span aria-hidden="true">←</span>
               <span>{t('common.backTo')} {t('nav.work')}</span>
             </a>

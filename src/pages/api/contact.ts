@@ -92,10 +92,11 @@ function jsonResponse(
   });
 }
 
-function buildSubject(name: string, lang: 'es' | 'en'): string {
-  return lang === 'en'
-    ? `[marmibas.dev] New message from ${name}`
-    : `[marmibas.dev] Nuevo mensaje de ${name}`;
+// `lang` stays as a param (rather than dropping it) even though the schema
+// only accepts 'es' today — see `odd/tasks/site-cleanup.md` C2 — so a future
+// locale is a one-line addition here instead of a signature change.
+function buildSubject(name: string, _lang: 'es'): string {
+  return `[marmibas.dev] Nuevo mensaje de ${name}`;
 }
 
 /**
@@ -121,14 +122,10 @@ function buildHtmlBody(payload: ContactPayload): string {
   <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#0a0a0f; color:#fafafa; padding:24px; margin:0;">
     <div style="max-width:600px; margin:0 auto; background:#13131a; border:1px solid #27272f; border-radius:12px; padding:32px;">
       <h1 style="margin:0 0 8px 0; font-size:20px; color:#a78bfa;">marmibas.dev</h1>
-      <p style="margin:0 0 24px 0; color:#9ca3af; font-size:13px;">${
-        payload.lang === 'en' ? 'New contact form message' : 'Nuevo mensaje del formulario de contacto'
-      }</p>
+      <p style="margin:0 0 24px 0; color:#9ca3af; font-size:13px;">Nuevo mensaje del formulario de contacto</p>
       <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
         <tr>
-          <td style="padding:8px 12px; background:#1c1c24; border-radius:6px 0 0 6px; color:#9ca3af; font-size:13px; width:80px;">${
-            payload.lang === 'en' ? 'Name' : 'Nombre'
-          }</td>
+          <td style="padding:8px 12px; background:#1c1c24; border-radius:6px 0 0 6px; color:#9ca3af; font-size:13px; width:80px;">Nombre</td>
           <td style="padding:8px 12px; background:#1c1c24; border-radius:0 6px 6px 0; color:#fafafa; font-size:14px;">${name}</td>
         </tr>
         <tr><td style="height:6px;" colspan="2"></td></tr>

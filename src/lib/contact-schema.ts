@@ -10,7 +10,9 @@
  *   - `email`   valid email format
  *   - `message` 10..2000 chars
  *   - `website` optional honeypot (filled = bot)
- *   - `lang`    enum 'es' | 'en' (default 'es')
+ *   - `lang`    enum 'es' (default 'es') — the only published locale, see
+ *               `odd/tasks/site-cleanup.md` C2. Kept as an enum (not a
+ *               literal) so a future locale is a one-line addition.
  */
 
 import { z } from 'zod';
@@ -20,7 +22,7 @@ export const contactSchema = z.object({
   email: z.string().email(),
   message: z.string().min(10).max(2000),
   website: z.string().optional(), // honeypot
-  lang: z.enum(['es', 'en']).default('es'),
+  lang: z.enum(['es']).default('es'),
 });
 
 export type ContactPayload = z.infer<typeof contactSchema>;

@@ -14,14 +14,14 @@
  * `src/lib/navigation.ts` exists):
  *   1. ES: item order, hrefs and `tab` labels match the Header exactly,
  *      including the injected `services` item at index 1.
- *   2. EN: no `services` item is present (order/hrefs/tabs for the
- *      remaining 5 items).
- *   3. `current` is true only for the item matching the current route
+ *   2. `current` is true only for the item matching the current route
  *      (home path).
- *   4. `current` mirrors the Header's dedicated services sub-route check:
+ *   3. `current` mirrors the Header's dedicated services sub-route check:
  *      `/servicios/tiendas-online/` marks `services` current (and nothing
  *      else), without touching `work`'s own `isCurrentRoute` result.
- *   5. EN `current` resolution works the same way for a non-home route.
+ *
+ * Spanish is now the only locale (the English version was removed — see
+ * `odd/tasks/site-cleanup.md` C2), so the EN-specific cases were dropped.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -36,7 +36,6 @@ describe('getPrimaryNav', () => {
       'services',
       'work',
       'experience',
-      'blog',
       'contact',
     ]);
 
@@ -45,7 +44,6 @@ describe('getPrimaryNav', () => {
       '/servicios',
       '/trabajos',
       '/experiencia',
-      '/blog',
       '/contacto',
     ]);
 
@@ -54,30 +52,7 @@ describe('getPrimaryNav', () => {
       '~/servicios',
       '~/trabajos',
       '~/experiencia',
-      '~/blog',
       '~/contacto',
-    ]);
-  });
-
-  it('returns the EN nav without a services item, in Header order, with hrefs and tabs', () => {
-    const nav = getPrimaryNav('en', '/en/');
-
-    expect(nav.map((item) => item.key)).toEqual(['home', 'work', 'experience', 'blog', 'contact']);
-
-    expect(nav.map((item) => item.href)).toEqual([
-      '/en/',
-      '/en/work',
-      '/en/experience',
-      '/en/blog',
-      '/en/contact',
-    ]);
-
-    expect(nav.map((item) => item.tab)).toEqual([
-      '~/home',
-      '~/work',
-      '~/experience',
-      '~/blog',
-      '~/contact',
     ]);
   });
 
@@ -91,11 +66,5 @@ describe('getPrimaryNav', () => {
     const nav = getPrimaryNav('es', '/servicios/tiendas-online/');
     const current = nav.filter((item) => item.current).map((item) => item.key);
     expect(current).toEqual(['services']);
-  });
-
-  it('resolves current correctly in EN for a non-home route', () => {
-    const nav = getPrimaryNav('en', '/en/work');
-    const current = nav.filter((item) => item.current).map((item) => item.key);
-    expect(current).toEqual(['work']);
   });
 });

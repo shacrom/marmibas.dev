@@ -8,27 +8,24 @@
  * ordered list of `{label, href, external?, ariaLabel?}` items.
  *
  * `site` reuses `getPrimaryNav` (T2) so the footer's site links always
- * stay in the same order as the header's — this is a deliberate choice:
- * the approved mockup happens to list `blog` before `experiencia`, but the
- * T3 task brief explicitly said to derive `site` "from getPrimaryNav", so
- * header/footer order consistency wins over that one mockup ordering
- * detail. `social`/`more` reuse the exact hrefs/constants the previous
- * (pre-terminal) `Footer.astro` used — same GitHub/LinkedIn/email/
- * phone/WhatsApp URLs, same RSS/cookie-policy paths.
+ * stay in the same order as the header's. `social`/`more` reuse the exact
+ * hrefs/constants the previous (pre-terminal) `Footer.astro` used — same
+ * GitHub/LinkedIn/email/phone/WhatsApp URLs, same cookie-policy path.
  *
  * Plan (strict TDD — written and observed RED before `src/lib/footer.ts`
  * exists):
  *   1. ES: 3 groups in order `site`/`social`/`more`, with the exact
  *      decorative headings and `<nav>` aria-labels.
- *   2. EN: same 3 groups, EN headings/aria-labels, no ES-only strings.
- *   3. ES `site` group: labels/hrefs/order mirror
+ *   2. ES `site` group: labels/hrefs/order mirror
  *      `getPrimaryNav('es', '')` lower-cased (home, services, work,
- *      experience, blog, contact).
- *   4. EN `site` group: mirrors `getPrimaryNav('en', '')` (no services).
- *   5. ES `social` group: exact hrefs/order/external flags for
+ *      experience, contact).
+ *   3. ES `social` group: exact hrefs/order/external flags for
  *      GitHub/LinkedIn/email/phone/WhatsApp.
- *   6. ES `more` group: RSS href `/rss.xml`, cookie policy href
- *      `/politica-cookies`. EN: `/en/rss.xml`, `/en/cookie-policy`.
+ *   4. ES `more` group: cookie policy href `/politica-cookies` only (no RSS
+ *      link — the blog/RSS feed was removed).
+ *
+ * Spanish is now the only locale (the English version was removed — see
+ * `odd/tasks/site-cleanup.md` C2), so the EN-specific cases were dropped.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -44,14 +41,6 @@ describe('getFooterTree', () => {
     expect(tree.map((group) => group.ariaLabel)).toEqual(['Sitio', 'Social', 'Más']);
   });
 
-  it('returns the EN groups in order with EN headings and nav aria-labels', () => {
-    const tree = getFooterTree('en');
-
-    expect(tree.map((group) => group.key)).toEqual(['site', 'social', 'more']);
-    expect(tree.map((group) => group.heading)).toEqual(['site/', 'social/', 'more/']);
-    expect(tree.map((group) => group.ariaLabel)).toEqual(['Site', 'Social', 'More']);
-  });
-
   it("ES 'site' group mirrors getPrimaryNav order/hrefs, lower-cased labels", () => {
     const tree = getFooterTree('es');
     const site = tree.find((group) => group.key === 'site');
@@ -61,27 +50,13 @@ describe('getFooterTree', () => {
       expectedNav.map((item) => item.label.toLowerCase())
     );
     expect(site?.items.map((item) => item.href)).toEqual(expectedNav.map((item) => item.href));
-    // Sanity: 6 items, services included, in Header order (home first).
+    // Sanity: 5 items, services included, in Header order (home first).
     expect(site?.items.map((item) => item.label)).toEqual([
       'inicio',
       'servicios',
       'trabajos',
       'experiencia',
-      'blog',
       'contacto',
-    ]);
-  });
-
-  it("EN 'site' group mirrors getPrimaryNav (no services)", () => {
-    const tree = getFooterTree('en');
-    const site = tree.find((group) => group.key === 'site');
-
-    expect(site?.items.map((item) => item.label)).toEqual([
-      'home',
-      'work',
-      'experience',
-      'blog',
-      'contact',
     ]);
   });
 
@@ -119,11 +94,8 @@ describe('getFooterTree', () => {
     expect(social?.items[3]?.external).toBeFalsy();
   });
 
-  it("ES 'more' group has the RSS and cookie-policy hrefs; EN uses the /en/ prefix", () => {
+  it('ES \'more\' group has only the cookie-policy href (no RSS link)', () => {
     const esMore = getFooterTree('es').find((group) => group.key === 'more');
-    expect(esMore?.items.map((item) => item.href)).toEqual(['/rss.xml', '/politica-cookies']);
-
-    const enMore = getFooterTree('en').find((group) => group.key === 'more');
-    expect(enMore?.items.map((item) => item.href)).toEqual(['/en/rss.xml', '/en/cookie-policy']);
+    expect(esMore?.items.map((item) => item.href)).toEqual(['/politica-cookies']);
   });
 });

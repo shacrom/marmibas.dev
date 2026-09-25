@@ -52,7 +52,7 @@ function assertHttpsUrl(value, label) {
 function assertIndexableSpanishPage(route) {
   const html = readRoute(route);
   assert(!/name="robots" content="[^"]*noindex/i.test(html), `${route} must be indexable`);
-  assert(!/hreflang="en"/i.test(html), `${route} must not expose a hidden English alternate`);
+  assert(!/hreflang="en"/i.test(html), `${route} must not expose an English alternate (removed)`);
 
   const canonical = attr(html, /<link rel="canonical" href="([^"]+)"/i);
   const ogUrl = attr(html, /<meta property="og:url" content="([^"]+)"/i);
@@ -90,10 +90,6 @@ assert(
   /name="robots" content="noindex, nofollow"/i.test(readRoute('/404.html')),
   '404 must remain noindex, nofollow'
 );
-assert(
-  /name="robots" content="noindex, follow"/i.test(readRoute('/en/')),
-  'English pages must remain noindex'
-);
 
 for (const slug of services) {
   const html = readRoute(`/servicios/${slug}/`);
@@ -110,14 +106,14 @@ const sitemap = readFileSync(resolve(dist, 'sitemap-0.xml'), 'utf8');
 for (const route of publicSpanishRoutes) {
   assert(sitemap.includes(`https://marmibas.dev${route}`), `Sitemap must include ${route}`);
 }
-for (const excluded of ['/en/', '/contacto/', '/politica-cookies/', '/404']) {
+for (const excluded of ['/en/', '/blog', '/contacto/', '/politica-cookies/', '/404']) {
   assert(!sitemap.includes(`https://marmibas.dev${excluded}`), `Sitemap must exclude ${excluded}`);
 }
 
 const robots = readFileSync(resolve(dist, 'robots.txt'), 'utf8');
 assert(/Allow: \//.test(robots), 'robots.txt must allow public pages');
 assert(/Disallow: \/api\//.test(robots), 'robots.txt must block API routes');
-assert(/Disallow: \/en\//.test(robots), 'robots.txt must block hidden English routes');
+assert(!/Disallow: \/en\//.test(robots), 'robots.txt must not reference the removed /en/ prefix');
 assert(
   /Sitemap: https:\/\/marmibas\.dev\/sitemap-index\.xml/.test(robots),
   'robots.txt sitemap must be canonical'

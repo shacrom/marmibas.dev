@@ -1,5 +1,5 @@
 /**
- * FAQs por idioma — fuente única usada por:
+ * FAQs — fuente única usada por:
  *   1) `<FAQSection>` para renderizar el acordeón visual en el home.
  *   2) `<SeoHead>` para inyectar el Schema.org `FAQPage` (JSON-LD) en `<head>`,
  *      necesario para que Google muestre featured snippets / People Also Ask.
@@ -7,9 +7,9 @@
  * Audiencia: PYMEs y emprendedores de habla hispana. Tono español España,
  * tuteo (tú/tu/te), sin rioplatense.
  *
- * Si añades, eliminas o reordenas preguntas, mantén la paridad ES/EN: ambas
- * listas deben tener el mismo número de items (Google asocia `mainEntity` por
- * orden cuando audita la página, y la UX de los dos idiomas debe coincidir).
+ * ES es el único idioma publicado (ver `src/i18n/ui.ts`); `getFaqs` mantiene
+ * su parámetro `lang` por consistencia con el resto del layer de i18n, listo
+ * para reintroducir una segunda lista si se añade un idioma en el futuro.
  */
 import type { Language } from '../i18n/ui';
 
@@ -58,49 +58,11 @@ const faqsEs: readonly FAQItem[] = [
   },
 ] as const;
 
-const faqsEn: readonly FAQItem[] = [
-  {
-    question: 'How much does custom software cost?',
-    answer:
-      'It depends on the scope of the project. A corporate website can start from 1,500€, an internal management app from 5,000€, and a more complex SaaS from 12,000€. I give you an exact quote after a free first conversation.',
-  },
-  {
-    question: 'How long does a project take?',
-    answer:
-      'A corporate website, 2-3 weeks. A management application, 6-12 weeks. A multi-tenant SaaS, 3-6 months. Always with partial deliveries and demos every 2 weeks.',
-  },
-  {
-    question: 'Do you work with small companies or only large ones?',
-    answer:
-      'Mostly with small companies, freelancers and entrepreneurs. Large companies already have internal teams. My focus is on businesses that are growing and need something custom.',
-  },
-  {
-    question: 'Do I need to know programming to work with you?',
-    answer:
-      'Not at all. My job is to understand what your business needs and translate it into software. You bring the business knowledge, I bring the development. We talk in clear language, without jargon.',
-  },
-  {
-    question: 'What happens if I do not like the result?',
-    answer:
-      'We work with partial deliveries every 2 weeks so you can validate as we go. You will not get to the end with surprises. If something does not fit, we adjust it before continuing.',
-  },
-  {
-    question: 'Can I keep maintaining the software afterwards?',
-    answer:
-      'Yes. I hand over all the code and documentation. Your team or any other developer can continue. If you prefer to keep working with me, I offer monthly maintenance.',
-  },
-  {
-    question: 'Do you only work with clients in Spain?',
-    answer:
-      'No. I work remotely from Spain with clients in any Spanish-speaking country, mainly Spain and Latin America.',
-  },
-] as const;
-
 /**
  * Devuelve las FAQs del idioma indicado. Tipado readonly para que ningún
  * consumidor mute el array (la lista es la fuente de verdad para el JSON-LD
- * y para el render del componente; mutar rompería la paridad).
+ * y para el render del componente).
  */
-export function getFaqs(lang: Language): readonly FAQItem[] {
-  return lang === 'es' ? faqsEs : faqsEn;
+export function getFaqs(_lang: Language): readonly FAQItem[] {
+  return faqsEs;
 }
