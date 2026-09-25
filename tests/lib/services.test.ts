@@ -26,8 +26,10 @@ import {
   spanishServices,
   MOSAIC_SLUG_ORDER,
   servicesInMosaicOrder,
+  mosaicDisplayName,
   drawerInsertIndex,
   drawerNotchPercent,
+  type SpanishService,
 } from '../../src/lib/services';
 
 describe('spanishServices — incluye items', () => {
@@ -53,6 +55,24 @@ describe('spanishServices — incluye items', () => {
   it('has unique keys', () => {
     const keys = spanishServices.map((service) => service.key);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+function findService(slug: string): SpanishService {
+  const service = spanishServices.find((candidate) => candidate.slug === slug);
+  if (!service) throw new Error(`Fixture service not found: ${slug}`);
+  return service;
+}
+
+describe('mosaicDisplayName', () => {
+  it('uses shortTitle when present (tiendas-online, desarrollo-aplicaciones-web)', () => {
+    expect(mosaicDisplayName(findService('tiendas-online'))).toBe('Tiendas online');
+    expect(mosaicDisplayName(findService('desarrollo-aplicaciones-web'))).toBe('Aplicaciones web');
+  });
+
+  it('falls back to title when shortTitle is absent', () => {
+    const management = findService('sistemas-de-gestion');
+    expect(mosaicDisplayName(management)).toBe(management.title);
   });
 });
 

@@ -22,6 +22,8 @@ export const spanishServices = [
     key: 'management',
     slug: 'sistemas-de-gestion',
     title: 'Sistemas de gestión',
+    // No distinct mosaic name needed — `title` already matches the E4 mockup's module name.
+    shortTitle: undefined,
     description:
       'Software interno para llevar clientes, presupuestos, facturas y calendario en un único sitio.',
     keyword: 'Backoffice',
@@ -38,6 +40,8 @@ export const spanishServices = [
     key: 'mobile',
     slug: 'aplicaciones-moviles',
     title: 'Aplicaciones móviles',
+    // No distinct mosaic name needed — `title` already matches the E4 mockup's module name.
+    shortTitle: undefined,
     description:
       'Apps iOS y Android para empleados o clientes, con publicación en stores incluida.',
     keyword: 'Mobile',
@@ -54,6 +58,8 @@ export const spanishServices = [
     key: 'automation',
     slug: 'automatizaciones',
     title: 'Automatizaciones',
+    // No distinct mosaic name needed — `title` already matches the E4 mockup's module name.
+    shortTitle: undefined,
     description:
       'Tareas repetitivas que se ejecutan solas: presupuestos, emails, informes, facturación.',
     keyword: 'Procesos',
@@ -70,6 +76,8 @@ export const spanishServices = [
     key: 'web',
     slug: 'webs-corporativas',
     title: 'Webs corporativas',
+    // No distinct mosaic name needed — `title` already matches the E4 mockup's module name.
+    shortTitle: undefined,
     description:
       'Webs rápidas, accesibles y bien posicionadas en buscadores, sin plantillas genéricas.',
     keyword: 'Web',
@@ -105,6 +113,8 @@ export const spanishServices = [
     key: 'integration',
     slug: 'integraciones',
     title: 'Integraciones',
+    // No distinct mosaic name needed — `title` already matches the E4 mockup's module name.
+    shortTitle: undefined,
     description:
       'Conexiones entre WhatsApp, ERP, hojas de cálculo, email y demás herramientas que ya usas.',
     keyword: 'Conexión',
@@ -127,6 +137,11 @@ export const spanishServicePaths = new Set(
 
 export function isSpanishServicePath(pathname: string): boolean {
   return spanishServicePaths.has(pathname.replace(/\/$/, ''));
+}
+
+/** The mosaic module's display name: `shortTitle` when set, `title` otherwise. */
+export function mosaicDisplayName(service: SpanishService): string {
+  return service.shortTitle ?? service.title;
 }
 
 // ---------------------------------------------------------------------------
