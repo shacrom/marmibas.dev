@@ -1,522 +1,296 @@
 ---
 /**
- * Footer.astro — T-18
+ * Footer — terminal "contact pane" (T3 terminal redesign, rebuild).
  *
- * Footer global, server-rendered (sin JS cliente).
+ * Visual spec: `FooterTerminal.dc.html` (desktop) / `FooterTerminalMovil.dc.html`
+ * (mobile) under the design scratchpad. DESIGN.md §8 pane contract.
  *
- * Estructura (DESIGN.md §3 — color sólido, sin gradient):
- *   - Top: tagline corto bilingüe (hardcoded; ver `tagline` más abajo).
- *   - Middle: 3 columnas (Navegación, Social, Legal/RSS).
- *   - Bottom: separador + copyright dinámico.
+ * Structure: a `<footer>` landmark containing one `TerminalPane` (`as="div"`,
+ * no index, no scan band — this pane is the last thing on the page, not
+ * one of the home's numbered sections) with the shared `.t-pane-gutter`
+ * spacing (T2/T3 convention — see `src/styles/terminal.css`):
+ *   1. Capture band: violet eyebrow comment, `.t-print` heading, sub copy,
+ *      and a prompt line ending in a primary `TerminalButton` + `.t-cursor`.
+ *      Copy is reused verbatim from the pre-terminal `Footer.astro`'s
+ *      `ctaSection`/tagline — nothing invented.
+ *   2. `<Prompt command="tree marmibas.dev" />` (T2 component).
+ *   3. 3 tree columns (`site`/`social`/`more`) from `getFooterTree(lang)`
+ *      (T3, `src/lib/footer.ts`) — `├── `/`└── ` connectors, real links,
+ *      `external` items keep `target="_blank" rel="noopener"`.
+ *   4. A violet status bar rendered through `TerminalPane`'s `after` slot
+ *      (extended in T3): `© {year} marmibas` + tagline, stacked on mobile.
  *
- * Tokens DESIGN.md:
- *   - Background: `--bg-0` (sólido, sin gradient en footer §3).
- *   - Border-top: `--border` sutil.
- *   - Texto base: `--text-2` con `--text-sm`.
- *   - Hover en links: color → `--accent-400`, 150ms con `--motion-ease-out`.
- *   - Padding vertical: 64-96px (clamp responsivo).
- *
- * SVGs:
- *   - Lucide-style inline, stroke 1.5px, currentColor (DESIGN.md §10).
- *   - GitHub, LinkedIn.
- *   - target=_blank + rel=noopener (sin tracker `noreferrer` para no romper
- *     analytics de los destinos; el bloqueo de referer no es un requisito
- *     declarado en DESIGN/TASKS, sí lo es no abrir vulnerabilidades a
- *     `window.opener` que cubre `noopener`).
- *
- * i18n:
- *   - Lee diccionario `ui.ts` con `useTranslations(lang)` para `footer.*`,
- *     `footer.social.*` y rutas via `getRoutePath`.
- *   - Tagline hardcoded bilingüe (no existe `footer.tagline` en `ui.ts` y
- *     evitamos tocar el diccionario fuera de scope de T-18).
+ * Only `h2`/`.t-print` and the trailing `.t-cursor` carry animation classes,
+ * exactly as scoped by the T3 task brief — the eyebrow/sub/tree rows are
+ * plain server-rendered text (no invented extra motion).
  */
-
-import { getRoutePath, localePath, useTranslations } from '../../i18n/helpers';
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { getRoutePath, useTranslations } from '../../i18n/helpers';
+import { getFooterTree } from '../../lib/footer';
 import type { Language } from '../../i18n/ui';
 
 interface Props {
   lang: Language;
 }
 
-const { lang } = Astro.props;
+const { lang } = Astro.props as Props;
 const t = useTranslations(lang);
 
 const year = new Date().getFullYear();
-
-// Rutas localizadas (resolved at build-time vía routes.ts).
-const homeHref = getRoutePath('home', lang);
-const workHref = getRoutePath('work', lang);
-const servicesHref = '/servicios';
-const blogHref = getRoutePath('blog', lang);
-const experienceHref = getRoutePath('experience', lang);
 const contactHref = getRoutePath('contact', lang);
-const rssHref = localePath('/rss.xml', lang);
-const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
-
-// Tagline hardcoded bilingüe — no añadimos clave a ui.ts en T-18.
-const tagline =
-  lang === 'es'
-    ? 'Construyo software que tu negocio necesita.'
-    : 'I build the software your business needs.';
-
-// Email + social URLs. Email del usuario y repo declarados en TASKS.md / prompt.
-const EMAIL = 'info@marmibas.dev';
-const PHONE_DISPLAY = '+34 614 22 42 36';
-const PHONE_HREF = '+34614224236';
-// WhatsApp uses the international number without "+" or spaces (wa.me format).
-const WHATSAPP_HREF = 'https://wa.me/34614224236';
-const GITHUB_URL = 'https://github.com/shacrom';
-const LINKEDIN_URL = 'https://www.linkedin.com/in/marcos-miguel-b%C3%A1scones-91669b205/';
-
-// Aria label localizado para el aside del footer.
+const panePath = lang === 'es' ? 'contacto' : 'contact';
 const footerLabel = lang === 'es' ? 'Pie de página' : 'Footer';
 
-// Sección destacada de captación que se muestra ENCIMA del bottom row de
-// copyright. No es un duplicado del LeadCTA del home: el LeadCTA solo aparece
-// en /, /en/, mientras que este CTA del footer se ve en TODAS las páginas
-// (case studies, blog posts, /experiencia, etc). Por eso reforzamos el copy
-// con foco en captación independientemente de dónde aterrice el visitante.
-const ctaSection = {
-  eyebrow: lang === 'es' ? '¿Empezamos?' : 'Shall we start?',
+// Capture band copy — reused verbatim from the pre-terminal Footer.astro's
+// `ctaSection` (eyebrow/heading/sub) and `tagline`. Only the CTA button
+// label changes source: it now reads `cta.contact` (the shared i18n key
+// the Header CTA also uses) instead of a footer-local `ctaSection.cta`
+// string, since both said the exact same thing ("Hablemos" / "Let's talk").
+const capture = {
+  eyebrow: lang === 'es' ? '# ¿Empezamos?' : '# Shall we start?',
   heading: lang === 'es' ? 'Cuéntame qué necesitas' : 'Tell me what you need',
   sub:
     lang === 'es'
       ? 'La primera llamada es gratis y sin compromiso.'
       : 'First call is free, no strings attached.',
-  cta: lang === 'es' ? 'Hablemos' : "Let's talk",
 };
+
+const tagline =
+  lang === 'es'
+    ? 'Construyo software que tu negocio necesita.'
+    : 'I build the software your business needs.';
+
+const tree = getFooterTree(lang);
 ---
 
-<footer class="site-footer" aria-label={footerLabel}>
-  <div class="site-footer__inner">
-    {/* --- Top: tagline -------------------------------------------------- */}
-    <p class="site-footer__tagline font-display">{tagline}</p>
-
-    {/* --- Middle: 3 columnas ------------------------------------------- */}
-    <div class="site-footer__columns">
-      {/* Col 1 — Navegación principal del sitio en idioma activo. */}
-      <nav
-        class="site-footer__col"
-        aria-label={lang === 'es' ? 'Navegación del sitio' : 'Site navigation'}
-      >
-        <h2 class="site-footer__heading">{lang === 'es' ? 'Sitio' : 'Site'}</h2>
-        <ul class="site-footer__list">
-          <li><a class="site-footer__link" href={homeHref}>{t('nav.home')}</a></li>
-          {
-            lang === 'es' && (
-              <li>
-                <a class="site-footer__link" href={servicesHref}>
-                  {t('nav.services')}
-                </a>
-              </li>
-            )
-          }
-          <li><a class="site-footer__link" href={workHref}>{t('nav.work')}</a></li>
-          <li><a class="site-footer__link" href={blogHref}>{t('nav.blog')}</a></li>
-          <li><a class="site-footer__link" href={experienceHref}>{t('nav.experience')}</a></li>
-          <li><a class="site-footer__link" href={contactHref}>{t('nav.contact')}</a></li>
-        </ul>
-      </nav>
-
-      {/* Col 2 — Social. Sin tracker (rel=noopener), abre en pestaña nueva. */}
-      <div class="site-footer__col">
-        <h2 class="site-footer__heading">{lang === 'es' ? 'Social' : 'Social'}</h2>
-        <ul class="site-footer__list">
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener"
-              aria-label={t('footer.social.github')}
-            >
-              {/* GitHub — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path
-                  d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
-                ></path>
-                <path d="M9 18c-4.51 2-5-2-7-2"></path>
-              </svg>
-              <span>{t('footer.social.github')}</span>
-            </a>
-          </li>
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={LINKEDIN_URL}
-              target="_blank"
-              rel="noopener"
-              aria-label={t('footer.social.linkedin')}
-            >
-              {/* LinkedIn — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                <rect width="4" height="12" x="2" y="9"></rect>
-                <circle cx="4" cy="4" r="2"></circle>
-              </svg>
-              <span>{t('footer.social.linkedin')}</span>
-            </a>
-          </li>
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={`mailto:${EMAIL}`}
-              aria-label={t('footer.social.email')}
-            >
-              {/* Mail — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-              </svg>
-              <span>{EMAIL}</span>
-            </a>
-          </li>
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={`tel:${PHONE_HREF}`}
-              aria-label={lang === 'es' ? `Llamar al ${PHONE_DISPLAY}` : `Call ${PHONE_DISPLAY}`}
-            >
-              {/* Phone — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path
-                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"
-                ></path>
-              </svg>
-              <span>{PHONE_DISPLAY}</span>
-            </a>
-          </li>
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={WHATSAPP_HREF}
-              target="_blank"
-              rel="noopener"
-              aria-label={lang === 'es'
-                ? `Escríbeme por WhatsApp al ${PHONE_DISPLAY}`
-                : `Message me on WhatsApp at ${PHONE_DISPLAY}`}
-            >
-              {/* WhatsApp — brand glyph, filled (currentColor) */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"
-                ></path>
-              </svg>
-              <span>WhatsApp</span>
-            </a>
-          </li>
-        </ul>
+<footer aria-label={footerLabel}>
+  <TerminalPane as="div" path={panePath} scan={false} class="t-pane-gutter">
+    <div class="footer-body">
+      <div class="footer-capture">
+        <span class="footer-capture__eyebrow">{capture.eyebrow}</span>
+        <h2 class="footer-capture__heading font-display t-print">{capture.heading}</h2>
+        <p class="footer-capture__sub">{capture.sub}</p>
+        <div class="footer-capture__prompt">
+          <span class="footer-capture__prompt-line"
+            ><span class="footer-capture__user">marcos@marmibas</span><span
+              class="footer-capture__sep"
+              >:~$
+            </span><span class="t-cursor" aria-hidden="true"></span></span
+          >
+          <TerminalButton href={contactHref} primary class="footer-capture__cta">
+            [ {t('cta.contact')} ↵ ]
+          </TerminalButton>
+        </div>
       </div>
 
-      {/* Col 3 — Legal / RSS. */}
-      <div class="site-footer__col">
-        <h2 class="site-footer__heading">{lang === 'es' ? 'Más' : 'More'}</h2>
-        <ul class="site-footer__list">
-          <li>
-            <a
-              class="site-footer__link site-footer__link--icon"
-              href={rssHref}
-              aria-label={t('footer.rss')}
-            >
-              {/* RSS — Lucide-style stroke 1.5 */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 11a9 9 0 0 1 9 9"></path>
-                <path d="M4 4a16 16 0 0 1 16 16"></path>
-                <circle cx="5" cy="19" r="1"></circle>
-              </svg>
-              <span>{t('footer.rss')}</span>
-            </a>
-          </li>
-          <li>
-            <a class="site-footer__link" href={cookiePolicyHref}>
-              {lang === 'es' ? 'Política de cookies' : 'Cookie policy'}
-            </a>
-          </li>
-        </ul>
+      <Prompt command="tree marmibas.dev" />
+
+      <div class="footer-tree">
+        {
+          tree.map((group) => (
+            <nav aria-label={group.ariaLabel} class="footer-tree__group">
+              <span class="footer-tree__heading">{group.heading}</span>
+              {group.items.map((item, index) => (
+                <span class="footer-tree__row">
+                  <span aria-hidden="true" class="footer-tree__connector">
+                    {index === group.items.length - 1 ? '└── ' : '├── '}
+                  </span>
+                  <a
+                    class="footer-tree__link"
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener' : undefined}
+                    aria-label={item.ariaLabel}
+                  >
+                    {item.label}
+                  </a>
+                </span>
+              ))}
+            </nav>
+          ))
+        }
       </div>
     </div>
 
-    {/* --- Sección destacada de captación (encima del bottom row) --------- */}
-    <section class="site-footer__capture" aria-labelledby="footer-capture-heading">
-      <p class="site-footer__capture-eyebrow">{ctaSection.eyebrow}</p>
-      <h2 id="footer-capture-heading" class="site-footer__capture-heading font-display">
-        {ctaSection.heading}
-      </h2>
-      <p class="site-footer__capture-sub">{ctaSection.sub}</p>
-      <a class="site-footer__capture-cta" href={contactHref}>{ctaSection.cta}</a>
-    </section>
-
-    {/* --- Bottom: separador + copyright --------------------------------- */}
-    <div class="site-footer__bottom">
-      <p class="site-footer__copy">
-        <span aria-hidden="true">©</span>
-        {year}
-        {t('footer.copyright')}
-      </p>
-    </div>
-  </div>
+    <Fragment slot="after">
+      <div class="footer-status">
+        <span>© {year} marmibas</span>
+        <span>{tagline}</span>
+      </div>
+    </Fragment>
+  </TerminalPane>
 </footer>
 
 <style>
-  .site-footer {
-    /* DESIGN.md §3: footer = color sólido, sin gradient. */
-    background: var(--bg-0);
-    border-top: 1px solid var(--border);
-    color: var(--text-2);
-    font-size: var(--text-sm);
-    /* Padding vertical generoso (64-96px) — DESIGN.md §5 ritmo vertical. */
-    padding-block: clamp(4rem, 6vw, 6rem);
-    padding-inline: clamp(1.5rem, 4vw, 3rem);
-    margin-top: auto;
-  }
-
-  .site-footer__inner {
-    max-width: 1080px;
-    margin-inline: auto;
+  .footer-body {
     display: flex;
     flex-direction: column;
-    gap: clamp(2rem, 4vw, 3rem);
+    gap: 22px;
   }
 
-  /* Top: tagline. Fraunces (display) más pequeño que un H1 — peso 600. */
-  .site-footer__tagline {
-    color: var(--text-1);
-    font-size: var(--text-xl);
-    font-weight: 600;
-    line-height: var(--leading-snug);
-    text-wrap: balance;
-    max-width: 32ch;
-    margin: 0;
-  }
-
-  /* Middle: grid responsive. 1 col mobile, 3 col ≥768px. */
-  .site-footer__columns {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  @media (min-width: 768px) {
-    .site-footer__columns {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3rem;
+  @media (max-width: 640px) {
+    .footer-body {
+      gap: 18px;
     }
   }
 
-  .site-footer__col {
+  /* --- Capture band ------------------------------------------------------ */
+  .footer-capture {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
+    padding-bottom: 32px;
+    border-bottom: 1px dashed var(--border);
   }
 
-  .site-footer__heading {
-    /* Eyebrow style: JetBrains Mono uppercase (DESIGN.md §8 anclas). */
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 400;
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--text-3);
+  @media (max-width: 640px) {
+    .footer-capture {
+      padding-bottom: 24px;
+    }
+  }
+
+  .footer-capture__eyebrow {
+    color: var(--accent-400);
+    font-size: var(--text-sm);
+  }
+
+  .footer-capture__heading {
     margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-0);
   }
 
-  .site-footer__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0;
+  @media (min-width: 641px) {
+    .footer-capture__heading {
+      font-size: var(--text-4xl);
+    }
+  }
+
+  .footer-capture__sub {
     margin: 0;
-    list-style: none;
-  }
-
-  .site-footer__link {
-    display: inline-flex;
-    align-items: center;
     color: var(--text-2);
-    text-decoration: none;
-    /* Hover transition 150ms con ease-out de motion.css. */
-    transition: color var(--motion-fast) var(--motion-ease-out);
+    font-size: var(--text-sm);
   }
 
-  .site-footer__link:hover,
-  .site-footer__link:focus-visible {
+  .footer-capture__prompt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 640px) {
+    .footer-capture__prompt {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  }
+
+  .footer-capture__user {
     color: var(--accent-400);
   }
 
-  .site-footer__link--icon {
-    gap: 0.5rem;
-  }
-
-  .site-footer__link--icon svg {
-    flex-shrink: 0;
-    /* SVG hereda currentColor; transición incluida en `color` del padre. */
-  }
-
-  /* --------------------------------------------------------------------------
-   * Sección de captación. Vive ENCIMA del bottom (copyright) y aparece en
-   * TODAS las páginas (no solo home), así que actúa como red de seguridad
-   * para el visitante que llegó por SEO o por un caso de estudio.
-   *
-   * Visual:
-   *   - text-align center, max-width 560px (mismo eje editorial que el resto).
-   *   - Eyebrow JetBrains Mono uppercase tracking-wider (estilo de las cols).
-   *   - Heading Fraunces 600, --text-2xl/3xl para anclar la sección.
-   *   - Subtagline Inter --text-base color --text-2.
-   *   - CTA primario: gradient + glow on focus (mismo style que Hero CTA §8).
-   * ------------------------------------------------------------------------ */
-  .site-footer__capture {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 12px;
-    padding-block: clamp(2rem, 4vw, 3rem);
-    border-top: 1px solid var(--border);
-  }
-
-  .site-footer__capture-eyebrow {
-    margin: 0;
-    color: var(--accent-300);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-  }
-
-  .site-footer__capture-heading {
-    margin: 0;
-    color: var(--text-0);
-    font-size: var(--text-2xl);
-    font-weight: 600;
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-tight);
-    text-wrap: balance;
-    max-width: 18ch;
-  }
-
-  @media (min-width: 768px) {
-    .site-footer__capture-heading {
-      font-size: var(--text-3xl);
-    }
-  }
-
-  .site-footer__capture-sub {
-    margin: 0;
-    max-width: 40ch;
+  .footer-capture__sep {
     color: var(--text-2);
-    font-size: var(--text-base);
-    line-height: var(--leading-relaxed);
+    white-space: pre;
   }
 
-  .site-footer__capture-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 8px;
-    padding: 12px 28px;
-    color: var(--text-0);
-    background: var(--gradient-cta);
-    background-size: 200% 200%;
-    border: 1px solid transparent;
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: var(--text-base);
-    font-weight: 500;
-    line-height: 1;
-    text-decoration: none;
-    transition:
-      background var(--motion-fast) var(--motion-ease-out),
-      box-shadow var(--motion-fast) var(--motion-ease-out),
-      transform var(--motion-fast) var(--motion-ease-out);
+  .footer-capture__cta {
+    font-weight: 600;
   }
 
-  .site-footer__capture-cta:hover {
-    background: var(--gradient-cta-hover);
-    background-position: 100% 50%;
-    transform: translateY(-1px);
-  }
-
-  .site-footer__capture-cta:focus-visible {
-    outline: none;
-    box-shadow: var(--shadow-glow);
-  }
-
-  /* Bottom: separador implícito vía border-top + spacing. */
-  .site-footer__bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    color: var(--text-3);
-    font-size: var(--text-xs);
-  }
-
-  @media (min-width: 768px) {
-    .site-footer__bottom {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
+  @media (max-width: 640px) {
+    .footer-capture__cta {
+      width: 100%;
+      justify-content: center;
     }
   }
 
-  .site-footer__copy {
-    margin: 0;
+  /* --- Tree columns ------------------------------------------------------ */
+  .footer-tree {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 641px) {
+    .footer-tree {
+      grid-template-columns: repeat(3, max-content);
+      gap: 80px;
+      line-height: 1.9;
+    }
+  }
+
+  .footer-tree__group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer-tree__heading {
+    font-weight: 600;
+    color: var(--accent-400);
+  }
+
+  .footer-tree__row {
+    display: flex;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .footer-tree__row {
+      /* DESIGN.md §12: touch targets ≥ 44px on mobile — the mockup's own
+         32px row is under that floor, so this uses the top of the task
+         brief's given 32–44px range instead of the mockup's exact value. */
+      min-height: 44px;
+    }
+  }
+
+  .footer-tree__connector {
+    flex-shrink: 0;
+    color: var(--border-strong);
+    white-space: pre;
+  }
+
+  .footer-tree__link {
+    color: var(--text-1);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .footer-tree__link:hover,
+  .footer-tree__link:focus-visible {
+    color: var(--accent-400);
+  }
+
+  /* --- Status bar (TerminalPane `after` slot) ---------------------------- */
+  .footer-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 36px;
+    padding-inline: 20px;
+    background: var(--accent-400);
+    color: var(--bg-0);
+    font-size: var(--text-xs);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .footer-status {
+      height: auto;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      padding: 10px 16px;
+    }
   }
 </style>

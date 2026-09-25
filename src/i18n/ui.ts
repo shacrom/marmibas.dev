@@ -35,6 +35,11 @@ export const ui = {
     'nav.about': 'Sobre mí',
     'nav.contact': 'Contacto',
 
+    // -- Header (terminal, T3) -------------------------------------------------
+    'header.clock': 'Hora en España',
+    'header.menu.open': 'Abrir menú',
+    'header.menu.close': 'Cerrar menú',
+
     // -- Footer ---------------------------------------------------------------
     'footer.copyright': 'marmibas',
     'footer.rss': 'RSS',
@@ -207,6 +212,11 @@ export const ui = {
     'nav.experience': 'Experience',
     'nav.about': 'About',
     'nav.contact': 'Contact',
+
+    // -- Header (terminal, T3) -------------------------------------------------
+    'header.clock': 'Time in Spain',
+    'header.menu.open': 'Open menu',
+    'header.menu.close': 'Close menu',
 
     // -- Footer ---------------------------------------------------------------
     'footer.copyright': 'marmibas',

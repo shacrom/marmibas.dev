@@ -1,39 +1,42 @@
 ---
 /**
- * Header — barra superior con brand "marmibas", nav primario y LangSwitcher.
+ * Header — terminal tab-bar chrome (T3 terminal redesign, rebuild).
  *
- * Comportamiento:
- * - Brand es link a la home del idioma activo (`/` en ES, `/en/` en EN).
- *   Tipografía display Fraunces (var(--font-display)), peso 600, color
- *   `--color-text-0` para máxima jerarquía.
- * - Nav muestra los 5 ítems primarios (home, work, experience, blog,
- *   contact) traducidos vía `t('nav.*')`. El link activo se resuelve con
- *   `isCurrentRoute(currentPath, key, lang)` y recibe `aria-current="page"`
- *   + un dot indicator morado (--color-accent-400) bajo el label.
- * - LangSwitcher (T-19) montado al extremo derecho, recibe `currentLang`
- *   y `currentUrl` para construir el href alterno.
- * - Sticky top con backdrop-filter blur sutil sobre `--color-bg-0`
- *   transparente (DESIGN.md §6 "tech minimal" — el fondo del header se
- *   "funde" con el contenido al hacer scroll, manteniendo legibilidad).
- * - Mobile (<640px): nav se mantiene visible con horizontal scroll
- *   (decisión: no introducir hamburger interactivo en T-17 porque eso
- *   exigiría JS cliente y T-17 NO pide hamburger explícitamente — la
- *   `Done` checklist de T-17 menciona hamburger pero el usuario priorizó
- *   "sin JS cliente salvo si TASKS.md pide hamburger interactivo". Se
- *   marca como deviation reportable y se deja el horizontal scroll
- *   accesible y sin layout shift). Ver reporte final.
- *   Brand siempre visible; nav es scrolleable horizontalmente con
- *   `scrollbar-width: none` y los chips no se truncan.
- * - View Transitions: `view-transition-name: header` para que persista
- *   visualmente entre navegaciones (sin re-mount visual).
+ * Visual spec: `Terminal.dc.html` (desktop tab bar) / `TerminalMovil.dc.html`
+ * (mobile bar + dropdown menu) under the design scratchpad. DESIGN.md §1/§7/§8.
  *
- * Spec: TASKS.md T-17 + DESIGN.md §1 (tech minimal oscuro), §4
- * (tipografías), §6 (motion tokens), §8 ("Lang switcher").
+ * Structure:
+ * - Full-bleed sticky bar (`--bg-inset`, bottom border), inner row capped at
+ *   1440px and centered. Desktop (>900px): brand cell → primary-nav tabs
+ *   (from `getPrimaryNav`, T2) → flexible spacer → clock cell → CTA cell.
+ *   Mobile (≤900px): brand → spacer → compact clock → 44×44 menu button;
+ *   tabs + CTA move into a dropdown `<nav>` under the bar.
+ * - `view-transition-name: header` is kept so the bar itself doesn't
+ *   visually "jump" during a page transition, but there is NO
+ *   `transition:persist` — the DOM (and therefore the active/current tab)
+ *   is rebuilt fresh on every navigation, as it must be for the current
+ *   route's tab to update.
+ * - Clock: server-rendered `--:--:--` placeholder in a `<time data-clock>`;
+ *   the client script imports `formatClockTime` (`src/lib/clock.ts`) and
+ *   ticks every second. Two `[data-clock]` nodes exist in the DOM (desktop
+ *   cell + mobile compact cell) — only one is visible at a time via CSS,
+ *   both get updated by the same interval.
+ * - Mobile menu: a real `<button>` toggles a dropdown `<nav>` with a
+ *   terminal "print" reveal (`.t-print`, clip-path steps — replays every
+ *   open because the panel goes through `display: none` between closes,
+ *   which resets the animation for free, no JS reflow trick needed).
+ *   Closes on Escape (returns focus to the button), on any link click, on
+ *   `astro:before-swap` (before a View Transitions navigation swaps the
+ *   DOM), and when the viewport grows past the 900px breakpoint. Progressive
+ *   enhancement: a `<noscript>` override forces the panel visible as a
+ *   static list and hides the (otherwise non-functional) toggle button.
+ *
+ * i18n: EN stays hidden (no language switcher here — DESIGN.md §13).
  */
-import MetallicLogo from './MetallicLogo.astro';
-import { useTranslations, getRoutePath, isCurrentRoute } from '../../i18n/helpers';
+import BrandLogo from './BrandLogo.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import { getPrimaryNav } from '../../lib/navigation';
 import type { Language } from '../../i18n/ui';
-import type { RouteKey } from '../../i18n/routes';
 
 interface Props {
   currentLang: Language;
@@ -47,280 +50,507 @@ const t = useTranslations(currentLang);
 const homeHref = getRoutePath('home', currentLang);
 const contactHref = getRoutePath('contact', currentLang);
 const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
+const brandLabel = currentLang === 'es' ? 'marmibas — inicio' : 'marmibas — home';
 
-interface NavItem {
-  key: RouteKey | 'services';
-  label: string;
-  href: string;
-  active: boolean;
-}
+const navItems = getPrimaryNav(currentLang, currentUrl.pathname);
 
-const navKeys: {
-  key: RouteKey;
-  labelKey: 'nav.home' | 'nav.work' | 'nav.experience' | 'nav.blog' | 'nav.contact';
-}[] = [
-  { key: 'home', labelKey: 'nav.home' },
-  { key: 'work', labelKey: 'nav.work' },
-  { key: 'experience', labelKey: 'nav.experience' },
-  { key: 'blog', labelKey: 'nav.blog' },
-  { key: 'contact', labelKey: 'nav.contact' },
-];
-
-const navItems: NavItem[] = navKeys.map(({ key, labelKey }) => ({
-  key,
-  label: t(labelKey),
-  href: getRoutePath(key, currentLang),
-  active: isCurrentRoute(currentUrl.pathname, key, currentLang),
-}));
-
-if (currentLang === 'es') {
-  navItems.splice(1, 0, {
-    key: 'services',
-    label: t('nav.services'),
-    href: '/servicios',
-    active: currentUrl.pathname === '/servicios' || currentUrl.pathname.startsWith('/servicios/'),
-  });
-}
+const menuLabelOpen = t('header.menu.open');
+const menuLabelClose = t('header.menu.close');
 ---
 
-<header class="site-header" data-current-lang={currentLang}>
-  <div class="site-header__inner">
-    {
-      /* Brand: logo metalizado (paquete externo) en vez del wordmark de texto.
-        El aria-label y el focus ring viven en el link; el span del logo
-        aporta su propio role="img" con label por defecto. */
-    }
-    <a class="site-header__brand" href={homeHref} aria-label="Marmibas — home">
-      <MetallicLogo src="/marmibas-logo.png" width="165px" height="27px" />
-    </a>
+<header class="t-header" data-terminal-header>
+  <div class="t-header__bar">
+    <div class="t-header__inner">
+      <a class="t-header__brand" href={homeHref} aria-label={brandLabel}>
+        <BrandLogo src="/marmibas-logo.png" width="132px" height="22px" />
+      </a>
 
-    <nav class="site-header__nav" aria-label={navAriaLabel}>
-      <ul class="site-header__list" role="list">
+      <nav class="t-header__tabs" aria-label={navAriaLabel}>
         {
           navItems.map((item) => (
-            <li class="site-header__item">
-              <a
-                class:list={['site-header__link', { 'site-header__link--active': item.active }]}
-                href={item.href}
-                aria-current={item.active ? 'page' : undefined}
-              >
-                <span class="site-header__link-label">{item.label}</span>
-              </a>
-            </li>
+            <a
+              class:list={['t-header__tab', { 't-header__tab--current': item.current }]}
+              href={item.href}
+              aria-current={item.current ? 'page' : undefined}
+            >
+              {item.tab}
+            </a>
           ))
         }
-      </ul>
-    </nav>
+      </nav>
 
-    <a class="site-header__cta" href={contactHref}>
-      {t('cta.contact')}
-    </a>
+      <div class="t-header__spacer"></div>
+
+      <div class="t-header__clock t-header__clock--desktop">
+        <span class="t-header__clock-label">{t('header.clock')}</span>
+        <time class="t-header__clock-value" data-clock>--:--:--</time>
+      </div>
+
+      <a class="btn-term btn-term--primary t-header__cta" href={contactHref}>
+        <span>{t('cta.contact')}</span><span aria-hidden="true">↵</span>
+      </a>
+
+      <div class="t-header__clock t-header__mobile-clock">
+        <span class="t-header__clock-label">{t('header.clock')}</span>
+        <time class="t-header__clock-value" data-clock>--:--:--</time>
+      </div>
+
+      <button
+        type="button"
+        class="t-header__menu-btn"
+        aria-expanded="false"
+        aria-controls="t-header-menu"
+        aria-label={menuLabelOpen}
+        data-menu-toggle
+        data-label-open={menuLabelOpen}
+        data-label-close={menuLabelClose}
+      >
+        <span aria-hidden="true" data-menu-icon>≡</span>
+      </button>
+    </div>
   </div>
+
+  <nav
+    id="t-header-menu"
+    class="t-header__menu t-print"
+    aria-label={navAriaLabel}
+    data-menu-panel
+    style="--t-dur: 220ms; --t-steps: 6;"
+  >
+    {
+      navItems.map((item) => (
+        <a
+          class="t-header__menu-link"
+          href={item.href}
+          aria-current={item.current ? 'page' : undefined}
+        >
+          <span
+            aria-hidden="true"
+            class:list={[
+              't-header__menu-marker',
+              { 't-header__menu-marker--current': item.current },
+            ]}
+          >
+            {item.current ? '▸' : '·'}
+          </span>
+          {item.tab}
+        </a>
+      ))
+    }
+    <div class="t-header__menu-cta-wrap">
+      <a class="btn-term btn-term--primary t-header__menu-cta" href={contactHref}>
+        <span>{t('cta.contact')}</span><span aria-hidden="true">↵</span>
+      </a>
+    </div>
+  </nav>
 </header>
 
+<noscript>
+  <style>
+    /* No JS: nothing can toggle the dropdown, so show it as a plain static
+       list instead of leaving mobile navigation unreachable, and hide the
+       now-nonfunctional toggle button. */
+    .t-header__menu {
+      display: flex !important;
+      position: static !important;
+      box-shadow: none !important;
+      animation: none !important;
+      clip-path: none !important;
+    }
+
+    .t-header__menu-btn {
+      display: none !important;
+    }
+  </style>
+</noscript>
+
 <style>
-  /* --------------------------------------------------------------------- */
-  /* Wrapper sticky con backdrop blur sutil. View Transitions preservadas. */
-  /* --------------------------------------------------------------------- */
-  .site-header {
+  .t-header {
     position: sticky;
     top: 0;
     z-index: 50;
-    width: 100%;
-    background-color: color-mix(in srgb, var(--color-bg-0) 72%, transparent);
-    /* Fallback para navegadores sin color-mix: bg-0 sólido, baja opacidad
-       a través del header, layout no rompe si backdrop-filter no aplica. */
-    backdrop-filter: blur(12px) saturate(140%);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
-    border-bottom: 1px solid var(--color-border);
     view-transition-name: header;
   }
 
-  /* Si el navegador soporta backdrop-filter, podemos bajar más la opacidad. */
-  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .site-header {
-      background-color: color-mix(in srgb, var(--color-bg-0) 60%, transparent);
-    }
+  .t-header__bar {
+    height: 48px;
+    background: var(--bg-inset);
+    border-bottom: 1px solid var(--border);
   }
 
-  .site-header__inner {
+  .t-header__inner {
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    max-width: 1080px;
+    align-items: stretch;
+    height: 100%;
+    max-width: 1440px;
     margin-inline: auto;
-    padding-block: 1rem;
-    padding-inline: clamp(1rem, 4vw, 2rem);
+    font-size: var(--text-xs);
   }
 
-  /* --------------------------------------------------------------------- */
-  /* Brand wordmark — Geist Sans display (var(--font-display)), peso 600    */
-  /* para destacar como logo. Letter-spacing ligeramente cerrado (-0.01em). */
-  /* "Marmibas" con M mayúscula, alineado con la card de visita.            */
-  /* --------------------------------------------------------------------- */
-  .site-header__brand {
+  .t-header__brand {
     flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: var(--text-xl, 1.25rem);
-    line-height: 1;
-    letter-spacing: -0.01em;
-    color: var(--color-text-0);
-    text-decoration: none;
-    transition: color var(--motion-duration-fast, 150ms)
-      var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
-  }
-
-  .site-header__brand:hover,
-  .site-header__brand:focus-visible {
-    color: var(--color-accent-300);
-  }
-
-  .site-header__brand:focus-visible {
-    outline: 2px solid var(--color-accent-400);
-    outline-offset: 4px;
-    border-radius: 2px;
-  }
-
-  /* --------------------------------------------------------------------- */
-  /* Nav central — flexible, ocupa el espacio disponible.                  */
-  /* --------------------------------------------------------------------- */
-  .site-header__nav {
-    flex: 1 1 auto;
-    min-width: 0; /* permite que .__list se contraiga sin overflow del flex */
-  }
-
-  .site-header__list {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: clamp(0.75rem, 2vw, 1.5rem);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    /* Mobile: scroll horizontal sin scrollbar visible si los chips no caben. */
+    padding-inline: 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .t-header__brand:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  .t-header__tabs {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
     overflow-x: auto;
-    overflow-y: hidden;
     scrollbar-width: none;
   }
 
-  .site-header__list::-webkit-scrollbar {
+  .t-header__tabs::-webkit-scrollbar {
     display: none;
   }
 
-  .site-header__item {
-    flex-shrink: 0;
-  }
-
-  /* --------------------------------------------------------------------- */
-  /* Links del nav — idle text-2, hover/active text-0, transición fast.    */
-  /* Dot indicator bajo el link activo con accent-400.                     */
-  /* --------------------------------------------------------------------- */
-  .site-header__link {
-    position: relative;
-    display: inline-flex;
+  .t-header__tab {
+    display: flex;
     align-items: center;
-    padding-block: 0.375rem;
-    padding-inline: 0.125rem;
-    font-family: var(--font-sans);
-    font-size: var(--text-sm, 0.875rem);
-    font-weight: 500;
-    line-height: 1;
-    color: var(--color-text-2);
-    text-decoration: none;
-    transition: color var(--motion-fast, 150ms)
-      var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
-  }
-
-  .site-header__link:hover,
-  .site-header__link:focus-visible {
-    color: var(--color-text-0);
-  }
-
-  .site-header__link:focus-visible {
-    outline: 2px solid var(--color-accent-400);
-    outline-offset: 4px;
-    border-radius: 2px;
-  }
-
-  .site-header__link--active {
-    color: var(--color-text-0);
-  }
-
-  /* Dot indicator bajo el link activo. Posicionado absoluto para no
-     desplazar el layout y evitar layout shift en hover/idle.            */
-  .site-header__link--active::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: -0.375rem;
-    width: 4px;
-    height: 4px;
-    border-radius: 9999px;
-    background-color: var(--color-accent-400);
-    transform: translateX(-50%);
-  }
-
-  .site-header__cta {
     flex-shrink: 0;
-    display: inline-flex;
+    padding-inline: 18px;
+    border-right: 1px solid var(--border);
+    color: var(--text-2);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color var(--motion-fast) var(--motion-ease-out),
+      background-color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .t-header__tab:hover,
+  .t-header__tab:focus-visible {
+    color: var(--text-0);
+    background: var(--bg-2);
+  }
+
+  .t-header__tab--current {
+    color: var(--text-0);
+    background: var(--bg-2);
+    box-shadow: inset 0 2px 0 var(--accent-400);
+  }
+
+  .t-header__spacer {
+    flex: 1 1 auto;
+  }
+
+  .t-header__clock-label {
+    color: var(--text-2);
+  }
+
+  .t-header__clock-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-0);
+  }
+
+  .t-header__clock--desktop {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 10px;
+    padding-inline: 20px;
+    border-left: 1px solid var(--border);
+  }
+
+  .t-header__clock--desktop .t-header__clock-label {
+    font-size: var(--text-xs);
+  }
+
+  .t-header__clock--desktop .t-header__clock-value {
+    font-size: var(--text-sm);
+  }
+
+  .t-header__cta {
+    flex-shrink: 0;
+    align-self: stretch;
+    height: auto;
+    gap: 8px;
+    padding-inline: 22px;
+    border-radius: 0;
+    border: none;
+    font-weight: 600;
+  }
+
+  .t-header__mobile-clock {
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    line-height: 1.25;
+  }
+
+  .t-header__mobile-clock .t-header__clock-label {
+    font-size: 10px;
+  }
+
+  .t-header__mobile-clock .t-header__clock-value {
+    font-size: 13px;
+  }
+
+  .t-header__menu-btn {
+    display: none;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
     align-items: center;
     justify-content: center;
-    padding: 0.625rem 0.875rem;
-    color: var(--color-text-0);
-    background: color-mix(in oklch, var(--color-accent-500) 24%, transparent);
-    border: 1px solid color-mix(in oklch, var(--color-accent-400) 36%, transparent);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm, 0.875rem);
-    font-weight: 500;
+    background: transparent;
+    color: var(--text-0);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 18px;
     line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .t-header__menu-btn:hover {
+    background: var(--accent-400);
+    color: var(--bg-0);
+  }
+
+  .t-header__menu-btn:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  /* Dropdown — always in the DOM, always hidden on desktop; only shown on
+     mobile when `[data-open]` is set (see the max-width query below). */
+  .t-header__menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    flex-direction: column;
+    background: var(--bg-inset);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+  }
+
+  .t-header__menu-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding-inline: 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--text-sm);
+    color: var(--text-1);
     text-decoration: none;
     transition:
-      background var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
-      border-color var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
-      transform var(--motion-fast, 150ms) var(--motion-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+      background-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
   }
 
-  .site-header__cta:hover,
-  .site-header__cta:focus-visible {
-    background: color-mix(in oklch, var(--color-accent-500) 34%, transparent);
-    border-color: var(--color-accent-400);
-    transform: translateY(-1px);
+  .t-header__menu-link:hover,
+  .t-header__menu-link:focus-visible {
+    background: color-mix(in srgb, var(--accent-400) 12%, transparent);
+    color: var(--text-0);
   }
 
-  /* --------------------------------------------------------------------- */
-  /* Mobile fine-tuning: padding compacto, gaps menores.                    */
-  /* --------------------------------------------------------------------- */
-  @media (max-width: 640px) {
-    .site-header__inner {
-      gap: 0.75rem;
-      padding-block: 0.75rem;
+  .t-header__menu-marker {
+    color: var(--border-strong);
+  }
+
+  .t-header__menu-marker--current {
+    color: var(--accent-400);
+  }
+
+  .t-header__menu-cta-wrap {
+    padding: 14px 16px 16px;
+  }
+
+  .t-header__menu-cta {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .t-header__bar {
+      height: 56px;
     }
 
-    .site-header__brand {
-      font-size: var(--text-lg, 1.125rem);
+    .t-header__inner {
+      padding-inline: 16px 8px;
+      gap: 12px;
     }
 
-    /* El logo metalizado lleva width/height inline (API del componente
-       externo), así que el escalado mobile necesita !important para
-       ganar al estilo inline — equivale al ajuste tipográfico anterior. */
-    .site-header__brand :global(.metallic-logo) {
-      width: 135px !important;
-      height: 22px !important;
-    }
-
-    .site-header__list {
-      justify-content: flex-start;
-    }
-
-    .site-header__link {
-      font-size: var(--text-sm, 0.875rem);
-    }
-
-    .site-header__cta {
+    .t-header__tabs,
+    .t-header__clock--desktop,
+    .t-header__cta {
       display: none;
+    }
+
+    .t-header__mobile-clock {
+      display: flex;
+    }
+
+    .t-header__menu-btn {
+      display: inline-flex;
+    }
+
+    .t-header__menu[data-open] {
+      display: flex;
     }
   }
 </style>
+
+<script>
+  /**
+   * Header clock + mobile menu driver. Progressive enhancement: the clock
+   * placeholder and the (hidden-by-default) dropdown already render
+   * server-side, so a no-JS visitor gets a static, correct header (with the
+   * dropdown always reachable — see the `<noscript>` override above).
+   *
+   * Both the clock interval and the menu's event listeners are torn down on
+   * `astro:before-swap` and re-created on `astro:page-load`, because the
+   * Header's DOM is fully rebuilt on every View Transitions navigation
+   * (there is no `transition:persist` here on purpose — the active tab must
+   * reflect the new page). Re-running init on a fresh DOM without tearing
+   * down the previous run's interval/listeners would leak both.
+   */
+  import { formatClockTime } from '../../lib/clock';
+
+  const HEADER_SELECTOR = '[data-terminal-header]';
+  const MENU_MEDIA_QUERY = '(max-width: 900px)';
+
+  let clockIntervalId: number | undefined;
+  let menuAbortController: AbortController | undefined;
+
+  function updateClocks(): void {
+    const now = formatClockTime(new Date());
+    document.querySelectorAll<HTMLElement>('[data-clock]').forEach((el) => {
+      el.textContent = now;
+    });
+  }
+
+  function setupClock(): void {
+    const header = document.querySelector<HTMLElement>(HEADER_SELECTOR);
+    if (!header || header.dataset.clockInit === 'true') return;
+    header.dataset.clockInit = 'true';
+
+    updateClocks();
+    clockIntervalId = window.setInterval(updateClocks, 1000);
+  }
+
+  function teardownClock(): void {
+    if (clockIntervalId !== undefined) {
+      window.clearInterval(clockIntervalId);
+      clockIntervalId = undefined;
+    }
+  }
+
+  function closeMenu(header: HTMLElement, focusButton: boolean): void {
+    const button = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const panel = header.querySelector<HTMLElement>('[data-menu-panel]');
+    const icon = header.querySelector<HTMLElement>('[data-menu-icon]');
+    if (!button || !panel) return;
+
+    panel.removeAttribute('data-open');
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-label', button.dataset.labelOpen ?? '');
+    if (icon) icon.textContent = '≡';
+    if (focusButton) button.focus();
+  }
+
+  function openMenu(header: HTMLElement): void {
+    const button = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const panel = header.querySelector<HTMLElement>('[data-menu-panel]');
+    const icon = header.querySelector<HTMLElement>('[data-menu-icon]');
+    if (!button || !panel) return;
+
+    panel.setAttribute('data-open', 'true');
+    button.setAttribute('aria-expanded', 'true');
+    button.setAttribute('aria-label', button.dataset.labelClose ?? '');
+    if (icon) icon.textContent = '×';
+  }
+
+  function setupMenu(): void {
+    const header = document.querySelector<HTMLElement>(HEADER_SELECTOR);
+    if (!header || header.dataset.menuInit === 'true') return;
+    header.dataset.menuInit = 'true';
+
+    const button = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const panel = header.querySelector<HTMLElement>('[data-menu-panel]');
+    if (!button || !panel) return;
+
+    menuAbortController = new AbortController();
+    const { signal } = menuAbortController;
+
+    button.addEventListener(
+      'click',
+      () => {
+        if (panel.hasAttribute('data-open')) {
+          closeMenu(header, false);
+        } else {
+          openMenu(header);
+        }
+      },
+      { signal }
+    );
+
+    panel.addEventListener(
+      'click',
+      (event) => {
+        if ((event.target as HTMLElement).closest('a')) closeMenu(header, false);
+      },
+      { signal }
+    );
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && panel.hasAttribute('data-open')) {
+          closeMenu(header, true);
+        }
+      },
+      { signal }
+    );
+
+    window.matchMedia(MENU_MEDIA_QUERY).addEventListener(
+      'change',
+      (event) => {
+        if (!event.matches) closeMenu(header, false);
+      },
+      { signal }
+    );
+  }
+
+  function teardownMenu(): void {
+    const header = document.querySelector<HTMLElement>(HEADER_SELECTOR);
+    if (header) closeMenu(header, false);
+    if (menuAbortController) {
+      menuAbortController.abort();
+      menuAbortController = undefined;
+    }
+  }
+
+  function setupHeader(): void {
+    setupClock();
+    setupMenu();
+  }
+
+  setupHeader();
+  document.addEventListener('astro:page-load', setupHeader);
+  document.addEventListener('astro:before-swap', () => {
+    teardownClock();
+    teardownMenu();
+  });
+</script>

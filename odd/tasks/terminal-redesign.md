@@ -53,7 +53,7 @@ look so navigation stays coherent.
 |----|------|-------|--------|
 | T1 | Foundation: terminal tokens (colours, radii, gradients, danger token), self-hosted IBM Plex Mono + Space Mono, font preloads, theme-color, DESIGN.md rewrite | delegated writer (4+ files) | [x] |
 | T2 | Terminal primitives: terminal motion CSS, `TerminalPane`/`Prompt` components, `src/lib/clock.ts` (TDD) | delegated writer | [x] |
-| T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [ ] |
+| T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [x] |
 | T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [ ] |
 | T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [ ] |
 | T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [ ] |
@@ -76,6 +76,16 @@ look so navigation stays coherent.
   `TerminalButton`. Reduced-motion final states appended to the single block in motion.css (project rule).
   Checks: npm test 27/27; check 0 errors; test:seo passed; lint = known base failures only.
 
+- T2 commit: 0e769dd.
+- T3 done: Header rebuilt (tab nav from getPrimaryNav, live Spain clock, ≤900px menu button + dropdown with
+  Escape/link/swap/resize close, noscript fallback), Footer rebuilt as a TerminalPane (capture band, `tree`
+  sitemap from `getFooterTree` — TDD, RED = module-not-found — and violet status bar via new `after` slot),
+  BrandLogo replaces MetallicLogo, CircuitBackground removed, `.t-pane-gutter` utility, i18n keys header.clock /
+  header.menu.open / header.menu.close. Footer site order follows the header (experience before blog).
+  Checks: npm test 33/33; check 0 errors; test:seo passed; build OK; lint = known base failures only
+  (BaseLayout prefer-rest-params moved 207→203).
+- Follow-up (polish, T8): staggered entrance in mobile dropdown and footer tree rows; violet glow on footer h2.
+
 ## Next step
 
-T3.
+T4.

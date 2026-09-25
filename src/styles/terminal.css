@@ -315,6 +315,23 @@
   color: var(--text-3);
 }
 
+/* t-pane-gutter: outer spacing for a `.t-pane` placed directly in the page
+   flow (not already inside a padded container) — desktop: 40px side +
+   bottom margin, so the window "floats" with breathing room; mobile
+   (≤640px, the SAME breakpoint `.t-pane` itself uses to go full-bleed):
+   flush, no margin, matching the pane's own edge-to-edge mobile treatment.
+   Established in T3 for Footer.astro; reuse this instead of redeclaring
+   the same margin per section (T4+ home panes). */
+.t-pane-gutter {
+  margin: 0 40px 40px;
+}
+
+@media (max-width: 640px) {
+  .t-pane-gutter {
+    margin: 0;
+  }
+}
+
 /* ----------------------------------------------------------------------- */
 /* 4. Run-on-view — pause every terminal animation while its pane hasn't   */
 /*    scrolled into view yet. `TerminalPane.astro`'s client script is the  */

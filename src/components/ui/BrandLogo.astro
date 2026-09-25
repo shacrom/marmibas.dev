@@ -1,0 +1,40 @@
+---
+/**
+ * Flat brand logo (T3 terminal redesign — renamed from `MetallicLogo.astro`,
+ * which had a metallic sheen animation that no longer fits the flat
+ * terminal aesthetic, DESIGN.md §1 "la estética terminal es deliberadamente
+ * plana"). Uses the logo PNG as a CSS mask filled with a solid color —
+ * static, no animation, so there is nothing to guard behind
+ * `prefers-reduced-motion` (unlike the old component, which needed its own
+ * local reduced-motion override to stop the sheen).
+ *
+ * `src` must be a PNG/SVG of the logo with no transparent margin around it
+ * (`public/marmibas-logo.png`).
+ *
+ * Usage:
+ *   <BrandLogo src="/marmibas-logo.png" width="132px" height="22px" />
+ */
+interface Props {
+  src: string;
+  width: string;
+  height: string;
+  label?: string;
+  class?: string;
+}
+const { src, width, height, label = 'Marmibas', class: className } = Astro.props as Props;
+---
+
+<span
+  class:list={['brand-logo', className]}
+  role="img"
+  aria-label={label}
+  style={`--logo:url('${src}'); width:${width}; height:${height};`}></span>
+
+<style>
+  .brand-logo {
+    display: inline-block;
+    -webkit-mask: var(--logo) left center / contain no-repeat;
+    mask: var(--logo) left center / contain no-repeat;
+    background: var(--text-0);
+  }
+</style>

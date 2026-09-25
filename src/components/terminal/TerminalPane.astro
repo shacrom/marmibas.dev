@@ -1,22 +1,37 @@
 ---
 /**
- * TerminalPane.astro — terminal window wrapper (T2 terminal redesign).
+ * TerminalPane.astro — terminal window wrapper (T2 terminal redesign;
+ * `after` slot added in T3 for Footer.astro's status bar).
  *
  * DESIGN.md §8 contract: window border + 40px pane bar (violet dot +
  * `~/path` + `[index]`) over `--bg-1`, with scanline/vignette/optional
  * sweep overlays. Mobile (≤640px): full-bleed — no radius, no side
  * borders, no big shadow.
  *
- * NOT used in any page yet — T3–T6 build the sections that render these.
- * This file only establishes the component contract for those tasks.
+ * The default slot is the scrollable pane body. The named `after` slot
+ * renders as a sibling AFTER the body but BEFORE the decorative overlays
+ * (scanlines/vignette/scan still cover it, matching the approved mockup) —
+ * used by Footer.astro for its full-bleed violet status bar, which must
+ * sit flush against the pane's own bottom edge rather than inside the
+ * padded body.
  *
- * Usage (future, T3+):
+ * Used by Footer.astro since T3; T4–T6 build the home sections that render
+ * the default slot.
+ *
+ * Usage:
  *   <TerminalPane path="servicios" index="2/7" labelledby="t-services">
  *     <Prompt command="ls servicios/" />
  *     ...pane content...
  *   </TerminalPane>
  *
  *   <TerminalPane as="aside" path="demo" scan={false}>...</TerminalPane>
+ *
+ *   <TerminalPane as="div" path="contacto" scan={false}>
+ *     ...pane content...
+ *     <Fragment slot="after">
+ *       <div class="status-bar">...</div>
+ *     </Fragment>
+ *   </TerminalPane>
  */
 
 export type TerminalPaneTag = 'section' | 'div' | 'aside' | 'article';
@@ -60,6 +75,8 @@ const rootClass = ['t-pane', className].filter(Boolean).join(' ');
   <div class="t-pane__body">
     <slot />
   </div>
+
+  <slot name="after" />
 
   <div class="t-pane__scanlines" aria-hidden="true"></div>
   <div class="t-pane__vignette" aria-hidden="true"></div>
@@ -116,9 +133,22 @@ const rootClass = ['t-pane', className].filter(Boolean).join(' ');
     font-variant-numeric: tabular-nums;
   }
 
+  /* Default body padding — matches every desktop/mobile mockup inspected
+     (Terminal/Proceso/Demo/Footer .dc.html all use the same 36/48/40 desktop
+     and 20/16/28 mobile values for their content area). Kept here, once,
+     so T3+ consumers don't each redeclare it; a consumer's own top-level
+     wrapper inside the default slot still owns its own internal vertical
+     rhythm (gap), since that varies per section's content. */
   .t-pane__body {
     position: relative;
     flex: 1 1 auto;
+    padding: 36px 48px 40px;
+  }
+
+  @media (max-width: 640px) {
+    .t-pane__body {
+      padding: 20px 16px 28px;
+    }
   }
 
   /* Decorative overlays — DESIGN.md §8, mockup-matched gradients. */
@@ -162,9 +192,9 @@ const rootClass = ['t-pane', className].filter(Boolean).join(' ');
    * point the class is removed once and the observer disconnects.
    *
    * Follows the same dataset-guard + `astro:page-load` re-init pattern as
-   * `Reveal.astro` / `CircuitBackground.astro` so View Transitions
-   * navigations wire up newly-mounted panes exactly once, without
-   * double-binding observers on repeated script execution.
+   * `Reveal.astro` so View Transitions navigations wire up newly-mounted
+   * panes exactly once, without double-binding observers on repeated
+   * script execution.
    */
   const PANE_SELECTOR = '[data-terminal-pane]';
 
