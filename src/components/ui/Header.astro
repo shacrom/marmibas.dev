@@ -63,7 +63,9 @@ const menuLabelClose = t('header.menu.close');
   <div class="t-header__bar">
     <div class="t-header__inner">
       <a class="t-header__brand" href={homeHref} aria-label={brandLabel}>
-        <BrandLogo src="/marmibas-logo.png" width="132px" height="22px" />
+        <!-- Fluid width: full 132px from ~370px up, shrinking on very narrow phones so
+             logo + clock + menu button still fit (≈112px at 310px). -->
+        <BrandLogo src="/marmibas-logo.png" width="clamp(104px, 36vw, 132px)" height="22px" />
       </a>
 
       <nav class="t-header__tabs" aria-label={navAriaLabel}>
