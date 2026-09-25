@@ -19,9 +19,9 @@
  * (`eyebrow`/`heading`/`sub`, `panels[].title/desc`, `machines.*`,
  * `management.*`, `data.*` minus the sort control below) — nothing
  * invented except decorative terminal framing strings (the `./demo …`
- * prompt, each sub-pane's `path/` bar label + status text, the `Vista`/
- * `View` toggle group label, and `buscar>`/`search>`), all per-lang consts
- * local to this component (same convention as `HeroPane`/`ServicesPane`).
+ * prompt, each sub-pane's `path/` bar label + status text, the `Vista`
+ * toggle group label, and `buscar>`), all consts local to this component
+ * (same convention as `HeroPane`/`ServicesPane`).
  *
  * DROPPED vs `ShowcaseSection.astro`: the "sort by amount" `<select>`. It
  * has no equivalent anywhere in the approved mockup's table (search + date
@@ -35,10 +35,9 @@
  * `src/lib/showcase-demo.ts` (TDD, no DOM) — this component only wires
  * that logic to real markup/events. `formatThousands` there is
  * deliberately locale-INVARIANT (always dot-grouped, "es-ES style" per its
- * own contract) rather than switching to comma-grouping for `lang="en"` —
- * a direct, intentional port of the mockup's own hardcoded `fmt()`, not an
- * oversight; the rest of this component's EN copy is fully translated as
- * usual.
+ * own contract) — a direct port of the mockup's own hardcoded `fmt()`.
+ * English was removed (site is Spanish-only — see
+ * `odd/tasks/site-cleanup.md` C2); `lang` stays typed for a future locale.
  *
  * Architecture note vs the mockup's own re-render approach: the mockup's
  * `<script type="text/x-dc">` re-templates the ENTIRE row/line list on
@@ -71,24 +70,21 @@ export interface Props {
 const { lang } = Astro.props as Props;
 
 const fmtMeters = (n: number): string => `${formatThousands(n)} m`;
-const fmtCurrency = (n: number): string =>
-  lang === 'es' ? `${formatThousands(n)} €` : `€${formatThousands(n)}`;
+const fmtCurrency = (n: number): string => `${formatThousands(n)} €`;
 
-// --- Decorative terminal framing (new copy, per-lang, local to this
-// component — see docblock above for why not ui.ts). -----------------------
+// --- Decorative terminal framing (new copy, local to this component — see
+// docblock above for why not ui.ts). ---------------------------------------
 const promptCommand: Record<Language, string> = {
   es: './demo --datos-ficticios',
-  en: './demo --sample-data',
 };
 
 const subPanePaths: Record<Language, { machines: string; doc: string; data: string }> = {
   es: { machines: 'planta/', doc: 'documentos/', data: 'excel-a-app/' },
-  en: { machines: 'floor/', doc: 'documents/', data: 'excel-to-app/' },
 };
 
-const realtimeLabel: Record<Language, string> = { es: 'tiempo real', en: 'real time' };
-const viewGroupLabel: Record<Language, string> = { es: 'Vista', en: 'View' };
-const searchPromptGlyph: Record<Language, string> = { es: 'buscar>', en: 'search>' };
+const realtimeLabel: Record<Language, string> = { es: 'tiempo real' };
+const viewGroupLabel: Record<Language, string> = { es: 'Vista' };
+const searchPromptGlyph: Record<Language, string> = { es: 'buscar>' };
 const docNumber = '#2026-041';
 
 // --- Real copy, reused verbatim from the pre-terminal ShowcaseSection.astro
@@ -192,104 +188,10 @@ const copy = {
       ],
     },
   },
-  en: {
-    eyebrow: 'Interactive demo',
-    heading: 'This is what the screens of an application look like',
-    sub: 'Demo panels with fictional data: this is what your team would actually see on screen.',
-    panels: [
-      {
-        title: 'Real-time shop floor',
-        desc: 'Monitor machines and production in real time, without walking the floor with a notepad.',
-      },
-      {
-        title: 'Document management',
-        desc: 'Quotes, invoices and contracts that calculate themselves and go out under your brand.',
-      },
-      {
-        title: 'From spreadsheet to app',
-        desc: 'Replace fragile spreadsheets with an application anyone on the team can use.',
-      },
-    ],
-    machines: {
-      names: ['Loom V1', 'Loom V2', 'Winder M1'],
-      stop: 'Stop',
-      start: 'Start',
-      summaryProduction: 'Production today',
-      summaryStops: 'Stops',
-    },
-    management: {
-      docTitle: 'Quote #2026-041',
-      status: 'Accepted',
-      includeLine: 'Include line',
-      lines: [
-        { label: 'Design & implementation', amount: 3200 },
-        { label: 'POS integration', amount: 950 },
-        { label: 'First month support', amount: 700 },
-      ],
-      totalLabel: 'Total',
-      pdfIdle: 'Generate PDF',
-      pdfDone: 'PDF ready ✓',
-    },
-    data: {
-      viewBefore: 'Before · Excel',
-      viewAfter: 'Now · App',
-      searchLabel: 'Search customer or product',
-      searchPlaceholder: 'Customer · Product…',
-      dateFilterLabel: 'Filter by date',
-      dateFilterAll: 'All dates',
-      noResults: 'No results',
-      statsLabel: 'Dashboard summary',
-      stats: [
-        { label: 'Monthly sales', value: '€8,240' },
-        { label: 'Open orders', value: '14' },
-        { label: 'Errors avoided', value: '7' },
-      ],
-      chartTitle: 'Sales by week',
-      headers: ['Customer', 'Product', 'Date', 'Total', 'Status'],
-      dateOptions: [
-        { value: 'Today', label: 'Today' },
-        { value: 'Yesterday', label: 'Yesterday' },
-        { value: 'Week', label: 'Week' },
-      ],
-      rows: [
-        { client: 'Ferretería Solá', product: 'M6 screws', date: 'Today', amount: 1240, status: 'Ready' },
-        { client: 'Grupo Ánfora', product: 'M8 screws', date: 'Week', amount: 1180, status: 'Ready' },
-        {
-          client: 'Mueblex S.L.',
-          product: 'Reinforced hinge',
-          date: 'Today',
-          amount: 860,
-          status: 'Pending',
-        },
-        {
-          client: 'Distribuciones Rus',
-          product: 'Aluminium profile',
-          date: 'Yesterday',
-          amount: 650,
-          status: 'Ready',
-        },
-        {
-          client: 'Talleres Camps',
-          product: 'Galvanized sheet',
-          date: 'Yesterday',
-          amount: 420,
-          status: 'Review',
-        },
-      ],
-      chart: [42, 66, 54, 86],
-      excel: [
-        'Customer', 'Product', 'Qty', 'Price', 'Status',
-        'Ferretería Solá', 'Screws', '120', '€54', 'Pending',
-        'Mueblex', 'Hinges', '80', '#ERROR', 'Review',
-        'Talleres Camps', 'Sheet', '25', '€310', 'OK',
-        'Grupo Ánfora', 'Screws', '140', 'Duplicate', 'Duplicate',
-      ],
-    },
-  },
 } as const;
 
 const content = copy[lang];
-const duplicateCellText = lang === 'es' ? 'Duplicado' : 'Duplicate';
+const duplicateCellText = 'Duplicado';
 const isErrorCell = (cell: string): boolean => cell.startsWith('#');
 const isDuplicateCell = (cell: string): boolean => cell === duplicateCellText;
 
@@ -317,7 +219,7 @@ const dataTitleId = 'demo-data-title';
 ---
 
 <TerminalPane path="demo" index="3/7" labelledby="demo-heading" class="t-pane-gutter">
-  <div class="demo-pane" data-demo data-lang={lang} data-base-production={String(BASE_PRODUCTION)} data-base-stops={String(BASE_STOPS)}>
+  <div class="demo-pane" data-demo data-base-production={String(BASE_PRODUCTION)} data-base-stops={String(BASE_STOPS)}>
     <Prompt command={promptCommand[lang]} delay={200} duration={600} />
 
     <div class="demo-pane__heading-block t-show" style="--t-delay: 850ms;">
@@ -667,8 +569,9 @@ const dataTitleId = 'demo-data-title';
     if (root.dataset.demoInit) return;
     root.dataset.demoInit = '1';
 
-    const lang = root.dataset.lang === 'en' ? 'en' : 'es';
-    const fmtCurrency = (n: number) => (lang === 'es' ? `${formatThousands(n)} €` : `€${formatThousands(n)}`);
+    // Spanish is the only locale (see `odd/tasks/site-cleanup.md` C2), so
+    // currency/meter formatting no longer branches by language.
+    const fmtCurrency = (n: number) => `${formatThousands(n)} €`;
     const fmtMeters = (n: number) => `${formatThousands(n)} m`;
 
     /* ---------------------------------------------------------------- */

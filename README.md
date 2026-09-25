@@ -1,14 +1,14 @@
 # marmibas.dev
 
-Portfolio personal de marmibas — Ingeniero Informático y Full Stack Developer. Una vitrina técnica honesta de proyectos, experiencia y artículos, en español e inglés.
+Portfolio personal de marmibas — Ingeniero Informático y Full Stack Developer. Una vitrina técnica honesta de proyectos y experiencia, en español.
 
 ## Stack
 
 - **[Astro 6](https://astro.build/)** — generador estático con islas interactivas.
 - **TypeScript strict** — `noUncheckedIndexedAccess`, `verbatimModuleSyntax`.
 - **[Tailwind v4](https://tailwindcss.com/)** — CSS-first vía `@theme`, sin `tailwind.config.js`.
-- **i18n nativo de Astro** — ES default sin prefijo, EN bajo `/en`, fallback rewrite a ES.
-- **MDX** — case studies y posts con componentes (Callout, MetricsGrid, etc.).
+- **i18n nativo de Astro** — español, único idioma publicado (sin prefijo de URL).
+- **MDX** — case studies y proyectos con componentes (Callout, MetricsGrid, etc.).
 - **[Resend](https://resend.com/)** — backend del form de contacto.
 - **[Vercel](https://vercel.com/)** — hosting + Web Analytics + adapter `@astrojs/vercel`.
 

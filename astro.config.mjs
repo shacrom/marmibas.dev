@@ -54,12 +54,12 @@ function readFrontmatterDate(raw, key) {
  * Build URL pathname → lastmod (Date) map for case-studies.
  *
  * Route reality (per `src/pages/`):
- *   - case-studies → `/case-studies/<slug>` (ES) and `/en/case-studies/<slug>`
- *     (EN). The user-facing aliases `/trabajos` and `/en/work` are LIST
- *     pages only; detail pages live under `/case-studies/`.
+ *   - case-studies → `/case-studies/<slug>`. The user-facing alias
+ *     `/trabajos` is a LIST page only; detail pages live under
+ *     `/case-studies/`.
  *
  * If detail-page routes are renamed in the future (e.g. moved under
- * `/trabajos/<slug>`), update the `pathFor` callbacks below in lockstep.
+ * `/trabajos/<slug>`), update the `pathFor` callback below in lockstep.
  */
 function buildLastmodMap() {
   const map = new Map();
@@ -70,11 +70,6 @@ function buildLastmodMap() {
       collection: 'case-studies',
       langDir: 'es',
       pathFor: (slug) => `/case-studies/${slug}`,
-    },
-    {
-      collection: 'case-studies',
-      langDir: 'en',
-      pathFor: (slug) => `/en/case-studies/${slug}`,
     },
   ];
 
@@ -131,38 +126,32 @@ export default defineConfig({
     webAnalytics: { enabled: true },
   }),
 
+  // Spanish is the only locale (the English version was removed — see
+  // `odd/tasks/site-cleanup.md` C2). A single-locale `i18n` config with no
+  // `fallback` disables Astro's fallback-rewrite routing entirely, so no
+  // shadow `/en/*` mirror of the Spanish pages gets auto-generated. To bring
+  // English back, restore `locales: ['es', 'en']` + a `fallback` block AND
+  // the `src/pages/en/**` page files (both are required together — the
+  // fallback rewrite only fills gaps between explicit page files).
   i18n: {
     defaultLocale: 'es',
-    locales: ['es', 'en'],
+    locales: ['es'],
     routing: {
       prefixDefaultLocale: false,
       redirectToDefaultLocale: false,
-      fallbackType: 'rewrite',
-    },
-    fallback: {
-      en: 'es',
     },
   },
 
   integrations: [
     mdx(),
     sitemap({
-      // English content is hidden from the public UI; do NOT advertise it in
-      // the sitemap (no entries, no hreflang). The /en/* routes still build
-      // and respond, but BaseLayout forces noindex on them and robots.txt
-      // disallows the prefix. Re-enable the i18n config + drop the /en/
-      // exclusion below to bring the English version back.
       // Skip API endpoints (e.g. /api/contact) — they are not addressable
-      // pages and search engines must not index them. Skip /en/* while the
-      // English version is hidden, plus the Spanish utility pages that emit
-      // noindex. Public Spanish services, home and experience remain listed.
+      // pages and search engines must not index them. Skip the Spanish
+      // utility pages that emit noindex. Public Spanish services, home and
+      // experience remain listed.
       filter: (page) => {
         const pathname = new URL(page).pathname.replace(/\/$/, '') || '/';
-        return (
-          !pathname.startsWith('/api/') &&
-          !/^\/en(\/|$)/.test(pathname) &&
-          !['/contacto', '/politica-cookies'].includes(pathname)
-        );
+        return !pathname.startsWith('/api/') && !['/contacto', '/politica-cookies'].includes(pathname);
       },
       // Inject `lastmod` from the collection frontmatter (or file mtime) for
       // case-studies + posts. Other pages keep the integration default.

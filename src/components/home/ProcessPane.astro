@@ -2,17 +2,16 @@
 /**
  * ProcessPane.astro — Home "process" pane (T6 terminal redesign).
  *
- * Renders the FIFTH home `TerminalPane` (`~/proceso` | `~/process`,
- * `[5/7]`), replacing the pre-terminal `ProcessSection.astro`. Matches
- * `ProcesoTerminal.dc.html` (desktop 1440) / `ProcesoTerminalMovil.dc.html`
- * (mobile 390) — the read-only visual + timing spec under the design
- * scratchpad.
+ * Renders the FIFTH home `TerminalPane` (`~/proceso`, `[5/7]`), replacing
+ * the pre-terminal `ProcessSection.astro`. Matches `ProcesoTerminal.dc.html`
+ * (desktop 1440) / `ProcesoTerminalMovil.dc.html` (mobile 390) — the
+ * read-only visual + timing spec under the design scratchpad.
  *
  * Copy (`eyebrow`/`heading`/`sub`/`steps[].title/text`) is reused VERBATIM
  * from `ProcessSection.astro`'s own local `copy` object — copied as-is,
- * nothing added or reworded. New copy is only the decorative `./proceso` /
- * `./process` prompt and the `paso NN` / `step NN` stage label, per-lang
- * consts local to this component (same convention as every prior pane).
+ * nothing added or reworded. New copy is only the decorative `./proceso`
+ * prompt and the `paso NN` stage label, consts local to this component
+ * (same convention as every prior pane).
  *
  * Pipeline: `role="list"` wrapper + `role="listitem"` per stage (the
  * mockup's own accessible pattern, explicitly offered as an alternative to
@@ -48,9 +47,9 @@ export interface Props {
 
 const { lang } = Astro.props as Props;
 
-const panePath = lang === 'es' ? 'proceso' : 'process';
-const promptCommand = lang === 'es' ? './proceso' : './process';
-const stepWord = lang === 'es' ? 'paso' : 'step';
+const panePath = 'proceso';
+const promptCommand = './proceso';
+const stepWord = 'paso';
 
 // Copy reused verbatim from ProcessSection.astro's own local object.
 const copy = {
@@ -70,25 +69,6 @@ const copy = {
       {
         title: 'Iteración con datos reales',
         text: 'Mejoramos lo que ya usan tus clientes o equipo, midiendo fricción, errores y oportunidades de automatización.',
-      },
-    ],
-  },
-  en: {
-    eyebrow: 'The process',
-    heading: 'From messy problem to useful tool without losing months.',
-    sub: 'The goal is not to build for the sake of building. It is to find the tool with the highest impact on sales, time or business control.',
-    steps: [
-      {
-        title: 'Clear diagnosis',
-        text: 'We understand where money, time or clients are being lost and prioritize what deserves to become software.',
-      },
-      {
-        title: 'Small first delivery',
-        text: 'We define a usable MVP to validate quickly, with closed scope and no decorative features.',
-      },
-      {
-        title: 'Iteration with real data',
-        text: 'We improve what your customers or team already use, measuring friction, errors and automation opportunities.',
       },
     ],
   },

@@ -505,36 +505,20 @@ const tagline =
     const errorBanner = document.getElementById('contact-error') as HTMLElement;
     const successBanner = document.getElementById('contact-success') as HTMLElement;
 
-    const messages = {
-      es: {
-        nameRequired: 'Dime cómo te llamas.',
-        nameTooShort: 'El nombre debe tener al menos 2 caracteres.',
-        emailRequired: 'Necesito un email para responderte.',
-        emailInvalid: 'El email no parece válido.',
-        messageRequired: 'Cuéntame en qué puedo ayudarte.',
-        messageMinLength: 'El mensaje necesita al menos 10 caracteres.',
-        messageMaxLength: 'El mensaje no puede pasar de 2000 caracteres.',
-        rateLimit: 'Has enviado varios mensajes seguidos. Espera unos minutos y vuelve a intentarlo.',
-        generic: 'Algo ha salido mal. Inténtalo de nuevo o escríbeme a info@marmibas.dev.',
-      },
-      en: {
-        nameRequired: 'Please share your name.',
-        nameTooShort: 'Name must be at least 2 characters.',
-        emailRequired: 'I need an email to reply.',
-        emailInvalid: 'That email does not look valid.',
-        messageRequired: 'Let me know how I can help.',
-        messageMinLength: 'Message must be at least 10 characters.',
-        messageMaxLength: 'Message must be under 2000 characters.',
-        rateLimit: 'Too many messages in a short time. Please wait a few minutes and try again.',
-        generic: 'Something went wrong. Please try again or email info@marmibas.dev.',
-      },
+    // Spanish is the only locale (the English contact page was removed —
+    // see `odd/tasks/site-cleanup.md` C2), so these messages no longer
+    // branch on the hidden `lang` field's value.
+    const m = {
+      nameRequired: 'Dime cómo te llamas.',
+      nameTooShort: 'El nombre debe tener al menos 2 caracteres.',
+      emailRequired: 'Necesito un email para responderte.',
+      emailInvalid: 'El email no parece válido.',
+      messageRequired: 'Cuéntame en qué puedo ayudarte.',
+      messageMinLength: 'El mensaje necesita al menos 10 caracteres.',
+      messageMaxLength: 'El mensaje no puede pasar de 2000 caracteres.',
+      rateLimit: 'Has enviado varios mensajes seguidos. Espera unos minutos y vuelve a intentarlo.',
+      generic: 'Algo ha salido mal. Inténtalo de nuevo o escríbeme a info@marmibas.dev.',
     } as const;
-
-    const lang =
-      (form.querySelector('input[name="lang"]') as HTMLInputElement | null)?.value === 'en'
-        ? 'en'
-        : 'es';
-    const m = messages[lang];
 
     function setError(name: FieldName, text: string): void {
       const input = form!.querySelector(`[name="${name}"]`) as HTMLInputElement | null;
@@ -622,7 +606,7 @@ const tagline =
             email: payload.email?.trim(),
             message: payload.message?.trim(),
             website: payload.website ?? '',
-            lang: payload.lang ?? lang,
+            lang: payload.lang ?? 'es',
           }),
         });
 

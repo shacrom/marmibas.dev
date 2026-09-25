@@ -11,10 +11,10 @@
  * `FAQSection.astro`'s own local `copy` object (never lived in `ui.ts`).
  * The FAQ list itself comes from `getFaqs(lang)` (`src/lib/faqs.ts`,
  * unchanged) — same source of truth `FAQSection.astro` used, and the SAME
- * source `index.astro`/`en/index.astro` pass to `<BaseLayout faqs={...}>`
- * for the FAQPage JSON-LD, so nothing about that Schema wiring changes
- * here. New copy is only the decorative `cat preguntas.txt` / `cat
- * questions.txt` prompt, per-lang, local to this component.
+ * source `index.astro` passes to `<BaseLayout faqs={...}>` for the
+ * FAQPage JSON-LD, so nothing about that Schema wiring changes here. New
+ * copy is only the decorative `cat preguntas.txt` prompt, local to this
+ * component.
  *
  * Accordion: native `<details>`/`<summary>` (zero JS, full keyboard/
  * screen-reader support by default), first item `open` on the server. The
@@ -47,7 +47,7 @@ export interface Props {
 
 const { lang } = Astro.props as Props;
 
-const catCommand = lang === 'es' ? 'cat preguntas.txt' : 'cat questions.txt';
+const catCommand = 'cat preguntas.txt';
 
 // Copy reused verbatim from FAQSection.astro's own local object.
 const copy = {
@@ -55,11 +55,6 @@ const copy = {
     eyebrow: 'FAQ',
     heading: 'Preguntas frecuentes',
     subheading: 'Las dudas más comunes que recibo antes de empezar un proyecto.',
-  },
-  en: {
-    eyebrow: 'FAQ',
-    heading: 'Frequently asked questions',
-    subheading: 'The most common questions I get before starting a project.',
   },
 } as const;
 

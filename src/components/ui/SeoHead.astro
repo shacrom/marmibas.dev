@@ -6,13 +6,13 @@
  *   - Document basics: charset, viewport, title, description, theme-color.
  *   - Robots directive (index/noindex).
  *   - Canonical URL (built from `currentUrl` against `PUBLIC_SITE_URL`).
- *   - hreflang alternates: `es`, `en`, `x-default` → ES.
+ *   - hreflang alternates: `es`, `x-default` → ES (the only published locale).
  *   - Open Graph: og:title, og:description, og:type, og:url, og:image, og:locale.
  *   - Twitter Card: summary_large_image with title/description/image.
  *   - Critical font preloads (Space Mono 700 + IBM Plex Mono 400) from `lib/fonts.ts`.
  *   - JSON-LD structured data (T-50):
  *       · `Person` schema on the home (auto-detected via pathname).
- *       · `Article` schema when `type === 'article'` (case studies + posts).
+ *       · `Article` schema when `type === 'article'` (case studies).
  *
  * Title strategy:
  *   - `title` is the page-specific title.
@@ -23,8 +23,8 @@
  *
  * JSON-LD strategy (T-50):
  *   - Home: emit `Person` with name, jobTitle, url, sameAs, knowsAbout. The
- *     home is detected from the canonical pathname (`/` for ES, `/en` or
- *     `/en/` for EN). This avoids leaking the schema on subpaths.
+ *     home is detected from the canonical pathname (`/`, the only public
+ *     locale). This avoids leaking the schema on subpaths.
  *   - Article: emit `Article` when the caller passes `type='article'`. Caller
  *     supplies optional `publishedAt` / `updatedAt` / `tags` / `author`; the
  *     component derives sensible defaults (author = "marmibas") and falls
@@ -116,20 +116,18 @@ const siteOrigin = new URL(canonicalUrl).origin;
 const ogImageAbsolute = absoluteUrl(ogImage, siteOrigin);
 
 // --- og:locale -----------------------------------------------------------
-// OpenGraph expects `xx_XX` (BCP-47 with underscore). We pin to es_ES / en_US
-// matching the sitemap config in astro.config.mjs.
-const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
+// OpenGraph expects `xx_XX` (BCP-47 with underscore). ES is the only
+// published locale, matching the sitemap config in astro.config.mjs.
+const ogLocale = 'es_ES';
 
 // --- JSON-LD structured data (T-50) --------------------------------------
-// Detect the home: ES home is exactly `/`; EN home is `/en` or `/en/`.
-// Anything else (e.g. `/trabajos`, `/en/work/voxye`, `/case-studies/post-x`) falls
-// through to the Article branch (when `type === 'article'`) or to no
-// structured data at all for generic landing pages.
+// Detect the home: exactly `/` (the only public locale). Anything else
+// (e.g. `/trabajos`, `/case-studies/voxye`) falls through to the Article
+// branch (when `type === 'article'`) or to no structured data at all for
+// generic landing pages.
 const pathname = currentUrl.pathname;
 const isHome =
   pathname === '/' ||
-  pathname === '/en' ||
-  pathname === '/en/' ||
   // Tolerate trailing-slash variants of the ES home produced by some adapters.
   pathname === '';
 
@@ -206,7 +204,7 @@ const articleSchema: ArticleSchema | undefined =
         '@type': 'Article',
         headline: title,
         description,
-        inLanguage: lang === 'es' ? 'es-ES' : 'en-US',
+        inLanguage: 'es-ES',
         url: canonicalUrl,
         mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
         image: ogImageAbsolute,
@@ -282,7 +280,7 @@ const faqSchema =
 {/* --- Canonical ----------------------------------------------------- */}
 <link rel="canonical" href={canonicalUrl} />
 
-{/* English remains intentionally hidden and is not a truthful alternate. */}
+{/* ES is the only published locale — emit its own hreflang + x-default. */}
 {
   !noindex && lang === 'es' && (
     <>

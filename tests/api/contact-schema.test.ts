@@ -6,7 +6,7 @@
  *   2. `name` shorter than the min length (2).
  *   3. Malformed `email`.
  *   4. `message` shorter than the min length (10).
- *   5. `lang` outside the allowed enum ('es' | 'en').
+ *   5. `lang` outside the allowed enum ('es' — the only published locale).
  */
 
 import { describe, it, expect } from 'vitest';

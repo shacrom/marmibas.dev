@@ -275,7 +275,7 @@ Desktop: 128px. Mobile: 64px. Sin cambios.
 
 ## 13. Idiomas
 
-**EN sigue oculto.** El locale inglés (`/en/*`) permanece `noindex`, sin language switcher visible y sin alternates `hreflang` verdaderos — se mantiene como locale de trabajo, no publicado, igual que en el sistema anterior. El redesign terminal cubre ambos locales (ES/EN) para que el código no diverja, pero solo ES es la superficie pública real.
+**Español, único idioma.** La versión en inglés (`/en/*`) se eliminó por completo (ver `odd/tasks/site-cleanup.md` C2): páginas, contenido EN de las collections, y el copy EN de cada componente. La capa de i18n (`src/i18n/`) se mantiene con la misma forma (`Language`, `routes`, `ui`, `Record<Language, …>`), hoy con una sola clave (`es`), para que añadir un idioma en el futuro sea sumar su entrada en cada sitio en vez de reconstruir la arquitectura.
 
 ## 14. Pendiente de iterar
 

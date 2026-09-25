@@ -31,7 +31,8 @@
  *   enhancement: a `<noscript>` override forces the panel visible as a
  *   static list and hides the (otherwise non-functional) toggle button.
  *
- * i18n: EN stays hidden (no language switcher here — DESIGN.md §13).
+ * i18n: Spanish is the only locale (no language switcher — the English
+ * version was removed, see `odd/tasks/site-cleanup.md` C2).
  */
 import BrandLogo from './BrandLogo.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
@@ -49,8 +50,8 @@ const t = useTranslations(currentLang);
 
 const homeHref = getRoutePath('home', currentLang);
 const contactHref = getRoutePath('contact', currentLang);
-const navAriaLabel = currentLang === 'es' ? 'Navegación principal' : 'Main navigation';
-const brandLabel = currentLang === 'es' ? 'marmibas — inicio' : 'marmibas — home';
+const navAriaLabel = 'Navegación principal';
+const brandLabel = 'marmibas — inicio';
 
 const navItems = getPrimaryNav(currentLang, currentUrl.pathname);
 

@@ -61,13 +61,13 @@ function getSiteGroup(lang: Language): FooterTreeGroup {
 
   return {
     key: 'site',
-    heading: lang === 'es' ? 'sitio/' : 'site/',
-    ariaLabel: lang === 'es' ? 'Sitio' : 'Site',
+    heading: 'sitio/',
+    ariaLabel: 'Sitio',
     items,
   };
 }
 
-function getSocialGroup(lang: Language, t: Translate): FooterTreeGroup {
+function getSocialGroup(t: Translate): FooterTreeGroup {
   const items: FooterTreeItem[] = [
     {
       label: 'github',
@@ -89,16 +89,13 @@ function getSocialGroup(lang: Language, t: Translate): FooterTreeGroup {
     {
       label: PHONE_DISPLAY,
       href: `tel:${PHONE_HREF}`,
-      ariaLabel: lang === 'es' ? `Llamar al ${PHONE_DISPLAY}` : `Call ${PHONE_DISPLAY}`,
+      ariaLabel: `Llamar al ${PHONE_DISPLAY}`,
     },
     {
       label: 'whatsapp',
       href: WHATSAPP_HREF,
       external: true,
-      ariaLabel:
-        lang === 'es'
-          ? `Escríbeme por WhatsApp al ${PHONE_DISPLAY}`
-          : `Message me on WhatsApp at ${PHONE_DISPLAY}`,
+      ariaLabel: `Escríbeme por WhatsApp al ${PHONE_DISPLAY}`,
     },
   ];
 
@@ -110,20 +107,18 @@ function getSocialGroup(lang: Language, t: Translate): FooterTreeGroup {
   };
 }
 
-function getMoreGroup(lang: Language): FooterTreeGroup {
-  const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
-
+function getMoreGroup(): FooterTreeGroup {
   const items: FooterTreeItem[] = [
     {
-      label: lang === 'es' ? 'política de cookies' : 'cookie policy',
-      href: cookiePolicyHref,
+      label: 'política de cookies',
+      href: '/politica-cookies',
     },
   ];
 
   return {
     key: 'more',
-    heading: lang === 'es' ? 'más/' : 'more/',
-    ariaLabel: lang === 'es' ? 'Más' : 'More',
+    heading: 'más/',
+    ariaLabel: 'Más',
     items,
   };
 }
@@ -135,5 +130,5 @@ function getMoreGroup(lang: Language): FooterTreeGroup {
 export function getFooterTree(lang: Language): FooterTreeGroup[] {
   const t = useTranslations(lang);
 
-  return [getSiteGroup(lang), getSocialGroup(lang, t), getMoreGroup(lang)];
+  return [getSiteGroup(lang), getSocialGroup(t), getMoreGroup()];
 }

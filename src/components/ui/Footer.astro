@@ -40,27 +40,21 @@ const t = useTranslations(lang);
 
 const year = new Date().getFullYear();
 const contactHref = getRoutePath('contact', lang);
-const panePath = lang === 'es' ? 'contacto' : 'contact';
-const footerLabel = lang === 'es' ? 'Pie de página' : 'Footer';
+const panePath = 'contacto';
+const footerLabel = 'Pie de página';
 
 // Capture band copy — reused verbatim from the pre-terminal Footer.astro's
 // `ctaSection` (eyebrow/heading/sub) and `tagline`. Only the CTA button
 // label changes source: it now reads `cta.contact` (the shared i18n key
 // the Header CTA also uses) instead of a footer-local `ctaSection.cta`
-// string, since both said the exact same thing ("Hablemos" / "Let's talk").
+// string, since both said the exact same thing ("Hablemos").
 const capture = {
-  eyebrow: lang === 'es' ? '# ¿Empezamos?' : '# Shall we start?',
-  heading: lang === 'es' ? 'Cuéntame qué necesitas' : 'Tell me what you need',
-  sub:
-    lang === 'es'
-      ? 'La primera llamada es gratis y sin compromiso.'
-      : 'First call is free, no strings attached.',
+  eyebrow: '# ¿Empezamos?',
+  heading: 'Cuéntame qué necesitas',
+  sub: 'La primera llamada es gratis y sin compromiso.',
 };
 
-const tagline =
-  lang === 'es'
-    ? 'Construyo software que tu negocio necesita.'
-    : 'I build the software your business needs.';
+const tagline = 'Construyo software que tu negocio necesita.';
 
 const tree = getFooterTree(lang);
 ---

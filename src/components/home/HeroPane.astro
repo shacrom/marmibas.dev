@@ -12,14 +12,15 @@
  *
  * Copy is reused VERBATIM from the pre-terminal `Hero.astro` (heroLines,
  * tagline, proofPoints, diagnosis object) — nothing invented. Only the
- * terminal framing strings below (`cat enfoque.txt`/`cat approach.txt`,
- * `./diagnostico --primera-llamada`/`./diagnosis --first-call`; `whoami`
- * and `uptime` are identical in both langs) are new, decorative, and
- * localised per lang. Per T4's brief (new UI copy → `ui.ts` OR a per-lang
- * object inside the component — pick one, be consistent): kept as per-lang
- * consts here, matching the pre-existing precedent in `Hero.astro`
+ * terminal framing strings below (`cat enfoque.txt`,
+ * `./diagnostico --primera-llamada`; `whoami` and `uptime`) are new and
+ * decorative. Per T4's brief (new UI copy → `ui.ts` OR a local object
+ * inside the component — pick one, be consistent): kept as local consts
+ * here, matching the pre-existing precedent in `Hero.astro`
  * (heroLines/tagline/diagnosis) and `Footer.astro` (T3's `capture` object),
- * neither of which put local/decorative copy in `ui.ts`.
+ * neither of which put local/decorative copy in `ui.ts`. English was
+ * removed (site is Spanish-only — see `odd/tasks/site-cleanup.md` C2);
+ * `lang` stays typed for a future locale.
  *
  * The two-column grid breaks out of `TerminalPane`'s own `.t-pane__body`
  * padding (36/48/40 desktop, 20/16/28 mobile — see `TerminalPane.astro`)
@@ -56,18 +57,16 @@ export interface Props {
 const { lang } = Astro.props as Props;
 const t = useTranslations(lang);
 
-const panePath = lang === 'es' ? 'inicio' : 'home';
+const panePath = 'inicio';
 
-// --- Decorative terminal framing (new copy, per-lang, local to this
-// component — see docblock above for why not ui.ts). -----------------------
+// --- Decorative terminal framing (new copy, local to this component — see
+// docblock above for why not ui.ts). ---------------------------------------
 const fileCommand: Record<Language, string> = {
   es: 'cat enfoque.txt',
-  en: 'cat approach.txt',
 };
 
 const diagnosisCommand: Record<Language, string> = {
   es: './diagnostico --primera-llamada',
-  en: './diagnosis --first-call',
 };
 
 // --- Real copy, reused verbatim from the pre-terminal Hero.astro. ----------
@@ -75,34 +74,23 @@ const diagnosisCommand: Record<Language, string> = {
 // --accent-400 (Terminal.dc.html: "que quieren <span accent>crecer.</span>").
 const heroTitleLines: Record<Language, [string, string, [string, string]]> = {
   es: ['Software a medida', 'para negocios', ['que quieren ', 'crecer.']],
-  en: ['Custom software', 'for businesses', ['ready to ', 'grow.']],
 };
 
 const tagline: Record<Language, string> = {
   es: 'Diseño y construyo webs, apps y sistemas internos para captar clientes, ahorrar horas y ordenar el trabajo diario. Sin jerga técnica: problema, solución y próximos pasos claros.',
-  en: 'I design and build websites, apps and internal systems to win clients, save hours and organize daily work. No technical jargon: clear problem, solution and next steps.',
 };
 
 const proof: Record<Language, { value: string; label: string }> = {
   es: { value: '5+ años', label: 'creando productos reales' },
-  en: { value: '5+ years', label: 'building real products' },
 };
 
 const diagnosis = {
-  label: lang === 'es' ? 'Primera llamada gratuita' : 'Free first call',
-  title:
-    lang === 'es'
-      ? 'Convierte una idea suelta en un plan claro.'
-      : 'Turn a rough idea into a clear plan.',
+  label: 'Primera llamada gratuita',
+  title: 'Convierte una idea suelta en un plan claro.',
   description:
-    lang === 'es'
-      ? 'En una conversación rápida aterrizamos qué construir, qué evitar y por dónde empezar para que el software tenga impacto real.'
-      : 'In one short conversation we define what to build, what to avoid and where to start so the software has real impact.',
-  items:
-    lang === 'es'
-      ? ['Prioridad del negocio', 'MVP posible', 'Coste y tiempos orientativos']
-      : ['Business priority', 'Possible MVP', 'Indicative cost and timeline'],
-  cta: lang === 'es' ? 'Pedir diagnóstico' : 'Request a diagnosis',
+    'En una conversación rápida aterrizamos qué construir, qué evitar y por dónde empezar para que el software tenga impacto real.',
+  items: ['Prioridad del negocio', 'MVP posible', 'Coste y tiempos orientativos'],
+  cta: 'Pedir diagnóstico',
 };
 
 // Checklist reveal timings (Terminal.dc.html): each `<li>` fades in, then

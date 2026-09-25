@@ -16,15 +16,16 @@
  * exists):
  *   1. ES: 3 groups in order `site`/`social`/`more`, with the exact
  *      decorative headings and `<nav>` aria-labels.
- *   2. EN: same 3 groups, EN headings/aria-labels, no ES-only strings.
- *   3. ES `site` group: labels/hrefs/order mirror
+ *   2. ES `site` group: labels/hrefs/order mirror
  *      `getPrimaryNav('es', '')` lower-cased (home, services, work,
  *      experience, contact).
- *   4. EN `site` group: mirrors `getPrimaryNav('en', '')` (no services).
- *   5. ES `social` group: exact hrefs/order/external flags for
+ *   3. ES `social` group: exact hrefs/order/external flags for
  *      GitHub/LinkedIn/email/phone/WhatsApp.
- *   6. ES `more` group: cookie policy href `/politica-cookies` only (no RSS
- *      link — the blog/RSS feed was removed). EN: `/en/cookie-policy`.
+ *   4. ES `more` group: cookie policy href `/politica-cookies` only (no RSS
+ *      link — the blog/RSS feed was removed).
+ *
+ * Spanish is now the only locale (the English version was removed — see
+ * `odd/tasks/site-cleanup.md` C2), so the EN-specific cases were dropped.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -38,14 +39,6 @@ describe('getFooterTree', () => {
     expect(tree.map((group) => group.key)).toEqual(['site', 'social', 'more']);
     expect(tree.map((group) => group.heading)).toEqual(['sitio/', 'social/', 'más/']);
     expect(tree.map((group) => group.ariaLabel)).toEqual(['Sitio', 'Social', 'Más']);
-  });
-
-  it('returns the EN groups in order with EN headings and nav aria-labels', () => {
-    const tree = getFooterTree('en');
-
-    expect(tree.map((group) => group.key)).toEqual(['site', 'social', 'more']);
-    expect(tree.map((group) => group.heading)).toEqual(['site/', 'social/', 'more/']);
-    expect(tree.map((group) => group.ariaLabel)).toEqual(['Site', 'Social', 'More']);
   });
 
   it("ES 'site' group mirrors getPrimaryNav order/hrefs, lower-cased labels", () => {
@@ -64,18 +57,6 @@ describe('getFooterTree', () => {
       'trabajos',
       'experiencia',
       'contacto',
-    ]);
-  });
-
-  it("EN 'site' group mirrors getPrimaryNav (no services)", () => {
-    const tree = getFooterTree('en');
-    const site = tree.find((group) => group.key === 'site');
-
-    expect(site?.items.map((item) => item.label)).toEqual([
-      'home',
-      'work',
-      'experience',
-      'contact',
     ]);
   });
 
@@ -113,11 +94,8 @@ describe('getFooterTree', () => {
     expect(social?.items[3]?.external).toBeFalsy();
   });
 
-  it("ES 'more' group has only the cookie-policy href (no RSS link); EN uses the /en/ prefix", () => {
+  it('ES \'more\' group has only the cookie-policy href (no RSS link)', () => {
     const esMore = getFooterTree('es').find((group) => group.key === 'more');
     expect(esMore?.items.map((item) => item.href)).toEqual(['/politica-cookies']);
-
-    const enMore = getFooterTree('en').find((group) => group.key === 'more');
-    expect(enMore?.items.map((item) => item.href)).toEqual(['/en/cookie-policy']);
   });
 });

@@ -75,11 +75,11 @@ const {
 
 const t = useTranslations(lang);
 
-// Rótulo "Rol" — sin key dedicada en `ui.ts`, fallback bilingüe inline.
-// Es razonable: es la única palabra que el componente necesita resolver
-// fuera del diccionario, no merece un diccionario aparte.
-const roleLabel = lang === 'en' ? 'Role' : 'Rol';
-const stackLabel = lang === 'en' ? 'Stack' : 'Stack';
+// Rótulo "Rol" — sin key dedicada en `ui.ts`. Es razonable: es la única
+// palabra que el componente necesita resolver fuera del diccionario, no
+// merece un diccionario aparte.
+const roleLabel = 'Rol';
+const stackLabel = 'Stack';
 
 const classes = ['case-study-hero', className].filter(Boolean).join(' ');
 ---

@@ -139,16 +139,16 @@ items.sort((a, b) => {
 // ---------------------------------------------------------------------------
 
 /**
- * Construye la ruta del detalle del item según colección + idioma.
- * Case studies viven en `/case-studies/<slug>` (ES) / `/en/case-studies/<slug>`.
- * Projects viven en `/proyectos/<slug>` (ES) / `/en/projects/<slug>`.
+ * Construye la ruta del detalle del item según colección.
+ * Case studies viven en `/case-studies/<slug>`.
+ * Projects viven en `/proyectos/<slug>`.
  */
 function getHref(item: WorkItem): string {
   const slug = item.entry.id.split('/').pop() ?? item.entry.id;
   if (item.kind === 'case-study') {
-    return lang === 'es' ? `/case-studies/${slug}` : `/en/case-studies/${slug}`;
+    return `/case-studies/${slug}`;
   }
-  return lang === 'es' ? `/proyectos/${slug}` : `/en/projects/${slug}`;
+  return `/proyectos/${slug}`;
 }
 
 /**
