@@ -20,6 +20,13 @@
  * copy vive en `VoxyePane`, así que estas tres panes son toda la
  * `experience` collection restante.
  *
+ * Conectores (owner request, 2026-09-25): entre cada par de panes va un
+ * `<PaneLink>` (`src/components/work/PaneLink.astro`) — la barra discontinua
+ * `.t-flow-v` fluyendo hacia arriba con un badge "↑" — para que la página se
+ * lea como una trayectoria de abajo (Cleverpy) hacia arriba (Plazasys). El
+ * link ocupa el hueco entre panes, así que las panes que siguen a uno llevan
+ * `topSpacingDesktop`/`topSpacingMobile` a `0`.
+ *
  * Carga `getCollection('experience', e => e.data.lang === 'es')`, ordena por
  * `order` ascendente (1 = más reciente) y pre-renderiza cada body MD una vez
  * (`items`) para iterarlo en el template. El `path`/`promptCommand`/
@@ -42,6 +49,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import LockupPane from '../../components/work/LockupPane.astro';
 import VoxyePane from '../../components/work/VoxyePane.astro';
 import FactorySoftwarePane from '../../components/work/FactorySoftwarePane.astro';
+import PaneLink from '../../components/work/PaneLink.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
 
 type ExperienceEntry = CollectionEntry<'experience'>;
@@ -84,7 +92,8 @@ const items = await Promise.all(
     </header>
 
     <FactorySoftwarePane lang={lang} />
-    <VoxyePane lang={lang} delayOffset={300} topSpacingDesktop={48} topSpacingMobile={32} />
+    <PaneLink />
+    <VoxyePane lang={lang} delayOffset={300} topSpacingDesktop={0} topSpacingMobile={0} />
 
     {
       items.map(({ entry, Content }) => {
@@ -102,20 +111,23 @@ const items = await Promise.all(
           : undefined;
 
         return (
-          <LockupPane
-            path={slug}
-            promptCommand={`ls ${slug}/`}
-            headingId={`exp-${slug}-heading`}
-            eyebrow={period}
-            heading={company}
-            subheading={role}
-            logo={logoProp}
-            tags={stack}
-            topSpacingDesktop={48}
-            topSpacingMobile={32}
-          >
-            <Content />
-          </LockupPane>
+          <>
+            <PaneLink />
+            <LockupPane
+              path={slug}
+              promptCommand={`ls ${slug}/`}
+              headingId={`exp-${slug}-heading`}
+              eyebrow={period}
+              heading={company}
+              subheading={role}
+              logo={logoProp}
+              tags={stack}
+              topSpacingDesktop={0}
+              topSpacingMobile={0}
+            >
+              <Content />
+            </LockupPane>
+          </>
         );
       })
     }

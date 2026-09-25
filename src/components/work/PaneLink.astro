@@ -1,0 +1,68 @@
+---
+/**
+ * PaneLink.astro — vertical connector between two stacked panes on
+ * `/experiencia` (owner request, 2026-09-25: "que se vea que vamos de abajo
+ * hacia arriba").
+ *
+ * The page stacks the panes newest first (Plazasys, Marmibas, then the past
+ * roles down to Cleverpy), so the career reads bottom → top. Each link is the
+ * same scrolling dashed bar the lock-up connector uses (`.t-flow-v`), with
+ * its direction reversed so the dashes travel upward, and a violet "↑" badge
+ * styled like `LockupPane`'s "×" badge.
+ *
+ * It also owns the vertical gap between the two panes it joins, so the panes
+ * next to it render with `topSpacingDesktop`/`topSpacingMobile` set to `0`.
+ * Reduced motion: `.t-flow-v` is already stopped by `motion.css`; the static
+ * dashes and the arrow still convey the direction.
+ */
+---
+
+<div class="pane-link" aria-hidden="true">
+  <span class="pane-link__bar t-flow-v"></span>
+  <span class="pane-link__arrow">↑</span>
+</div>
+
+<style>
+  .pane-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 88px;
+  }
+
+  @media (max-width: 640px) {
+    .pane-link {
+      height: 64px;
+    }
+  }
+
+  /* Two classes so this beats `.t-flow-v`'s `animation` shorthand
+     regardless of stylesheet order. */
+  .pane-link__bar.t-flow-v {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    animation-direction: reverse;
+  }
+
+  .pane-link__arrow {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--bg-0);
+    border: 1px solid var(--border-strong);
+    color: var(--accent-400);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--text-base);
+  }
+</style>
