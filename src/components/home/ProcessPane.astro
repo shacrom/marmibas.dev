@@ -7,7 +7,7 @@
  * (desktop 1440) / `ProcesoTerminalMovil.dc.html` (mobile 390) — the
  * read-only visual + timing spec under the design scratchpad.
  *
- * Copy (`eyebrow`/`heading`/`sub`/`steps[].title/text`) is reused VERBATIM
+ * Copy (`eyebrow`/`heading`/`steps[].title/text`) is reused VERBATIM
  * from `ProcessSection.astro`'s own local `copy` object — copied as-is,
  * nothing added or reworded. New copy is only the decorative `./proceso`
  * prompt and the `paso NN` stage label, consts local to this component
@@ -56,7 +56,6 @@ const copy = {
   es: {
     eyebrow: 'El proceso',
     heading: 'De problema confuso a herramienta útil, sin perder meses.',
-    sub: 'El objetivo no es construir por construir: es encontrar la herramienta que más impacto tiene en ventas, tiempo o control del negocio.',
     steps: [
       {
         title: 'Diagnóstico claro',
@@ -96,7 +95,6 @@ const headingId = 'process-heading';
         <p class="t-comment process-pane__eyebrow"># {content.eyebrow}</p>
         <h2 id={headingId} class="process-pane__heading">{content.heading}</h2>
       </div>
-      <p class="process-pane__sub">{content.sub}</p>
     </div>
 
     <div class="process-pane__pipeline" role="list">
@@ -152,12 +150,6 @@ const headingId = 'process-heading';
     align-items: end;
   }
 
-  @media (min-width: 901px) {
-    .process-pane__heading-block {
-      grid-template-columns: minmax(0, 1fr) 460px;
-    }
-  }
-
   .process-pane__heading-col {
     display: flex;
     flex-direction: column;
@@ -183,13 +175,6 @@ const headingId = 'process-heading';
     .process-pane__heading {
       font-size: 26px;
     }
-  }
-
-  .process-pane__sub {
-    margin: 0;
-    font-size: var(--text-sm);
-    line-height: 1.6;
-    color: var(--text-2);
   }
 
   .process-pane__pipeline {

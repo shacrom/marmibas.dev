@@ -51,11 +51,6 @@ const faqsEs: readonly FAQItem[] = [
     answer:
       'Sí. Te entrego todo el código y la documentación. Tu equipo o cualquier otro desarrollador puede continuar. Si prefieres seguir conmigo, ofrezco mantenimiento mensual.',
   },
-  {
-    question: '¿Trabajas solo con clientes de España?',
-    answer:
-      'No. Trabajo en remoto desde España con clientes en cualquier país de habla hispana, principalmente España y Latinoamérica.',
-  },
 ] as const;
 
 /**

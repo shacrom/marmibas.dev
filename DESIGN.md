@@ -61,7 +61,7 @@ Cuatro principios de diseño que mandan sobre todo lo demás:
 | Status | Color | Uso |
 |---|---|---|
 | Success / en producción | `var(--accent-400)` | Voxye, Recetas Novatex |
-| En desarrollo | `#c9a892` (terracotta muted) | Jinba, Acompaña |
+| En desarrollo | `#c9a892` (terracotta muted) | Proyectos en construcción |
 | Side project / pausado | `#71717a` (neutral) | Feed Me, Puro Padel |
 | Experiencia previa | `var(--text-2)` | Capgemini, Cleverpy, Devoltec |
 

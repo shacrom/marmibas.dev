@@ -86,7 +86,7 @@ export const ui = {
     'about.bio.p1':
       'Soy Marcos. Soy ingeniero informático y llevo 5 años desarrollando software para empresas de todos los tamaños: startups, pymes y grandes compañías.',
     'about.bio.p2':
-      'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Para proyectos industriales trabajo en alianza con Plazasys, mi socio tecnológico. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
+      'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
     'about.bio.p3':
       'Trabajo desde España, en remoto, con clientes en cualquier ubicación. Si tienes una idea o un problema que quieres resolver, escríbeme — la primera conversación es gratis y sin compromiso.',
     'about.cta.experience': 'Ver historia completa',
