@@ -17,6 +17,9 @@ industrial work only as the page's closing section, the owner missed it when rev
 - Layout: **two panes at the top** — "Marmibas × Voxye" first, "Software para fábricas" second. The Marmibas card
   leaves the timeline, which now starts at Devoltec.
 - Never frame Plazasys as an "alianza" — keep "junto a Plazasys" / "socio tecnológico".
+- Review feedback (2026-09-25, after seeing it locally): **factory pane first, Marmibas pane second**; the Marmibas
+  pane drops the connector and the Voxye logo from the lock-up (Marmibas logo alone), keeps the rest of the style
+  and shows Voxye only as the project row below.
 
 ## Scope
 
@@ -47,15 +50,16 @@ industrial work only as the page's closing section, the owner missed it when rev
 | P1 | Extract reusable lock-up pane; `FactorySoftwarePane` becomes data-only (no visual change) | delegated writer | [x] |
 | P2 | Marmibas × Voxye pane + both panes at the top + drop Marmibas from the timeline | delegated writer (same) | [x] |
 | P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
+| P4 | Owner feedback: swap pane order; Marmibas pane without connector/partner logo (partner optional in `LockupPane`) | direct inline (3 small edits in understood files) | [x] |
 
 Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page, content file) → writer trigger.
 
 ## Acceptance criteria
 
-- `/experiencia` order: header → Marmibas × Voxye pane → Software para fábricas pane → timeline (Devoltec first)
-  → education → CTA.
-- Voxye pane: Marmibas logo × Voxye logo with the animated connector; Marmibas intro copy; one Voxye row linking
-  to `/case-studies/voxye` with LED + "en producción".
+- `/experiencia` order (updated by P4): header → Software para fábricas pane → Marmibas pane → timeline
+  (Devoltec first) → education → CTA.
+- Marmibas pane (updated by P4): Marmibas logo alone (no connector, no Voxye logo); Marmibas intro copy; one Voxye
+  row linking to `/case-studies/voxye` with LED + "en producción".
 - Plazasys pane unchanged except position/spacing; no "alianza" wording anywhere.
 - Checks green except the known lint base failures.
 
@@ -83,6 +87,13 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
   screenshots freeze mid-animation on every page (home included), so it needs a real-browser look.
 - RDD: off (global) — no review lifecycle.
 
+- P4 done — `590989c feat(experience): lead with the factory pane and show Marmibas without a lock-up`.
+  `LockupPane` `partnerLogo` is optional (no partner → Marmibas tile alone, connector not rendered);
+  `VoxyePane` passes no partner; page renders `FactorySoftwarePane` then `VoxyePane` (`delayOffset` 300,
+  48/32 top spacing moved to it). Checks: `npm test` 94/94, `npm run check` 0 errors, eslint + prettier on the
+  4 changed files clean. Visual QA 1440/390 (reduced motion): factory pane first with its lock-up, Marmibas pane
+  with the logo alone and the Voxye row + LED.
+
 ## Next step
 
-Owner review of the page; then push/PR only after explicit OK.
+Owner review; push/PR only after explicit OK.
