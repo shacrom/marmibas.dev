@@ -40,7 +40,7 @@ tiles and the "Ver caso" button) and the case study page as drawn.
 |----|------|-------|--------|
 | W1 | Trabajos index in terminal panes + autoría filter (pure logic tested) | delegated writer | [x] |
 | W2 | Case study page in terminal panes (hero + stat aside, body panes, diff results, CTA, prev/next) | delegated writer (same) | [x] |
-| W3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
+| W3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [x] |
 
 Route evidence: W1/W2 touch 4+ non-trivial files (WorkIndex, CaseStudyCard, CaseStudyLayout, CaseStudyHero,
 BeforeAfter, lib + tests) → writer trigger.
@@ -73,6 +73,10 @@ BeforeAfter, lib + tests) → writer trigger.
 - Open note: `/trabajos` ends with its `cat idea.txt` CTA pane followed by the footer contact pane (different
   copy; kept as approved in the artboard).
 
+- Delivered 2026-09-25 (owner: "Me cuadra, súbelo todo"): PR #10 (`type:feature`, `size:exception`) merged as
+  `5746d3c` after the Vercel preview check passed. Later mobile/tablet fixes and the removal of the `/trabajos` page
+  CTA shipped in PR #11 (`odd/tasks/services-mosaic.md`).
+
 ## Next step
 
-Delivery (push/PR/merge) after the owner's OK.
+None — feature complete.

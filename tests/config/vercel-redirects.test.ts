@@ -6,6 +6,12 @@
  * slash (e.g. `/blog/cuanto-cuesta-software-a-medida/`), which `:path*` sources do
  * not match on Vercel. These tests compile the redirects with Vercel's own
  * routing utilities, so what passes here is what the platform will serve.
+ *
+ * S3 (`odd/tasks/services-mosaic.md`) removed the 7 `/servicios/<slug>/`
+ * detail pages and folded their content into `/servicios`' mosaic drawers.
+ * Those URLs were live/indexed too, so they get the same trailing-slash-aware
+ * 308 treatment, redirecting to the mosaic's own deep-link hash
+ * (`/servicios/#<slug>`) instead of `/`.
  */
 
 import { readFileSync } from 'node:fs';
@@ -17,7 +23,7 @@ interface VercelConfig {
 }
 
 const config = JSON.parse(
-  readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8')
 ) as VercelConfig;
 
 const { routes, error } = getTransformedRoutes({ redirects: config.redirects });
@@ -86,10 +92,32 @@ describe('vercel.json redirects', () => {
     expect(resolved?.status).toBe(308);
   });
 
-  it.each(['/', '/servicios/', '/servicios/tiendas-online/', '/trabajos/', '/case-studies/voxye/', '/contacto/'])(
+  it.each([
+    ['/servicios/tiendas-online', '/servicios/#tiendas-online'],
+    ['/servicios/tiendas-online/', '/servicios/#tiendas-online'],
+    ['/servicios/sistemas-de-gestion', '/servicios/#sistemas-de-gestion'],
+    ['/servicios/sistemas-de-gestion/', '/servicios/#sistemas-de-gestion'],
+    ['/servicios/aplicaciones-moviles', '/servicios/#aplicaciones-moviles'],
+    ['/servicios/aplicaciones-moviles/', '/servicios/#aplicaciones-moviles'],
+    ['/servicios/automatizaciones', '/servicios/#automatizaciones'],
+    ['/servicios/automatizaciones/', '/servicios/#automatizaciones'],
+    ['/servicios/webs-corporativas', '/servicios/#webs-corporativas'],
+    ['/servicios/webs-corporativas/', '/servicios/#webs-corporativas'],
+    ['/servicios/desarrollo-aplicaciones-web', '/servicios/#desarrollo-aplicaciones-web'],
+    ['/servicios/desarrollo-aplicaciones-web/', '/servicios/#desarrollo-aplicaciones-web'],
+    ['/servicios/integraciones', '/servicios/#integraciones'],
+    ['/servicios/integraciones/', '/servicios/#integraciones'],
+  ])('permanently redirects the removed service page %s to %s', (from, to) => {
+    const resolved = resolveRedirect(from);
+    expect(resolved).not.toBeNull();
+    expect(resolved?.location).toBe(to);
+    expect(resolved?.status).toBe(308);
+  });
+
+  it.each(['/', '/servicios/', '/trabajos/', '/case-studies/voxye/', '/contacto/'])(
     'leaves the live page %s untouched',
     (path) => {
       expect(resolveRedirect(path)).toBeNull();
-    },
+    }
   );
 });

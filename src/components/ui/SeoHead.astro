@@ -10,9 +10,13 @@
  *   - Open Graph: og:title, og:description, og:type, og:url, og:image, og:locale.
  *   - Twitter Card: summary_large_image with title/description/image.
  *   - Critical font preloads (Space Mono 700 + IBM Plex Mono 400) from `lib/fonts.ts`.
- *   - JSON-LD structured data (T-50):
+ *   - JSON-LD structured data (T-50, extended for the services mosaic S2/S3):
  *       · `Person` schema on the home (auto-detected via pathname).
  *       · `Article` schema when `type === 'article'` (case studies).
+ *       · `ItemList` of `Service` items on `/servicios` (the mosaic index) —
+ *         replaces the `Service` schema the 7 per-service detail pages used
+ *         to emit individually before they were removed (S3) and folded
+ *         into the mosaic.
  *
  * Title strategy:
  *   - `title` is the page-specific title.
@@ -25,6 +29,11 @@
  *   - Home: emit `Person` with name, jobTitle, url, sameAs, knowsAbout. The
  *     home is detected from the canonical pathname (`/`, the only public
  *     locale). This avoids leaking the schema on subpaths.
+ *   - `/servicios`: emit an `ItemList` of `Service` `ListItem`s, one per
+ *     `spanishServices` entry, each `item.url` pointing at that service's
+ *     drawer hash (`<canonical>#<slug>`) — the mosaic's own deep-link
+ *     target. Detected from the normalized pathname (trailing slash
+ *     stripped) so it fires regardless of how the route resolves.
  *   - Article: emit `Article` when the caller passes `type='article'`. Caller
  *     supplies optional `publishedAt` / `updatedAt` / `tags` / `author`; the
  *     component derives sensible defaults (author = "marmibas") and falls
@@ -38,7 +47,7 @@
 import { CRITICAL_FONT_PRELOADS } from '../../lib/fonts';
 import { getCanonicalUrl } from '../../i18n/helpers';
 import { absoluteUrl } from '../../lib/seo';
-import { isSpanishServicePath } from '../../lib/services';
+import { spanishServices } from '../../lib/services';
 import type { Language } from '../../i18n/ui';
 
 interface Props {
@@ -131,6 +140,11 @@ const isHome =
   // Tolerate trailing-slash variants of the ES home produced by some adapters.
   pathname === '';
 
+// Normalized pathname (no trailing slash, `/` stays `/`) — used to detect
+// the services mosaic index regardless of trailing-slash rendering.
+const normalizedPath = pathname.replace(/\/$/, '') || '/';
+const isServicesIndex = normalizedPath === '/servicios';
+
 /** Coerce a Date | ISO-string | undefined to an ISO 8601 string (or undefined). */
 function toIso(value: string | Date | undefined): string | undefined {
   if (value === undefined) return undefined;
@@ -216,30 +230,42 @@ const articleSchema: ArticleSchema | undefined =
       }
     : undefined;
 
-const serviceSchema =
-  isSpanishServicePath(pathname)
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Service',
-        name: title.replace(/\s*\|\s*marmibas\.dev$/i, ''),
-        description,
-        url: canonicalUrl,
-        provider: {
-          '@type': 'Person',
-          name: 'Marcos Miguel Báscones',
-          alternateName: 'marmibas',
-          url: siteOrigin,
+// ItemList of Service ListItems for the /servicios mosaic — the structured-
+// data replacement for the Service schema the 7 now-removed detail pages
+// used to emit individually (S3, `odd/tasks/services-mosaic.md`). Each
+// item's `url` points at the mosaic's own drawer deep link
+// (`<canonical>#<slug>`) rather than a page that no longer exists.
+const servicesCatalogSchema = isServicesIndex
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: title.replace(/\s*\|\s*marmibas\.dev$/i, ''),
+      itemListElement: spanishServices.map((service, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Service',
+          name: service.title,
+          description: service.description,
+          url: `${canonicalUrl}#${service.slug}`,
+          provider: {
+            '@type': 'Person',
+            name: 'Marcos Miguel Báscones',
+            alternateName: 'marmibas',
+            url: siteOrigin,
+          },
+          inLanguage: 'es-ES',
         },
-        inLanguage: 'es-ES',
-      }
-    : undefined;
+      })),
+    }
+  : undefined;
 
 // Resolve the actual schema object to inject. Article wins over Person when
 // a page is somehow both home and an article (defensive — should not happen
 // in practice). We prefer to emit at most ONE primary JSON-LD block per
 // page to keep the head light and the structured-data validator unambiguous.
 const structuredData: object | undefined =
-  articleSchema ?? serviceSchema ?? (isHome ? personSchema : undefined);
+  articleSchema ?? servicesCatalogSchema ?? (isHome ? personSchema : undefined);
 
 // FAQPage schema: emitted as a SECONDARY JSON-LD block when the page declares
 // FAQ entries (today: home only). Google explicitly allows multiple JSON-LD

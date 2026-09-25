@@ -1,0 +1,875 @@
+---
+/**
+ * ServicesMosaic.astro — `/servicios` mosaic + drawer (S2,
+ * `odd/tasks/services-mosaic.md`).
+ *
+ * Renders the owner-approved Claude Design canvas artboards "Servicios — E
+ * · mosaico" (base) and "E4 · cajón" (interaction) — source of truth for
+ * structure/spacing/colours/motion/copy:
+ *   ~/servicios TerminalPane (`ls servicios/`)
+ *     h1 "Lo que puedo hacer por tu negocio" + `total 7`
+ *     4-column mosaic: 7 service modules (icon, NN index, name, keyword) +
+ *       an 8th dashed "¿otra cosa?" contact card
+ *     one full-width drawer, inserted right after the open module's visual
+ *       row, with a notch pointing at that module
+ *
+ * Data: `servicesInMosaicOrder()` / `mosaicDisplayName()` (S1,
+ * `src/lib/services.ts`, tested in `tests/lib/services.test.ts`) — the
+ * mosaic's own NN 01-07 order, independent from `spanishServices`' array
+ * order (the home `ServicesPane` keeps its own unrelated row order).
+ *
+ * Crawlability / progressive enhancement:
+ *   - Every module is a real `<button aria-expanded aria-controls>`.
+ *   - Every service's full drawer content (cat <slug>.md, keyword, name,
+ *     description, "incluye" ✓ list, CTA) is server-rendered as its own
+ *     `<li class="mosaic-drawer">`, inside a second `<ul>` BELOW the grid
+ *     (`data-mosaic-drawers-fallback`). Without JS this second list stays
+ *     fully visible — that IS the no-JS fallback (a plain "all drawers open
+ *     below the mosaic" reading order), and every "incluye" item is real
+ *     server-rendered text, so it is crawlable either way.
+ *   - With JS, `initMosaic` below collapses every drawer (`.is-collapsed` +
+ *     `inert`), hides the fallback list, and, on click, moves the clicked service's `<li>` INTO the
+ *     grid `<ul>` at the correct child index — computed from the actual
+ *     rendered column count (`getComputedStyle(grid).gridTemplateColumns`,
+ *     robust across the 4/2/1-column breakpoints below without duplicating
+ *     their exact widths in JS) via the same formula as the tested
+ *     `drawerInsertIndex`/`drawerNotchPercent` helpers (mirrored inline
+ *     here rather than imported — this codebase's other client `<script>`s,
+ *     e.g. `WorkIndex.astro`'s filter, `Header.astro`'s clock, keep their
+ *     logic self-contained rather than importing `src/lib/*`; see
+ *     `tests/lib/services.test.ts` for the formula's own coverage).
+ *
+ * Deep links: `/servicios/#<slug>` opens that drawer on load and scrolls it
+ * into view (no focus steal on load — see `openDrawer`'s `focusHeading`
+ * flag, only set for a user-driven click). Opening updates the hash via
+ * `history.replaceState` (no jump); closing clears it the same way.
+ *
+ * A11y: focus moves into the drawer's `h2` (heading, `tabindex="-1"`) on a
+ * user-driven open, and back to the clicked module on close. Esc closes
+ * the open drawer from anywhere on the page. Reduced motion: the drawer's
+ * open/close is a plain CSS `transition` (grid-template-rows + opacity),
+ * already covered by `motion.css`'s single reduced-motion block's global
+ * `transition-duration: 0.01ms !important` override — no new rule needed
+ * there. The drawer's inner text lines and the "incluye" items reuse the
+ * existing `.t-print` utility (terminal.css/motion.css) instead of a new
+ * one. The module icon's on-entrance stroke draw is a small scoped keyframe
+ * local to this component (same pattern `ServicesPane.astro` already uses
+ * for its own icon animation) — already covered by motion.css's blanket
+ * `*, *::before, *::after { animation-duration: 0.01ms !important; }` rule.
+ *
+ * Responsive: 4 columns ≥1000px, 2 columns 641-999px (tablet), 1 column
+ * ≤640px (mobile) — `drawerInsertIndex`'s generic column-count formula
+ * places the drawer correctly at every breakpoint without special-casing.
+ *
+ * Icon paths: copied verbatim from `ServicesPane.astro`'s own `ICONS` map
+ * (itself copied verbatim from the pre-terminal `ServicesSection.astro`),
+ * per that component's own docblock precedent for this exact icon set.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { getRoutePath } from '../../i18n/helpers';
+import { servicesInMosaicOrder, mosaicDisplayName } from '../../lib/services';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Spanish is the only published locale (link targets only). */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+
+const contactHref = getRoutePath('contact', lang);
+const services = servicesInMosaicOrder();
+const lsCommand = 'ls servicios/';
+
+// Verbatim from ServicesPane.astro's inline SVG switch (viewBox 0 0 24 24,
+// stroke-width 1.5, round caps/joins — set on the wrapping <svg> below).
+const ICONS: Record<string, string> = {
+  'shopping-bag':
+    '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>',
+  'layout-dashboard':
+    '<rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect>',
+  smartphone:
+    '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>',
+  globe:
+    '<circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path>',
+  'plug-zap':
+    '<path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"></path><path d="m2 22 3-3"></path><path d="M7.5 13.5 10 11"></path><path d="M10.5 16.5 13 14"></path><path d="m18 3-4 4h6l-4 4"></path>',
+};
+---
+
+<TerminalPane path="servicios" index="1/1" labelledby="services-heading" class="t-pane-gutter">
+  <div class="mosaic" data-mosaic-root>
+    <Prompt command={lsCommand} />
+
+    <div class="mosaic__heading-row">
+      <h1 id="services-heading" class="mosaic__title font-display">
+        Lo que puedo hacer por tu negocio
+      </h1>
+      <p class="mosaic__total">{`total ${services.length}`}</p>
+    </div>
+
+    <ul class="mosaic__grid" role="list" data-mosaic-grid>
+      {
+        services.map((service, i) => (
+          <li class="mosaic__cell">
+            <button
+              type="button"
+              class="mosaic__module"
+              id={`module-${service.slug}`}
+              aria-expanded="false"
+              aria-controls={`drawer-${service.slug}`}
+              data-mosaic-module
+              data-slug={service.slug}
+              data-service-index={i}
+            >
+              <span class="mosaic__module-top">
+                <span class="mosaic__icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    set:html={ICONS[service.iconName]}
+                  />
+                </span>
+                <span class="mosaic__idx" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+              </span>
+              <span class="mosaic__module-bottom">
+                <strong class="mosaic__name font-display">{mosaicDisplayName(service)}</strong>
+                <span class="mosaic__keyword">{service.keyword}</span>
+              </span>
+            </button>
+          </li>
+        ))
+      }
+
+      <li class="mosaic__cell">
+        <div class="mosaic__cta">
+          <p class="mosaic__cta-prompt">
+            <span class="mosaic__cta-dollar">$ </span>¿otra cosa?
+          </p>
+          <div class="mosaic__cta-bottom">
+            <strong class="mosaic__cta-title font-display">Cuéntamelo igualmente</strong>
+            <TerminalButton href={contactHref} primary class="mosaic__cta-button">
+              [ Hablemos ]
+            </TerminalButton>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    {
+      /* No-JS fallback: every drawer stays visible here, in mosaic order,
+        below the grid — content and "incluye" items are crawlable and
+        reachable without JS either way. With JS, initMosaic() collapses
+        these and moves the open one into the grid above (see docblock). */
+    }
+    <ul class="mosaic__drawers" role="list" data-mosaic-drawers-fallback>
+      {
+        services.map((service, i) => (
+          <li
+            class="mosaic-drawer"
+            id={`drawer-${service.slug}`}
+            role="region"
+            aria-labelledby={`drawer-${service.slug}-title`}
+            data-mosaic-drawer
+            data-slug={service.slug}
+            data-service-index={i}
+          >
+            <span class="mosaic-drawer__notch" aria-hidden="true" />
+            <div class="mosaic-drawer__frame">
+              <div class="mosaic-drawer__clip">
+                <div class="mosaic-drawer__body">
+                  <div class="mosaic-drawer__main">
+                    <p class="mosaic-drawer__cat t-print">
+                      <span class="mosaic-drawer__prompt-accent">$ </span>cat {service.slug}.md
+                    </p>
+                    <span class="mosaic-drawer__keyword t-print" style="--t-delay: 60ms;">
+                      {`# ${service.keyword}`}
+                    </span>
+                    <h2
+                      id={`drawer-${service.slug}-title`}
+                      class="mosaic-drawer__title font-display t-print"
+                      style="--t-delay: 120ms;"
+                      tabindex="-1"
+                    >
+                      {mosaicDisplayName(service)}
+                    </h2>
+                    <p class="mosaic-drawer__desc t-print" style="--t-delay: 180ms;">
+                      {service.description}
+                    </p>
+                    <div class="mosaic-drawer__cta t-print" style="--t-delay: 260ms;">
+                      <TerminalButton href={contactHref} primary>
+                        [ Hablemos de esto ]
+                      </TerminalButton>
+                    </div>
+                  </div>
+
+                  <div class="mosaic-drawer__includes">
+                    <span class="mosaic-drawer__includes-label t-print" style="--t-delay: 180ms;">
+                      incluye
+                    </span>
+                    <ul class="mosaic-drawer__list" role="list">
+                      {service.includes.map((item, itemIndex) => (
+                        <li class="t-print" style={`--t-delay: ${220 + itemIndex * 40}ms;`}>
+                          <span class="mosaic-drawer__check" aria-hidden="true">
+                            ✓{' '}
+                          </span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="mosaic-drawer__close"
+                    data-mosaic-close
+                    aria-label={`Cerrar ${mosaicDisplayName(service)}`}
+                  >
+                    [ × ]
+                  </button>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</TerminalPane>
+
+<style>
+  .mosaic {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .mosaic__heading-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .mosaic__title {
+    margin: 0;
+    font-size: clamp(1.9rem, 3.4vw + 1rem, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-0);
+  }
+
+  .mosaic__total {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-3);
+  }
+
+  /* --- Grid --------------------------------------------------------------
+   * 4 columns ≥1000px, 2 columns 641-999px (tablet), 1 column ≤640px
+   * (mobile) — matches drawerInsertIndex's column-count contract. */
+  .mosaic__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 999px) {
+    .mosaic__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mosaic__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .mosaic__cell {
+    min-width: 0;
+  }
+
+  /* --- Module button ------------------------------------------------------ */
+  .mosaic__module {
+    width: 100%;
+    height: 230px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-inset);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color var(--motion-fast) var(--motion-ease-out),
+      background var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .mosaic__module:hover {
+    border-color: var(--accent-400);
+  }
+
+  .mosaic__module:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  .mosaic__module[aria-expanded='true'] {
+    border-color: var(--accent-400);
+    background: color-mix(in oklch, var(--accent-400) 8%, var(--bg-1));
+  }
+
+  .mosaic__module-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .mosaic__icon {
+    display: block;
+    width: 36px;
+    height: 36px;
+    color: var(--accent-400);
+  }
+
+  /* Entrance stroke-draw, scoped locally — same pattern as
+     ServicesPane.astro's own icon-draw keyframe (see docblock). Covered by
+     motion.css's blanket `*` animation-duration override under reduced
+     motion, same as that component's. */
+  .mosaic__icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-dasharray: 80;
+    animation: mosaic-icon-draw 1s ease both;
+  }
+
+  @keyframes mosaic-icon-draw {
+    from {
+      stroke-dashoffset: 80;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .mosaic__idx {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+  }
+
+  .mosaic__module[aria-expanded='true'] .mosaic__idx {
+    color: var(--accent-400);
+  }
+
+  .mosaic__module-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mosaic__name {
+    font-size: 21px;
+    line-height: 1.2;
+    color: var(--text-0);
+  }
+
+  .mosaic__module[aria-expanded='true'] .mosaic__name {
+    color: var(--accent-300);
+  }
+
+  .mosaic__keyword {
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  /* --- "¿otra cosa?" CTA card --------------------------------------------- */
+  .mosaic__cta {
+    height: 230px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+  }
+
+  .mosaic__cta-prompt {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-2);
+  }
+
+  .mosaic__cta-dollar {
+    color: var(--accent-400);
+  }
+
+  .mosaic__cta-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .mosaic__cta-title {
+    font-size: 21px;
+    line-height: 1.2;
+    color: var(--text-0);
+  }
+
+  .mosaic__cta-button {
+    align-self: flex-start;
+  }
+
+  /* Mobile: one compact row per module (icon · name + keyword · index)
+     instead of 230px tiles, so the seven services fit in about one screen
+     (owner review, 2026-09-25). `display: contents` lifts the icon and the
+     index out of `.mosaic__module-top` so they can be reordered around the
+     text block. */
+  @media (max-width: 640px) {
+    .mosaic__module {
+      height: auto;
+      min-height: 72px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+    }
+
+    .mosaic__module-top {
+      display: contents;
+    }
+
+    .mosaic__icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+    }
+
+    .mosaic__module-bottom {
+      order: 1;
+      flex: 1;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .mosaic__idx {
+      order: 2;
+    }
+
+    .mosaic__name {
+      font-size: 17px;
+    }
+
+    .mosaic__cta {
+      height: auto;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .mosaic__cta-title {
+      font-size: 17px;
+    }
+  }
+
+  /* --- Drawers (fallback list — see docblock for the JS-driven move) ----- */
+  .mosaic__drawers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Author `display: flex` above would beat the UA `[hidden]` rule. */
+  .mosaic__drawers[hidden] {
+    display: none;
+  }
+
+  .mosaic-drawer {
+    position: relative;
+    grid-column: 1 / -1;
+    padding-top: 10px;
+  }
+
+  .mosaic-drawer__notch {
+    position: absolute;
+    top: 2px;
+    left: var(--mosaic-notch-left, 50%);
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    box-sizing: border-box;
+    background: var(--bg-inset);
+    border-left: 1px solid var(--accent-400);
+    border-top: 1px solid var(--accent-400);
+    transform: rotate(45deg);
+    z-index: 1;
+  }
+
+  /* Open/close is a plain CSS transition (not a `.t-*` one-shot keyframe) —
+     it needs to replay every toggle, not just once on mount. Already
+     covered by motion.css's global `transition-duration: 0.01ms !important`
+     override under reduced motion; no new rule needed there. */
+  .mosaic-drawer__frame {
+    display: grid;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    border: 1px solid var(--accent-400);
+    border-radius: var(--radius-lg);
+    background: var(--bg-inset);
+    transition:
+      grid-template-rows var(--motion-duration-base) var(--motion-ease-out),
+      opacity var(--motion-duration-base) var(--motion-ease-out);
+  }
+
+  /* Collapsed state — only ever applied by JS (initMosaic adds
+     .is-collapsed on init); a no-JS visitor never sees this class, so every
+     drawer stays expanded, satisfying the no-JS fallback. */
+  .mosaic-drawer.is-collapsed .mosaic-drawer__frame {
+    grid-template-rows: 0fr;
+    opacity: 0.2;
+  }
+
+  .mosaic-drawer__clip {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .mosaic-drawer__body {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+    gap: 40px;
+    padding: 32px 36px;
+  }
+
+  /* 900px (not 760px): the 1.1fr/1fr/auto three-way split leaves the main
+     column too narrow in the 761-795px range, wrapping the CTA button's
+     bracket syntax onto its own line ("[ Hablemos de esto" / "]") — e.g. at
+     a 768px tablet viewport. Grid-column count for the module tiles above
+     (`.mosaic__grid`, 640/999px) is unrelated and untouched — the drawer
+     always spans the full row (`grid-column: 1 / -1`) regardless of tile
+     column count, so this only changes the drawer's own inner layout. */
+  @media (max-width: 900px) {
+    .mosaic-drawer__body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px 20px;
+    }
+  }
+
+  .mosaic-drawer__main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .mosaic-drawer__cat {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-1);
+  }
+
+  .mosaic-drawer__prompt-accent {
+    color: var(--accent-400);
+  }
+
+  .mosaic-drawer__keyword {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+  }
+
+  .mosaic-drawer__title {
+    margin: 0;
+    font-size: clamp(1.6rem, 2vw + 1rem, 2rem);
+    line-height: 1.15;
+    color: var(--text-0);
+    outline: none;
+  }
+
+  .mosaic-drawer__desc {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--text-1);
+  }
+
+  .mosaic-drawer__cta {
+    padding-top: 6px;
+  }
+
+  .mosaic-drawer__includes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 32px;
+    border-left: 1px solid var(--border);
+    min-width: 0;
+  }
+
+  /* Matches `.mosaic-drawer__body`'s stacking breakpoint above. */
+  @media (max-width: 900px) {
+    .mosaic-drawer__includes {
+      padding-left: 0;
+      border-left: none;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+  }
+
+  .mosaic-drawer__includes-label {
+    font-size: var(--text-xs);
+    color: var(--text-3);
+  }
+
+  .mosaic-drawer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: var(--text-base);
+    color: var(--text-1);
+  }
+
+  .mosaic-drawer__check {
+    color: var(--accent-400);
+  }
+
+  .mosaic-drawer__close {
+    align-self: flex-start;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-2);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+
+  .mosaic-drawer__close:hover,
+  .mosaic-drawer__close:focus-visible {
+    color: var(--text-0);
+    border-color: var(--accent-400);
+  }
+
+  /* Matches `.mosaic-drawer__body`'s stacking breakpoint above. */
+  @media (max-width: 900px) {
+    .mosaic-drawer__close {
+      justify-self: start;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Client-side mosaic drawer driver — progressive enhancement.
+   *
+   * Without JS, every `.mosaic-drawer` stays exactly as server-rendered:
+   * visible, expanded, below the grid (see the component docblock). With
+   * JS, this collapses every drawer (`.is-collapsed` + `inert`) and, on
+   * open, moves the clicked service's drawer `<li>` INTO the grid `<ul>`
+   * at the row-end index for the actual rendered column count — the same
+   * formula as `drawerInsertIndex`/`drawerNotchPercent`
+   * (`src/lib/services.ts`, tested in `tests/lib/services.test.ts`),
+   * mirrored inline rather than imported (see docblock for why).
+   *
+   * Follows the same dataset-guard + `astro:page-load` re-init pattern as
+   * `WorkIndex.astro`'s filter / `TerminalPane.astro`'s run-on-view driver.
+   */
+  function initMosaic(root: HTMLElement): void {
+    if (root.dataset.mosaicInit) return;
+    root.dataset.mosaicInit = '1';
+
+    const grid = root.querySelector<HTMLUListElement>('[data-mosaic-grid]');
+    const fallback = root.querySelector<HTMLUListElement>('[data-mosaic-drawers-fallback]');
+    if (!grid || !fallback) return;
+
+    const modules = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-mosaic-module]'));
+
+    const drawers = new Map<string, HTMLLIElement>();
+    root.querySelectorAll<HTMLLIElement>('[data-mosaic-drawer]').forEach((drawer) => {
+      const slug = drawer.dataset.slug;
+      if (slug) drawers.set(slug, drawer);
+    });
+
+    // JS takes over: collapse every drawer and remove it from the tab/hit
+    // order until it is explicitly opened.
+    drawers.forEach((drawer) => {
+      drawer.classList.add('is-collapsed');
+      drawer.inert = true;
+    });
+    // The fallback list only parks closed drawers from here on (the open one
+    // is moved into the grid), so hide it: otherwise every collapsed drawer
+    // still paints its border and notch below the mosaic.
+    fallback.hidden = true;
+
+    let openSlug: string | null = null;
+
+    function moduleFor(slug: string): HTMLButtonElement | undefined {
+      return modules.find((module) => module.dataset.slug === slug);
+    }
+
+    function columnCount(): number {
+      if (!grid) return 1;
+      const tracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean);
+      return tracks.length || 1;
+    }
+
+    // Mirrors drawerInsertIndex: the drawer goes right after the last cell
+    // of the open module's visual row, clamped to the grid's cell count.
+    function insertIndexFor(serviceIndex: number, columns: number, total: number): number {
+      const rowEnd = (Math.floor(serviceIndex / columns) + 1) * columns;
+      return Math.min(rowEnd, total);
+    }
+
+    // Mirrors drawerNotchPercent: centers the notch within the open
+    // module's own column.
+    function notchPercentFor(serviceIndex: number, columns: number): number {
+      return ((serviceIndex % columns) + 0.5) * (100 / columns);
+    }
+
+    function updateHash(slug: string | null): void {
+      const path = window.location.pathname + window.location.search;
+      window.history.replaceState(null, '', slug ? `${path}#${slug}` : path);
+    }
+
+    function closeDrawer(options: { moveFocus?: boolean } = {}): void {
+      if (!openSlug || !fallback) return;
+      const slug = openSlug;
+      const drawer = drawers.get(slug);
+      const module = moduleFor(slug);
+      openSlug = null;
+
+      if (drawer) {
+        drawer.classList.add('is-collapsed');
+        drawer.inert = true;
+        fallback.append(drawer);
+      }
+      if (module) {
+        module.setAttribute('aria-expanded', 'false');
+        if (options.moveFocus) module.focus();
+      }
+      updateHash(null);
+    }
+
+    function openDrawer(
+      slug: string,
+      options: { focusHeading?: boolean; scroll?: boolean } = {}
+    ): void {
+      const drawer = drawers.get(slug);
+      const module = moduleFor(slug);
+      if (!drawer || !module || !grid) return;
+
+      if (openSlug && openSlug !== slug) closeDrawer();
+
+      // Detach first so `grid.children.length` below always reflects only
+      // the stable module/CTA cells — including when repositioning a
+      // drawer that is already open and already inside the grid (resize).
+      drawer.remove();
+
+      const serviceIndex = Number(module.dataset.serviceIndex ?? '0');
+      const columns = columnCount();
+      const total = grid.children.length;
+      const insertAt = insertIndexFor(serviceIndex, columns, total);
+      grid.insertBefore(drawer, grid.children[insertAt] ?? null);
+
+      drawer.style.setProperty('--mosaic-notch-left', `${notchPercentFor(serviceIndex, columns)}%`);
+
+      drawer.inert = false;
+      // Force a layout flush so the browser registers the collapsed state
+      // at the drawer's new DOM position before the class removal below —
+      // otherwise the transition can be coalesced away.
+      void drawer.offsetHeight;
+      drawer.classList.remove('is-collapsed');
+
+      module.setAttribute('aria-expanded', 'true');
+      openSlug = slug;
+      updateHash(slug);
+
+      if (options.focusHeading) {
+        drawer.querySelector<HTMLElement>('.mosaic-drawer__title')?.focus();
+      }
+      if (options.scroll) {
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    modules.forEach((module) => {
+      module.addEventListener('click', () => {
+        const slug = module.dataset.slug;
+        if (!slug) return;
+        if (openSlug === slug) {
+          closeDrawer({ moveFocus: true });
+        } else {
+          openDrawer(slug, { focusHeading: true });
+        }
+      });
+    });
+
+    drawers.forEach((drawer) => {
+      drawer
+        .querySelector<HTMLButtonElement>('[data-mosaic-close]')
+        ?.addEventListener('click', () => closeDrawer({ moveFocus: true }));
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && openSlug) closeDrawer({ moveFocus: true });
+    });
+
+    // Recompute the open drawer's row/notch on a breakpoint change.
+    let resizeFrame = 0;
+    window.addEventListener('resize', () => {
+      if (!openSlug) return;
+      cancelAnimationFrame(resizeFrame);
+      const slug = openSlug;
+      resizeFrame = requestAnimationFrame(() => openDrawer(slug));
+    });
+
+    // Deep link: /servicios/#<slug> opens that drawer on load and scrolls
+    // it into view (no focus steal on load — only user-driven opens do).
+    const initialSlug = window.location.hash.replace('#', '');
+    if (initialSlug && drawers.has(initialSlug)) {
+      openDrawer(initialSlug, { scroll: true });
+    }
+  }
+
+  function initAllMosaics(): void {
+    document.querySelectorAll<HTMLElement>('[data-mosaic-root]').forEach(initMosaic);
+  }
+
+  initAllMosaics();
+
+  type MosaicWindow = Window & { __marmibasMosaicBound?: boolean };
+
+  if (!(window as MosaicWindow).__marmibasMosaicBound) {
+    (window as MosaicWindow).__marmibasMosaicBound = true;
+    document.addEventListener('astro:page-load', initAllMosaics);
+  }
+</script>
