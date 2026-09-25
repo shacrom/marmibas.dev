@@ -1,0 +1,329 @@
+/* ============================================================================
+ * terminal.css — Terminal motion + primitives (T2 terminal redesign)
+ *
+ * Source of truth: DESIGN.md §7 (motion policy) and §8 (component contracts:
+ * TerminalPane, Prompt, buttons). Keyframes/timings/markup mirror the
+ * approved mockups (`Terminal.dc.html`, `TerminalMovil.dc.html`,
+ * `DemoTerminal.dc.html`, `ProcesoTerminal.dc.html`).
+ *
+ * Timing contract — every animated `.t-*` utility below reads its timing
+ * from CSS custom properties so markup can tune it per instance inline
+ * (e.g. `style="--t-delay: 350ms; --t-steps: 13"`), without new classes:
+ *   --t-dur    animation-duration       (per-class default below)
+ *   --t-delay  animation-delay          (default 0ms)
+ *   --t-steps  steps() step count       (`.t-type`/`.t-print` only)
+ *   --t-done   delay before the "resolved" state (`.t-spinner`/`.t-tick`)
+ *
+ * Reduced motion — DEVIATION FROM THE LITERAL TASK BRIEF, DOCUMENTED HERE:
+ * this file intentionally does NOT declare its own
+ * `@media (prefers-reduced-motion: reduce)` block. `src/styles/motion.css`
+ * states explicitly (and DESIGN.md §7 repeats): "Único punto donde se
+ * neutralizan TODAS las animaciones — vive en src/styles/motion.css y no
+ * se duplica en ningún otro sitio" / "Do NOT add another
+ * `@media (prefers-reduced-motion: reduce)` anywhere else in the project."
+ * That single-source-of-truth rule predates this task and is stronger than
+ * the generic per-task checklist line asking for a block "in terminal.css".
+ * The terminal-specific reduced-motion FINAL STATES (spinner hidden, tick
+ * visible, cursor static, scan hidden, etc.) are therefore appended to the
+ * one existing block in `motion.css` instead of opening a second block
+ * here. Nothing terminal-related is unhandled — it just lives in the file
+ * the project designates as the single source of truth.
+ *
+ * Progressive enhancement / run-on-view — without JS, nothing carries
+ * `.is-waiting`, so every `.t-*` animation plays on load (server-rendered
+ * final state is always correct). `TerminalPane.astro`'s client script adds
+ * `.is-waiting` to a pane not yet in the viewport and removes it once an
+ * IntersectionObserver reports it has scrolled in; see the rule at the
+ * bottom of this file.
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------- */
+/* 1. Keyframes                                                            */
+/* ----------------------------------------------------------------------- */
+
+/* t-type: command "typing" — clip-path reveal left → right. Pair with
+   `steps(var(--t-steps, <command length>), end)` so each step reveals one
+   character. */
+@keyframes t-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* t-print: output line "printing" — clip-path reveal top → down, as if the
+   terminal flushed the whole line at once after the command resolved. */
+@keyframes t-print {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* t-show: instant opacity reveal (used both standalone and composed with
+   `t-blink` for the caret's initial appearance). */
+@keyframes t-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* t-fade: opacity + 6px rise — generic content fade used for line-level
+   reveals that want a touch more motion than `t-show`. */
+@keyframes t-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* t-blink: 2-step terminal caret blink. Distinct from `motion.css`'s
+   `caret-blink` (kept separate: that one is shared site-wide, this one is
+   scoped to the terminal caret's own composed animation list). */
+@keyframes t-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* t-spin: full rotation, used by `.t-spinner`'s ring. */
+@keyframes t-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* t-hide: opacity → 0, `forwards`-only. Combined with `t-spin` and an
+   `animation-delay: var(--t-done)` on `.t-spinner` so the ring spins then
+   disappears once the "task" resolves. */
+@keyframes t-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+/* t-sweep: scanline sweep band. Starts just above the pane and travels
+   160% of the viewport height — comfortably clears any real pane height
+   (the pane itself clips via `overflow: hidden`), unlike a fixed pixel
+   value tied to one mockup's fixed canvas size. */
+@keyframes t-sweep {
+  from {
+    transform: translateY(-160px);
+  }
+  to {
+    transform: translateY(160vh);
+  }
+}
+
+/* t-pulse: LED box-shadow ring pulse (diagnostic/status dots). */
+@keyframes t-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-400) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px transparent;
+  }
+}
+
+/* ----------------------------------------------------------------------- */
+/* 2. Utility classes — timing-parametrised via custom properties.         */
+/* ----------------------------------------------------------------------- */
+
+.t-type {
+  display: inline-block;
+  animation: t-type var(--t-dur, 500ms) steps(var(--t-steps, 12), end) var(--t-delay, 0ms) both;
+}
+
+.t-print {
+  display: inline-block;
+  animation: t-print var(--t-dur, 240ms) steps(var(--t-steps, 3), end) var(--t-delay, 0ms) both;
+}
+
+.t-show {
+  animation: t-show var(--t-dur, 60ms) linear var(--t-delay, 0ms) both;
+}
+
+.t-fade {
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) both;
+}
+
+/* t-reveal: generic opacity+rise reveal, identical to `.t-fade` under a
+   name that does not imply "terminal line output" — reserved for
+   non-prompt content (e.g. cards, panels) composed inside a `.t-pane` in
+   later tasks (T3+). Included now because the run-on-view pause rule below
+   already needs to cover it. */
+.t-reveal {
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) both;
+}
+
+/* t-cursor: violet block caret. Appears at `--t-delay` (via `t-show`, 1ms)
+   then blinks indefinitely (`t-blink`, also delayed so it doesn't blink
+   before it has appeared). */
+.t-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  vertical-align: -0.22em;
+  background: var(--accent-400);
+  animation:
+    t-show 1ms linear var(--t-delay, 0ms) both,
+    t-blink 1.1s steps(1, end) var(--t-delay, 0ms) infinite;
+}
+
+/* t-spinner: absolutely-positioned ring, meant inside a small square
+   wrapper (`position: relative`, e.g. 16px×16px) alongside a `.t-tick`.
+   Spins forever, then hides at `--t-done` so the sibling tick can "take
+   over" the resolved state. */
+.t-spinner {
+  position: absolute;
+  inset: 1px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent-400);
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation:
+    t-spin 700ms linear infinite,
+    t-hide 1ms linear var(--t-done, 0ms) forwards;
+}
+
+/* t-tick: the resolved "✓" companion to `.t-spinner`. Hidden until
+   `--t-done`, then appears — content (the ✓ glyph) is real text supplied
+   by the consumer, not CSS `content`. */
+.t-tick {
+  display: inline-block;
+  color: var(--accent-400);
+  animation: t-show 1ms linear var(--t-done, 0ms) both;
+}
+
+/* t-led: small pulsing status dot (DESIGN.md §8 pane-bar "LED"). */
+.t-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-400);
+  animation: t-pulse 1.8s ease-in-out infinite;
+}
+
+/* t-scan: decorative scanline sweep band. Self-contained — positions
+   itself absolutely against the nearest positioned ancestor (`.t-pane`),
+   so a consumer only needs `<div class="t-scan" aria-hidden="true"></div>`. */
+.t-scan {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 160px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--accent-400) 5%, transparent),
+    transparent
+  );
+  animation: t-sweep 7s linear infinite;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 3. Components — buttons, links, comments.                              */
+/* ----------------------------------------------------------------------- */
+
+/* btn-term: secondary/outline terminal button — DESIGN.md §8 "[ Acción ]"
+   bracket syntax is supplied by the caller's label text, not added here. */
+.btn-term {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 44px;
+  padding-inline: 1.125rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-0);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease-out),
+    color var(--motion-fast) var(--motion-ease-out),
+    border-color var(--motion-fast) var(--motion-ease-out);
+}
+
+.btn-term:hover {
+  background: var(--accent-400);
+  border-color: var(--accent-400);
+  color: var(--bg-0);
+}
+
+.btn-term:focus-visible {
+  outline: 2px solid var(--accent-400);
+  outline-offset: 2px;
+}
+
+/* btn-term--primary: solid violet fill — DESIGN.md §8 "Primario". */
+.btn-term--primary {
+  background: var(--accent-400);
+  border-color: var(--accent-400);
+  color: var(--bg-0);
+}
+
+.btn-term--primary:hover {
+  background: var(--accent-300);
+  border-color: var(--accent-300);
+  color: var(--bg-0);
+}
+
+/* t-link: inline terminal-styled link (prompt output, comments). */
+.t-link {
+  color: var(--accent-300);
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--motion-ease-out);
+}
+
+.t-link:hover,
+.t-link:focus-visible {
+  color: var(--text-0);
+}
+
+/* t-comment: muted "# " prefixed line. The literal `# ` prefix is markup,
+   not CSS-generated content (keeps it copy-pasteable/selectable/screen-
+   reader-visible as real text). */
+.t-comment {
+  color: var(--text-3);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 4. Run-on-view — pause every terminal animation while its pane hasn't   */
+/*    scrolled into view yet. `TerminalPane.astro`'s client script is the  */
+/*    only thing that ever adds/removes `.is-waiting`; without JS nothing  */
+/*    gets this class, so animations simply play on load (progressive     */
+/*    enhancement, per DESIGN.md §7).                                      */
+/* ----------------------------------------------------------------------- */
+
+.t-pane.is-waiting
+  :is(.t-type, .t-print, .t-show, .t-fade, .t-cursor, .t-spinner, .t-tick, .t-reveal) {
+  animation-play-state: paused;
+}

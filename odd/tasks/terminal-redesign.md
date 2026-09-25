@@ -52,7 +52,7 @@ look so navigation stays coherent.
 | ID | Task | Route | Status |
 |----|------|-------|--------|
 | T1 | Foundation: terminal tokens (colours, radii, gradients, danger token), self-hosted IBM Plex Mono + Space Mono, font preloads, theme-color, DESIGN.md rewrite | delegated writer (4+ files) | [x] |
-| T2 | Terminal primitives: terminal motion CSS, `TerminalPane`/`Prompt` components, `src/lib/clock.ts` (TDD) | delegated writer | [ ] |
+| T2 | Terminal primitives: terminal motion CSS, `TerminalPane`/`Prompt` components, `src/lib/clock.ts` (TDD) | delegated writer | [x] |
 | T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [ ] |
 | T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [ ] |
 | T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [ ] |
@@ -70,6 +70,12 @@ look so navigation stays coherent.
   tokenised, theme-color #08070b, DESIGN.md rewritten. Checks: npm test 17/17; check 0 errors; test:seo passed;
   lint = known base failures only. Stale font comments in prose.css and later-task components deferred to T3–T7.
 
+- T1 commit: aa0bde0.
+- T2 done: `src/lib/clock.ts` + `src/lib/navigation.ts` (TDD: RED = module-not-found for both, then GREEN), terminal.css
+  (t-* keyframes/utilities, `.btn-term`, run-on-view `.t-pane.is-waiting` pause), `TerminalPane`, `Prompt`,
+  `TerminalButton`. Reduced-motion final states appended to the single block in motion.css (project rule).
+  Checks: npm test 27/27; check 0 errors; test:seo passed; lint = known base failures only.
+
 ## Next step
 
-T2.
+T3.

@@ -1,0 +1,55 @@
+---
+/**
+ * TerminalButton.astro — `.btn-term` / `.btn-term--primary` renderer (T2
+ * terminal redesign, optional-but-preferred per task brief).
+ *
+ * Renders an `<a>` when `href` is given, a real `<button>` otherwise.
+ * DESIGN.md §8 bracket syntax (`[ Acción ]`) is part of the caller's label
+ * text (slot content) — this component never adds brackets itself.
+ *
+ * NOT used in any page yet — T3–T6 wire these into actual CTAs.
+ *
+ * Usage (future, T3+):
+ *   <TerminalButton href="/contacto">[ Hablemos ]</TerminalButton>
+ *   <TerminalButton href="/trabajos" primary>[ Ver mi trabajo ]</TerminalButton>
+ *   <TerminalButton type="submit" primary>[ Enviar mensaje ]</TerminalButton>
+ */
+
+export interface Props {
+  /** Renders an `<a href>` instead of a `<button>` when set. */
+  href?: string;
+  /** Applies the solid `.btn-term--primary` fill. Defaults to `false`. */
+  primary?: boolean;
+  /** `<button type>` when no `href` is given. Defaults to `'button'`. */
+  type?: 'button' | 'submit' | 'reset';
+  /** Extra classes merged onto the rendered element. */
+  class?: string;
+  /** Forwarded `id`. */
+  id?: string;
+}
+
+const {
+  href,
+  primary = false,
+  type = 'button',
+  class: className,
+  id,
+  ...rest
+} = Astro.props as Props;
+
+const classes = ['btn-term', primary ? 'btn-term--primary' : undefined, className]
+  .filter(Boolean)
+  .join(' ');
+---
+
+{
+  href ? (
+    <a href={href} id={id} class={classes} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} id={id} class={classes} {...rest}>
+      <slot />
+    </button>
+  )
+}

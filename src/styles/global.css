@@ -10,6 +10,12 @@
  *      utilities like `bg-bg-0`, `text-accent-400`, `font-display` are valid.
  *   4. `:root` mirrors raw aliases for hand-written CSS (gradients, motion).
  *   5. Custom reset (Andy Bell + Josh Comeau, slimmed) + base typography.
+ *   6. `@import "./terminal.css"` (T2) — terminal motion keyframes/utilities
+ *      and primitives (`.btn-term`, `.t-link`, `.t-comment`, run-on-view
+ *      pause rule). Imported after `./motion.css` so it can read the shared
+ *      motion tokens/easings; its own reduced-motion final states live in
+ *      `./motion.css`'s single `@media (prefers-reduced-motion: reduce)`
+ *      block, not a second one here (see terminal.css's own header comment).
  *
  * Source of truth for tokens: /DESIGN.md (supersedes any other palette).
  */
@@ -19,6 +25,7 @@
 @import 'tailwindcss';
 @import './motion.css';
 @import './prose.css';
+@import './terminal.css';
 
 /* ----------------------------------------------------------------------- */
 /* 1. Theme tokens (Tailwind v4 CSS-first config).                         */
@@ -149,9 +156,7 @@
    * resplandor difuso bajo, en vez de elevación con sombra negra. */
   --shadow-glow: 0 0 0 4px rgba(167, 139, 250, 0.18);
   --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.4);
-  --shadow-card-hover:
-    0 0 0 1px rgba(167, 139, 250, 0.3),
-    0 0 30px rgba(167, 139, 250, 0.1);
+  --shadow-card-hover: 0 0 0 1px rgba(167, 139, 250, 0.3), 0 0 30px rgba(167, 139, 250, 0.1);
 }
 
 /* ----------------------------------------------------------------------- */

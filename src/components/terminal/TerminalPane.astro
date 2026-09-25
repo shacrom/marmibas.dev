@@ -1,0 +1,232 @@
+---
+/**
+ * TerminalPane.astro — terminal window wrapper (T2 terminal redesign).
+ *
+ * DESIGN.md §8 contract: window border + 40px pane bar (violet dot +
+ * `~/path` + `[index]`) over `--bg-1`, with scanline/vignette/optional
+ * sweep overlays. Mobile (≤640px): full-bleed — no radius, no side
+ * borders, no big shadow.
+ *
+ * NOT used in any page yet — T3–T6 build the sections that render these.
+ * This file only establishes the component contract for those tasks.
+ *
+ * Usage (future, T3+):
+ *   <TerminalPane path="servicios" index="2/7" labelledby="t-services">
+ *     <Prompt command="ls servicios/" />
+ *     ...pane content...
+ *   </TerminalPane>
+ *
+ *   <TerminalPane as="aside" path="demo" scan={false}>...</TerminalPane>
+ */
+
+export type TerminalPaneTag = 'section' | 'div' | 'aside' | 'article';
+
+export interface Props {
+  /** Decorative path shown in the pane bar, rendered as `~/{path}`. */
+  path: string;
+  /** Decorative index shown as `[index]` (e.g. `'2/7'`) when present. */
+  index?: string;
+  /** Root element tag. Defaults to `section`. */
+  as?: TerminalPaneTag;
+  /** Forwarded as `aria-labelledby` on the root element. */
+  labelledby?: string;
+  /** Whether to render the decorative `.t-scan` sweep band. Defaults to `true`. */
+  scan?: boolean;
+  /** Extra classes merged onto the root element. */
+  class?: string;
+  /** Forwarded `id`. */
+  id?: string;
+}
+
+const {
+  path,
+  index,
+  as: Tag = 'section',
+  labelledby,
+  scan = true,
+  class: className,
+  id,
+} = Astro.props as Props;
+
+const rootClass = ['t-pane', className].filter(Boolean).join(' ');
+---
+
+<Tag class={rootClass} id={id} data-terminal-pane aria-labelledby={labelledby}>
+  <div class="t-pane__bar" aria-hidden="true">
+    <span class="t-pane__bar-path"><span class="t-pane__dot"></span>~/{path}</span>
+    {index ? <span class="t-pane__index">[{index}]</span> : null}
+  </div>
+
+  <div class="t-pane__body">
+    <slot />
+  </div>
+
+  <div class="t-pane__scanlines" aria-hidden="true"></div>
+  <div class="t-pane__vignette" aria-hidden="true"></div>
+  {scan ? <div class="t-scan" aria-hidden="true" /> : null}
+</Tag>
+
+<style>
+  .t-pane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--bg-1);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .t-pane__bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding-inline: 1.25rem;
+    background: var(--bg-inset);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .t-pane__bar-path {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .t-pane__dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--accent-400);
+  }
+
+  .t-pane__index {
+    flex-shrink: 0;
+    padding-inline-start: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .t-pane__body {
+    position: relative;
+    flex: 1 1 auto;
+  }
+
+  /* Decorative overlays — DESIGN.md §8, mockup-matched gradients. */
+  .t-pane__scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.022) 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  .t-pane__vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+  }
+
+  /* Mobile: full-bleed — no radius, no side borders, no elevation shadow. */
+  @media (max-width: 640px) {
+    .t-pane {
+      border-radius: 0;
+      border-inline: none;
+      box-shadow: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Run-on-view driver for `.t-pane` animations.
+   *
+   * Progressive enhancement: without JS, no pane ever gets `.is-waiting`,
+   * so every `.t-*` animation inside it plays on load (server-rendered
+   * final state is already correct — see terminal.css). With JS, a pane
+   * not yet in the viewport is paused via `.is-waiting` (terminal.css rule)
+   * until an IntersectionObserver reports it has scrolled in, at which
+   * point the class is removed once and the observer disconnects.
+   *
+   * Follows the same dataset-guard + `astro:page-load` re-init pattern as
+   * `Reveal.astro` / `CircuitBackground.astro` so View Transitions
+   * navigations wire up newly-mounted panes exactly once, without
+   * double-binding observers on repeated script execution.
+   */
+  const PANE_SELECTOR = '[data-terminal-pane]';
+
+  type TerminalPaneWindow = Window & {
+    __marmibasTerminalPaneBound?: boolean;
+  };
+
+  function isRoughlyInViewport(el: HTMLElement): boolean {
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.top < viewportHeight && rect.bottom > 0;
+  }
+
+  function initTerminalPane(pane: HTMLElement): void {
+    if (pane.dataset.terminalInit) return;
+    pane.dataset.terminalInit = '1';
+
+    // Already on screen at init time: let it play immediately, no observer
+    // needed (there is nothing to remove later).
+    if (isRoughlyInViewport(pane)) return;
+
+    pane.classList.add('is-waiting');
+
+    if (typeof IntersectionObserver === 'undefined') {
+      // No IO support: fail open rather than leaving the pane paused forever.
+      pane.classList.remove('is-waiting');
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            pane.classList.remove('is-waiting');
+            observer.unobserve(pane);
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(pane);
+  }
+
+  function initAllTerminalPanes(): void {
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Reduced motion: skip entirely — never add `.is-waiting`. Nothing to
+    // pause/resume when every `.t-*` animation is already neutralised by
+    // motion.css's reduced-motion block.
+    if (reduceMotion) return;
+
+    document.querySelectorAll<HTMLElement>(PANE_SELECTOR).forEach(initTerminalPane);
+  }
+
+  initAllTerminalPanes();
+
+  if (!(window as TerminalPaneWindow).__marmibasTerminalPaneBound) {
+    (window as TerminalPaneWindow).__marmibasTerminalPaneBound = true;
+    document.addEventListener('astro:page-load', initAllTerminalPanes);
+  }
+</script>

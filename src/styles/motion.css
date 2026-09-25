@@ -263,4 +263,50 @@
     opacity: 1;
     transform: none;
   }
+
+  /* --- Terminal (T2, src/styles/terminal.css) final states -------------
+   * Zeroing the duration tokens above already neutralises `t-type`/
+   * `t-print`'s `steps()` timing and `t-fade`'s easing, but a handful of
+   * `.t-*` utilities need an explicit end-state override: clip-path-based
+   * reveals must resolve to fully revealed, the spinner/tick pair must
+   * show its RESOLVED state (not a mid-spin frame), the caret must be a
+   * static solid block (no blink loop), and decorative motion (scanline
+   * sweep, LED pulse) must disappear rather than freeze mid-animation.
+   * Kept here, not in terminal.css, per this file's single-source-of-truth
+   * rule above. */
+  .t-type,
+  .t-print,
+  .t-show,
+  .t-fade,
+  .t-reveal {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
+  .t-cursor {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .t-spinner {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .t-tick {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .t-led {
+    animation: none !important;
+    box-shadow: none;
+  }
+
+  .t-scan {
+    animation: none !important;
+    opacity: 0;
+  }
 }
