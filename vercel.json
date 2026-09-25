@@ -2,19 +2,101 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "astro",
   "redirects": [
-    { "source": "/rss.xml", "destination": "/", "permanent": true },
-    { "source": "/blog", "destination": "/", "permanent": true },
-    { "source": "/blog/:path*", "destination": "/", "permanent": true },
-    { "source": "/en/case-studies/voxye", "destination": "/case-studies/voxye/", "permanent": true },
-    { "source": "/en/case-studies/:slug", "destination": "/trabajos/", "permanent": true },
-    { "source": "/en/projects/:slug", "destination": "/trabajos/", "permanent": true },
-    { "source": "/en/work", "destination": "/trabajos/", "permanent": true },
-    { "source": "/en/experience", "destination": "/experiencia/", "permanent": true },
-    { "source": "/en/contact", "destination": "/contacto/", "permanent": true },
-    { "source": "/en/cookie-policy", "destination": "/politica-cookies/", "permanent": true },
-    { "source": "/en", "destination": "/", "permanent": true },
-    { "source": "/en/", "destination": "/", "permanent": true },
-    { "source": "/en/:path*", "destination": "/", "permanent": true }
+    {
+      "source": "/rss.xml",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/blog/(.*)",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en/case-studies/voxye",
+      "destination": "/case-studies/voxye/",
+      "permanent": true
+    },
+    {
+      "source": "/en/case-studies/voxye/",
+      "destination": "/case-studies/voxye/",
+      "permanent": true
+    },
+    {
+      "source": "/en/case-studies/:slug",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/case-studies/:slug/",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/projects/:slug",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/projects/:slug/",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/work",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/work/",
+      "destination": "/trabajos/",
+      "permanent": true
+    },
+    {
+      "source": "/en/experience",
+      "destination": "/experiencia/",
+      "permanent": true
+    },
+    {
+      "source": "/en/experience/",
+      "destination": "/experiencia/",
+      "permanent": true
+    },
+    {
+      "source": "/en/contact",
+      "destination": "/contacto/",
+      "permanent": true
+    },
+    {
+      "source": "/en/contact/",
+      "destination": "/contacto/",
+      "permanent": true
+    },
+    {
+      "source": "/en/cookie-policy",
+      "destination": "/politica-cookies/",
+      "permanent": true
+    },
+    {
+      "source": "/en/cookie-policy/",
+      "destination": "/politica-cookies/",
+      "permanent": true
+    },
+    {
+      "source": "/en",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en/(.*)",
+      "destination": "/",
+      "permanent": true
+    }
   ],
   "headers": [
     {
