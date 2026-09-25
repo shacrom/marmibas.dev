@@ -24,6 +24,7 @@ industrial work only as the page's closing section, the owner missed it when rev
   top panes — each role becomes a terminal pane (bar `~/<company>`, `ls <company>/`, period as eyebrow, company as
   heading + role line, company logo tile linking to its site, stack badges, the MD body with bullets as ✓ rows).
   The vertical timeline line goes away; copy stays in the `experience` MD files.
+- Follow-up request (2026-09-25): connect the sections so the page reads as a progression from the bottom up.
 
 ## Scope
 
@@ -56,6 +57,7 @@ industrial work only as the page's closing section, the owner missed it when rev
 | P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [x] |
 | P4 | Owner feedback: swap pane order; Marmibas pane without connector/partner logo (partner optional in `LockupPane`) | direct inline (3 small edits in understood files) | [x] |
 | P5 | Past roles as terminal panes: generalise `LockupPane` (primary logo, role line, tags, body slot, optional rows) without visual change to the top panes, then replace the timeline with one pane per role | delegated writer | [x] |
+| P6 | Connectors between the stacked panes: vertical dashed `.t-flow-v` bar flowing upward + "↑" badge, so the page reads bottom (Cleverpy) → top (Plazasys) | direct inline (1 understood file) | [x] |
 
 Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page, content file) → writer trigger.
 
@@ -118,9 +120,16 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
   `npm test` 94/94, build OK, eslint + prettier on the 2 files clean; strings verified in the dev server HTML.
 - Delivery (owner: "haz commit y sube todos los cambios a producción", 2026-09-25): one PR to `main` with label
   `size:exception` (~1.7k changed lines in `src`, mostly the factory pane moved into `LockupPane` and the removed
-  timeline CSS; the owner asked to ship everything now rather than slice). Merged with a merge commit like #5/#6;
+  timeline CSS; the owner asked to ship everything now rather than slice). To be merged with a merge commit like #5/#6;
   Vercel deploys `main` to production. `fix/og-image` ships in its own PR in the same round.
+
+- P6 done — `53b2e9a feat(experience): link the stacked panes bottom to top`. New `src/components/work/PaneLink.astro`
+  (88px desktop / 64px mobile gap, `.t-flow-v` with `animation-direction: reverse` so dashes travel up, "↑" badge
+  styled like the lock-up "×"); 4 links rendered, panes after a link use top spacing 0. Checks: `npm test` 94/94,
+  `npm run check` 0 errors, eslint + prettier on the 2 files clean. Visual QA 1440/390 (reduced motion) OK; the
+  upward motion itself not captured headless.
 
 ## Next step
 
-Verify production after the merge.
+Delivery blocked: push to `shacrom/marmibas.dev` returned 403 for the git account in use; waiting for the owner
+to switch the account (nothing pushed yet).
