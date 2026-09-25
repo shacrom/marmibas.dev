@@ -22,8 +22,9 @@
  *     Plazasys").
  *   - Base/Primera llamada: `about.bio.p3` ("España, en remoto... gratis y
  *     sin compromiso").
- *   - `Experiencia` reuses the existing `about.stats.yearsValue` ("5+")
- *     rather than re-deriving a new number.
+ *   - `Experiencia` reuses the "5+" figure from the bio rather than
+ *     re-deriving a new number (the old `about.stats.*` i18n keys this once
+ *     matched were dropped as unused — see `odd/tasks/site-cleanup.md` C3).
  * Framing strings (`neofetch`, `cat sobre-mi.txt`, the `marcos@marmibas`
  * header + rule) are new, decorative consts — same convention as every
  * prior pane. English was removed (site is Spanish-only — see

@@ -33,7 +33,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
 |----|------|-------|--------|
 | C1 | Remove blog + 301 redirects + RSS/dependency cleanup | delegated writer | [x] |
 | C2 | Remove English version (pages, content, EN copy, ES-only i18n) + 301 redirects + SEO script update | delegated writer | [x] |
-| C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [ ] |
+| C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [x] |
 | C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [ ] |
 | C5 | Mobile header clock layout | delegated writer | [ ] |
 | C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [ ] |
@@ -128,8 +128,41 @@ keys, finish the footer polish and fix the mobile header clock layout.
   at all; sitemap has no `/en/`/`/blog` URLs; `vercel.json` parses as valid JSON (13 redirects total).
   Final sweep: `grep -rn "lang === 'en'"` and `currentLang === 'en'"` across `src/` → 0 hits.
 
-- C2 commit: (pending — recorded after this commit).
+- C2 commit: d3c2713.
+
+- C3 done: verified every key in `src/i18n/ui.ts` against actual usage in `src/` (accounting for dynamic
+  key construction like `t(\`services.${service.key}.title\`)` in `ServicesPane.astro` and the
+  `status: 'status.success'` lookup map in `Pill.astro`, both real uses that a naive literal grep would
+  miss). Removed 34 orphaned keys (68 including EN, already gone with C2's dictionary): `nav.projects`,
+  `nav.about`, `footer.copyright` (Footer.astro hardcodes `© {year} marmibas`), `cta.viewCaseStudy`,
+  `cta.viewProject`, `cta.viewAllWork`, `cta.readMore`, `cta.backHome`, `cta.backToTop`, `cta.sendMessage`,
+  `cta.downloadCv`, `cta.copyEmail`, `cta.emailCopied`, `form.sending`, `form.error.rateLimit`,
+  `form.error.validation`, `form.validation.{nameRequired,nameTooShort,emailRequired,emailInvalid,
+  messageRequired,messageMinLength,messageMaxLength}` (7 keys — `contacto.astro`'s client script has its
+  own local `messages` object with the same ES copy, never called `t()` for these), `meta.languageSwitcher`,
+  `meta.langSwitcherLabel`, `meta.currentLanguage`, `meta.toggleMenu`, `meta.closeMenu`, `meta.openExternal`,
+  `meta.search` (all `LangSwitcher.astro`-only or otherwise unwired — `LangSwitcher` was already deleted in
+  C2), `common.readMore`, `common.viewProject`, `common.viewCaseStudy`, `common.publishedOn`,
+  `common.updatedOn`, `common.readingTime`, `common.tableOfContents` (superseded by `toc.label`, which stays),
+  `common.relatedPosts`, `common.previousPost`, `common.nextPost`, `common.empty.posts` (blog, removed in C1),
+  `common.empty.work`, `common.filters.{status,tag,clear,all}` (4 keys), `work.filter.{label,all,success,
+  development,sideProjects}` (5 keys — `WorkIndex.astro`'s filter UI was already dead/unwired before this
+  task: `data-status`/`data-bucket` attributes exist with no `<select>`/script consumer; left that dead
+  markup alone as out of C3's i18n-key scope), `experience.disclaimer`, `experience.fallback`,
+  `notFound.{title,description,backHome,viewWork}` (4 keys — `404.astro` hardcodes its own bilingual copy,
+  never called `t()`), `about.stats.{years,yearsValue,projects,projectsValue}` (4 keys, the ones named in the
+  brief). Fixed the stale comment in `AboutPane.astro` that referenced `about.stats.yearsValue` as if still
+  live. Kept (confirmed real usage): `cta.contact`, `cta.viewWork`, `common.backTo`, `toc.label`, all
+  `status.*` (dynamic lookup), all `services.*` (dynamic `${service.key}` construction), `meta.skipToContent`,
+  `work.heading/tagline/empty`, `experience.heading/tagline/education.*`, `nav.home/work/services/experience/
+  contact`, `form.{name,email,message}.*`, `form.submit/success/error`, `footer.social.*`, `header.*`,
+  `featured.*`, `about.heading/bio.*/cta.*`.
+  Checks: `npm test` 58/58; `npm run check` 0 errors/0 warnings; `npm run build` + `test:seo` passed (10 ES
+  routes); `npm run lint` 7 errors + 2 warnings (unchanged from C2 baseline — no lint impact from a
+  dictionary-only change).
+
+- C3 commit: (pending — recorded after this commit).
 
 ## Next step
 
-C3.
+C4.

@@ -26,10 +26,8 @@ export const ui = {
     // -- Navegación principal -------------------------------------------------
     'nav.home': 'Inicio',
     'nav.work': 'Trabajos',
-    'nav.projects': 'Proyectos',
     'nav.services': 'Servicios',
     'nav.experience': 'Experiencia',
-    'nav.about': 'Sobre mí',
     'nav.contact': 'Contacto',
 
     // -- Header (terminal, T3) -------------------------------------------------
@@ -38,7 +36,6 @@ export const ui = {
     'header.menu.close': 'Cerrar menú',
 
     // -- Footer ---------------------------------------------------------------
-    'footer.copyright': 'marmibas',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
     'footer.social.email': 'Email',
@@ -46,16 +43,6 @@ export const ui = {
     // -- Botones / CTAs -------------------------------------------------------
     'cta.contact': 'Hablemos',
     'cta.viewWork': 'Ver mi trabajo',
-    'cta.viewCaseStudy': 'Ver caso de estudio',
-    'cta.viewProject': 'Ver proyecto',
-    'cta.viewAllWork': 'Ver todos los trabajos',
-    'cta.readMore': 'Leer más',
-    'cta.backHome': 'Volver al inicio',
-    'cta.backToTop': 'Volver arriba',
-    'cta.sendMessage': 'Enviar mensaje',
-    'cta.downloadCv': 'Descargar CV',
-    'cta.copyEmail': 'Copiar email',
-    'cta.emailCopied': 'Email copiado',
 
     // -- Formulario de contacto ----------------------------------------------
     'form.name.label': 'Nombre',
@@ -65,19 +52,8 @@ export const ui = {
     'form.message.label': 'Mensaje',
     'form.message.placeholder': 'Cuéntame en qué estás y cómo puedo ayudarte',
     'form.submit': 'Enviar mensaje',
-    'form.sending': 'Enviando…',
     'form.success': 'Mensaje enviado. Te respondo en menos de 48 h.',
     'form.error': 'Algo ha salido mal. Inténtalo de nuevo o escríbeme a info@marmibas.dev.',
-    'form.error.rateLimit':
-      'Has enviado varios mensajes seguidos. Espera unos minutos y vuelve a intentarlo.',
-    'form.error.validation': 'Revisa los campos y vuelve a enviar.',
-    'form.validation.nameRequired': 'Dime cómo te llamas.',
-    'form.validation.nameTooShort': 'El nombre debe tener al menos 2 caracteres.',
-    'form.validation.emailRequired': 'Necesito un email para responderte.',
-    'form.validation.emailInvalid': 'El email no parece válido.',
-    'form.validation.messageRequired': 'Cuéntame en qué puedo ayudarte.',
-    'form.validation.messageMinLength': 'El mensaje necesita al menos 10 caracteres.',
-    'form.validation.messageMaxLength': 'El mensaje no puede pasar de 2000 caracteres.',
 
     // -- Status labels --------------------------------------------------------
     'status.success': 'Para un cliente, ya en uso',
@@ -89,33 +65,10 @@ export const ui = {
 
     // -- Meta / layout / a11y -------------------------------------------------
     'meta.skipToContent': 'Saltar al contenido',
-    'meta.languageSwitcher': 'Cambiar idioma',
-    'meta.langSwitcherLabel': 'Idioma',
-    'meta.currentLanguage': 'Idioma actual',
-    'meta.toggleMenu': 'Abrir menú',
-    'meta.closeMenu': 'Cerrar menú',
-    'meta.openExternal': 'Abrir en una pestaña nueva',
-    'meta.search': 'Buscar',
 
     // -- Listados / contenido vacío ------------------------------------------
-    'common.readMore': 'Leer más',
     'common.backTo': 'Volver a',
-    'common.viewProject': 'Ver proyecto',
-    'common.viewCaseStudy': 'Ver caso de estudio',
-    'common.publishedOn': 'Publicado el',
-    'common.updatedOn': 'Actualizado el',
-    'common.readingTime': 'min de lectura',
-    'common.tableOfContents': 'En esta página',
     'toc.label': 'Contenido',
-    'common.relatedPosts': 'Posts relacionados',
-    'common.previousPost': 'Post anterior',
-    'common.nextPost': 'Post siguiente',
-    'common.empty.posts': 'Aún no hay publicaciones. Volvé pronto.',
-    'common.empty.work': 'No hay proyectos que coincidan con los filtros.',
-    'common.filters.status': 'Estado',
-    'common.filters.tag': 'Tecnología',
-    'common.filters.clear': 'Limpiar filtros',
-    'common.filters.all': 'Todos',
 
     // -- Home: Featured projects (T-30) --------------------------------------
     'featured.heading': 'Casos de éxito',
@@ -123,14 +76,9 @@ export const ui = {
       'Soluciones reales que ya están en funcionamiento en empresas de distintos sectores.',
     'featured.viewAll': 'Ver todos los proyectos →',
 
-    // -- Work index — grid + filtros (T-34) ----------------------------------
+    // -- Work index (T-34) ----------------------------------------------------
     'work.heading': 'Proyectos de software a medida',
     'work.tagline': 'Una selección de trabajos para clientes y proyectos propios.',
-    'work.filter.label': 'Filtrar por',
-    'work.filter.all': 'Todos',
-    'work.filter.success': 'Para clientes',
-    'work.filter.development': 'Construyendo',
-    'work.filter.sideProjects': 'Propios',
     'work.empty': 'Aún no hay proyectos en esta categoría.',
 
     // -- Home: About section (T-31) -------------------------------------------
@@ -141,10 +89,6 @@ export const ui = {
       'Hoy trabajo de forma independiente, ayudando a emprendedores, autónomos y pequeñas empresas a digitalizar su día a día. Para proyectos industriales trabajo en alianza con Plazasys, mi socio tecnológico. Si tu negocio tiene tareas repetitivas que te quitan tiempo, presupuestos llenos de errores, o información dispersa entre Excel y WhatsApp, puedo ayudarte.',
     'about.bio.p3':
       'Trabajo desde España, en remoto, con clientes en cualquier ubicación. Si tienes una idea o un problema que quieres resolver, escríbeme — la primera conversación es gratis y sin compromiso.',
-    'about.stats.years': 'Años de experiencia',
-    'about.stats.yearsValue': '5+',
-    'about.stats.projects': 'Proyectos en producción',
-    'about.stats.projectsValue': '2+',
     'about.cta.experience': 'Ver historia completa',
     'about.cta.contact': 'Hablemos',
 
@@ -177,20 +121,10 @@ export const ui = {
     // -- Experience page (T-35) ----------------------------------------------
     'experience.heading': 'Experiencia profesional',
     'experience.tagline': '5 años construyendo software en empresas de Valencia y remoto.',
-    'experience.disclaimer':
-      'Las empresas listadas son empleadores anteriores. Hoy trabajo de forma independiente.',
     'experience.education.heading': 'Educación',
     'experience.education.degree': 'Grado en Ingeniería Informática',
     'experience.education.school': 'ETSE Universidad de Valencia',
     'experience.education.years': '2018 — 2023',
-    'experience.fallback': 'Experience details only available in Spanish for now.',
-
-    // -- 404 ------------------------------------------------------------------
-    'notFound.title': 'Esta página no existe',
-    'notFound.description':
-      'El enlace está roto o la página se movió. Podés volver al inicio o explorar los trabajos.',
-    'notFound.backHome': 'Volver al inicio',
-    'notFound.viewWork': 'Ver trabajos',
   },
 } as const satisfies Record<Language, Record<string, string>>;
 
