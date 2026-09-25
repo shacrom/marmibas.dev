@@ -3,8 +3,9 @@
  *
  * Layer order (Tailwind v4 CSS-first config):
  *   1. `@import "tailwindcss"` registers Preflight + every Tailwind utility.
- *   2. `@import "./fonts.css"` declares self-hosted @font-face (T-07). Imported
- *      first to avoid FOIT once Tailwind utilities reference Inter / Geist Sans.
+ *   2. `@import "./fonts.css"` declares self-hosted @font-face (B3 · Terminal
+ *      redesign). Imported first to avoid FOIT once Tailwind utilities
+ *      reference IBM Plex Mono / Space Mono.
  *   3. `@theme` exposes design tokens (DESIGN.md §2-§6) AS Tailwind tokens, so
  *      utilities like `bg-bg-0`, `text-accent-400`, `font-display` are valid.
  *   4. `:root` mirrors raw aliases for hand-written CSS (gradients, motion).
@@ -35,20 +36,24 @@
 
 @theme {
   /* --- Base oscura — DESIGN.md §2 -------------------------------------
-   * Tinte violeta sutil (no neutral) para alinearse con la tarjeta de
-   * visita: same darkness level pero levemente desplazado hacia violet
-   * para que el accent morado y los gradients pink-magenta-violet
-   * encuentren un terreno coherente y no parezcan superpuestos. */
-  --color-bg-0: #0d0a14;
-  --color-bg-1: #16121f;
-  --color-bg-2: #1f1a2c;
+   * Terminal: casi negro con un tinte violeta apenas perceptible, no un
+   * gris neutro puro. Cada nivel sube muy poco de luminosidad (ventana
+   * sobre página, panel elevado sobre ventana) para leer como distintas
+   * "capas" de terminal sin recurrir a bordes gruesos. `--color-bg-inset`
+   * es el nivel MÁS oscuro — barras de título y status strips, por debajo
+   * de `--color-bg-0`. */
+  --color-bg-0: #08070b;
+  --color-bg-1: #0c0b11;
+  --color-bg-2: #0e0d14;
+  --color-bg-inset: #0a090e;
 
   /* --- Texto — DESIGN.md §2 ------------------------------------------- */
-  --color-text-0: #fafafa;
-  --color-text-1: #e8e8ee;
-  --color-text-2: #a8a8b8;
-  --color-text-3: #6a6a78;
-  --color-border: #252535;
+  --color-text-0: #e9e6f2;
+  --color-text-1: #c9c5d6;
+  --color-text-2: #9b97a8;
+  --color-text-3: #8a8697;
+  --color-border: #24222e;
+  --color-border-strong: #3a3746;
 
   /* --- Acento morado — DESIGN.md §2 ----------------------------------- */
   --color-accent-100: #ede9fe;
@@ -74,10 +79,19 @@
   --color-status-paused: #71717a;
   --color-status-prev: #a8a8b8;
 
+  /* --- Semántico — danger / warning — DESIGN.md §2 ---------------------
+   * `--color-danger` es el tono legible para texto/bordes de error
+   * (formulario de contacto, validación). `--color-danger-bg` es un wash
+   * muy sutil para fondos de alerta — mismo hue, mucha menos opacidad.
+   * `--color-warning` queda reservado para futuros estados intermedios. */
+  --color-danger: #fca5a5;
+  --color-danger-bg: rgba(248, 113, 113, 0.12);
+  --color-warning: #dcc3b1;
+
   /* --- Tipografía — DESIGN.md §4 -------------------------------------- */
-  --font-display: 'Geist Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+  --font-display: 'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-sans: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* --- Escala de texto — DESIGN.md §4 (base 16, ratio 1.25) ----------- */
   /* Tailwind v4 acepta `--text-<name>` y derivados `--text-<name>--line-height` */
@@ -120,19 +134,24 @@
   /* Tailwind v4 multiplica `--spacing` por el N de la utility (p-1, p-2…). */
   --spacing: 0.25rem; /* 4px → genera p-1 = 4px, p-24 = 96px, etc. */
 
-  /* --- Radius --------------------------------------------------------- */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px; /* CTA, cards */
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
+  /* --- Radius — terminal: escuadrado, casi sin curva ------------------- */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px; /* CTA, cards */
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 10px;
   --radius-full: 9999px;
 
-  /* --- Shadow --------------------------------------------------------- */
-  --shadow-glow: 0 0 0 4px var(--color-accent-glow);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  /* --- Shadow — terminal: casi plana --------------------------------
+   * Sin sombras proyectadas tradicionales. El foco/glow usa un anillo
+   * violeta translúcido; el hover de card combina un aro de 1px con un
+   * resplandor difuso bajo, en vez de elevación con sombra negra. */
+  --shadow-glow: 0 0 0 4px rgba(167, 139, 250, 0.18);
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-card-hover:
+    0 0 0 1px rgba(167, 139, 250, 0.3),
+    0 0 30px rgba(167, 139, 250, 0.1);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -150,11 +169,13 @@
   --bg-0: var(--color-bg-0);
   --bg-1: var(--color-bg-1);
   --bg-2: var(--color-bg-2);
+  --bg-inset: var(--color-bg-inset);
   --text-0: var(--color-text-0);
   --text-1: var(--color-text-1);
   --text-2: var(--color-text-2);
   --text-3: var(--color-text-3);
   --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
   --accent-100: var(--color-accent-100);
   --accent-300: var(--color-accent-300);
   --accent-400: var(--color-accent-400);
@@ -162,37 +183,28 @@
   --accent-600: var(--color-accent-600);
   --accent-700: var(--color-accent-700);
   --accent-glow: var(--color-accent-glow);
+  --danger: var(--color-danger);
+  --danger-bg: var(--color-danger-bg);
+  --warning: var(--color-warning);
 
-  /* Gradients — DESIGN.md §3 ------------------------------------------- */
-  --gradient-hero-ambient:
-    radial-gradient(60% 55% at 18% 8%, color-mix(in oklch, var(--color-accent-700) 88%, transparent) 0%, transparent 70%),
-    radial-gradient(50% 45% at 82% 22%, color-mix(in oklch, var(--color-accent-500) 60%, transparent) 0%, transparent 72%),
-    radial-gradient(70% 60% at 50% 100%, color-mix(in oklch, var(--color-accent-600) 45%, transparent) 0%, transparent 78%);
-
-  --gradient-cta: linear-gradient(
-    135deg,
-    var(--color-accent-500) 0%,
-    var(--color-accent-400) 100%
+  /* Gradients — DESIGN.md §3 -------------------------------------------
+   * Terminal: sin degradados decorativos. Los tokens se conservan (19
+   * archivos los consumen vía var()) pero cada uno colapsa a un relleno
+   * plano o a un ambient casi imperceptible — el violeta ya es la señal,
+   * no necesita reforzarse con gradient. */
+  --gradient-hero-ambient: radial-gradient(
+    ellipse at top,
+    rgba(167, 139, 250, 0.08) 0%,
+    transparent 60%
   );
 
-  --gradient-cta-hover: linear-gradient(
-    135deg,
-    var(--color-accent-400) 0%,
-    var(--color-accent-300) 100%
-  );
+  --gradient-cta: linear-gradient(#a78bfa, #a78bfa);
 
-  --gradient-text-display: linear-gradient(
-    180deg,
-    var(--color-text-0) 0%,
-    var(--color-accent-300) 100%
-  );
+  --gradient-cta-hover: linear-gradient(#c4b5fd, #c4b5fd);
 
-  --gradient-border-featured: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--color-accent-600),
-    var(--color-accent-400),
-    var(--color-accent-600)
-  );
+  --gradient-text-display: linear-gradient(#e9e6f2, #e9e6f2);
+
+  --gradient-border-featured: linear-gradient(#a78bfa, #a78bfa);
 
   /* Color scheme hint para UA dark widgets (scrollbar, form controls). */
   color-scheme: dark;
@@ -282,11 +294,12 @@ ol {
 /* ----------------------------------------------------------------------- */
 /* 4. Tipografía base.                                                     */
 /*                                                                         */
-/* Decisión: Inter como default global; Geist Sans aplicado SELECTIVAMENTE */
-/* (clase utility `.font-display` o asignación explícita en componentes   */
-/* hero / case study). Esto permite usar Geist Sans para H1/H2 destacados */
-/* sin imponerlo en cada h3 de prose o de UI auxiliar (DESIGN.md §4 dice  */
-/* "headings de sección usan display 600", no "todos los headings").     */
+/* Decisión: IBM Plex Mono como default global (body ES monoespaciado por  */
+/* diseño); Space Mono aplicado SELECTIVAMENTE (clase utility              */
+/* `.font-display` o asignación explícita en componentes hero / case      */
+/* study). Esto permite usar Space Mono para H1/H2 destacados sin         */
+/* imponerlo en cada h3 de prose o de UI auxiliar (DESIGN.md §4 dice      */
+/* "headings de sección usan display 700", no "todos los headings").     */
 /* ----------------------------------------------------------------------- */
 
 h1,
@@ -312,8 +325,8 @@ pre {
   font-family: var(--font-mono);
 }
 
-/* Utility class para opt-in a Geist Sans (aplicada en hero, case study,
-   featured cards). Body sigue siendo Inter (DESIGN.md §4). */
+/* Utility class para opt-in a Space Mono (aplicada en hero, case study,
+   featured cards). Body sigue siendo IBM Plex Mono (DESIGN.md §4). */
 .font-display {
   font-family: var(--font-display);
 }
