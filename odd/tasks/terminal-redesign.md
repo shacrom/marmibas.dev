@@ -56,7 +56,7 @@ look so navigation stays coherent.
 | T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [x] |
 | T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [x] |
 | T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [x] |
-| T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [ ] |
+| T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [x] |
 | T7 | Inner pages pass: fix breakages from the new tokens (contact danger colours, overflow with monospace) | delegated writer | [ ] |
 | T8 | Verification + delivery: full checks, visual QA desktop/mobile, push, PR, preview, production (each outward step asked) | parent | [ ] |
 
@@ -106,6 +106,18 @@ look so navigation stays coherent.
   Checks: npm test 57/57; check 0 errors; test:seo passed; lint = known base; bars 50/79/64/102 px at 1440.
 - Follow-up: EN demo numbers use dot grouping (EN page is hidden; revisit if EN is published).
 
+- T5 commit: 6d20f2a.
+- T6 done: `CasesPane` [4/7] (MidCta + 3 case cards, tags via tested `src/lib/case-tags.ts` — RED =
+  module-not-found), `ProcessPane` [5/7] (pipeline with flowing connectors, spinners→✓), `AboutPane` [6/7]
+  (neofetch: ASCII "M", facts derived from the bio, swatches; bio + CTAs), `FaqPane` [7/7] (details [+]/[-], full
+  answers; FAQPage JSON-LD unchanged). Old MidCta/FeaturedProjects/ProcessSection/AboutSection/FAQSection removed.
+  Parent QA fix: box-drawing/block glyphs are not in the Plex Mono subsets → new `--font-glyphs` system-mono stack
+  for the ASCII art and footer `tree` connectors. Checks: npm test 63/63; check 0 errors; test:seo passed; lint =
+  known base; no horizontal scroll at 320.
+- Follow-up: `ui.ts` about.stats.* keys now unused (left in place).
+
 ## Next step
 
-T6.
+T7: inner pages — /experiencia timeline header overflows at 390 (role text), /servicios* decorative `__ambient`
+overflows at 390, legacy violet buttons use light text on violet (≈2.2:1, fails AA; terminal uses bg-0 text),
+stale Geist/Inter/JetBrains comments (prose.css and others).

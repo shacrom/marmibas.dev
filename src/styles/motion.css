@@ -338,4 +338,30 @@
   .t-glitch {
     animation: none !important;
   }
+
+  /* --- Process pane (T6, src/styles/terminal.css) final state ----------
+   * `.t-flow`/`.t-flow-v` (pipeline connector dashes) are continuous/
+   * repeating decorative motion, same category as `.t-stripes` above:
+   * their own static background-image is already the correct resting
+   * appearance, so the dashes simply stop scrolling instead of needing an
+   * opacity/transform override. */
+  .t-flow,
+  .t-flow-v {
+    animation: none !important;
+  }
+
+  /* --- FAQ pane (T6) final state -----------------------------------------
+   * `.faq-pane__item[open] .faq-pane__answer` (FaqPane.astro) plays a
+   * `t-fade`-style reveal every time a `<details>` is toggled open, not
+   * just once on load — the zeroed duration tokens above already make it
+   * instant, but it still needs the same explicit end-state override as
+   * `.t-fade` (see the terminal block above) since `backwards` fill mode
+   * only holds the FROM state during the (here, zero) delay: without this,
+   * the animation would still run its clip/opacity keyframe at 0.01ms
+   * instead of never animating at all. */
+  .faq-pane__item[open] .faq-pane__answer {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
 }

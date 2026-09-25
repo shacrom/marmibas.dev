@@ -1,33 +1,23 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroPane from '../components/home/HeroPane.astro';
-import FeaturedProjects from '../components/home/FeaturedProjects.astro';
-import AboutSection from '../components/home/AboutSection.astro';
 import ServicesPane from '../components/home/ServicesPane.astro';
 import DemoPane from '../components/home/DemoPane.astro';
-import ProcessSection from '../components/home/ProcessSection.astro';
-import FAQSection from '../components/home/FAQSection.astro';
-import MidCta from '../components/home/MidCta.astro';
+import CasesPane from '../components/home/CasesPane.astro';
+import ProcessPane from '../components/home/ProcessPane.astro';
+import AboutPane from '../components/home/AboutPane.astro';
+import FaqPane from '../components/home/FaqPane.astro';
 import { getFaqs } from '../lib/faqs';
-import { getRoutePath } from '../i18n/helpers';
 
 const lang = 'es' as const;
 
-// Las FAQs se duplican intencionalmente: el componente las renderiza para el
+// Las FAQs se duplican intencionalmente: FaqPane las renderiza para el
 // usuario y el layout las pasa a `<SeoHead>` para inyectar el Schema FAQPage
 // en `<head>`. Compartir la fuente de verdad evita drift entre ambos.
 const faqs = getFaqs(lang).map((faq) => ({
   question: faq.question,
   answer: faq.answer,
 }));
-
-// MidCta único tras los servicios: un solo recordatorio de contacto entre
-// secciones; el hero (arriba) ya concentra la conversión primaria.
-// Showcase va justo después de Services porque demuestra los servicios:
-// orden narrativo "qué hago → así se ve → contacta → pruebas reales".
-const contactHref = getRoutePath('contact', lang);
-const midCtaText = '¿Tienes una idea o un problema que quieres resolver?';
-const midCtaLink = 'Escríbeme';
 ---
 
 <BaseLayout
@@ -38,9 +28,8 @@ const midCtaLink = 'Escríbeme';
   <HeroPane lang={lang} />
   <ServicesPane lang={lang} />
   <DemoPane lang={lang} />
-  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
-  <FeaturedProjects lang={lang} />
-  <ProcessSection lang={lang} />
-  <AboutSection lang={lang} />
-  <FAQSection lang={lang} />
+  <CasesPane lang={lang} />
+  <ProcessPane lang={lang} />
+  <AboutPane lang={lang} />
+  <FaqPane lang={lang} />
 </BaseLayout>

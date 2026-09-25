@@ -1,32 +1,22 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import HeroPane from '../../components/home/HeroPane.astro';
-import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
-import AboutSection from '../../components/home/AboutSection.astro';
 import ServicesPane from '../../components/home/ServicesPane.astro';
 import DemoPane from '../../components/home/DemoPane.astro';
-import ProcessSection from '../../components/home/ProcessSection.astro';
-import FAQSection from '../../components/home/FAQSection.astro';
-import MidCta from '../../components/home/MidCta.astro';
+import CasesPane from '../../components/home/CasesPane.astro';
+import ProcessPane from '../../components/home/ProcessPane.astro';
+import AboutPane from '../../components/home/AboutPane.astro';
+import FaqPane from '../../components/home/FaqPane.astro';
 import { getFaqs } from '../../lib/faqs';
-import { getRoutePath } from '../../i18n/helpers';
 
 const lang = 'en' as const;
 
-// FAQs feed both the visual accordion and the Schema.org FAQPage JSON-LD
-// in `<head>`. Same source of truth guarantees the two stay aligned.
+// FAQs feed both the visual accordion (FaqPane) and the Schema.org FAQPage
+// JSON-LD in `<head>`. Same source of truth guarantees the two stay aligned.
 const faqs = getFaqs(lang).map((faq) => ({
   question: faq.question,
   answer: faq.answer,
 }));
-
-// Single MidCta after the services section: one contact reminder between
-// sections; the hero above already carries the primary conversion.
-// Showcase sits right after Services because it demonstrates the services:
-// narrative order "what I do → what it looks like → get in touch → real proof".
-const contactHref = getRoutePath('contact', lang);
-const midCtaText = 'Have an idea or a problem you want to solve?';
-const midCtaLink = "Let's talk";
 ---
 
 <BaseLayout
@@ -38,9 +28,8 @@ const midCtaLink = "Let's talk";
   <HeroPane lang={lang} />
   <ServicesPane lang={lang} />
   <DemoPane lang={lang} />
-  <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
-  <FeaturedProjects lang={lang} />
-  <ProcessSection lang={lang} />
-  <AboutSection lang={lang} />
-  <FAQSection lang={lang} />
+  <CasesPane lang={lang} />
+  <ProcessPane lang={lang} />
+  <AboutPane lang={lang} />
+  <FaqPane lang={lang} />
 </BaseLayout>
