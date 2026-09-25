@@ -1,7 +1,8 @@
 ---
 /**
- * VoxyePane.astro — "Software para reformas" pane for `/experiencia`, the
- * Marmibas × Voxye lock-up (owner decision 2026-09-25).
+ * VoxyePane.astro — "Software para reformas" pane for `/experiencia`:
+ * Marmibas' own work, with Voxye as its project row (owner decision
+ * 2026-09-25).
  *
  * Context: the owner liked the effect built for `FactorySoftwarePane.astro`
  * (Marmibas × Plazasys — logo lock-up, animated connector, case-study rows
@@ -10,6 +11,11 @@
  * the timeline; the timeline's former top entry
  * (`src/content/experience/es/marmibas.md`) is removed rather than
  * duplicated, since this pane now carries that copy.
+ *
+ * After reviewing it locally the owner dropped the "Marmibas × Voxye"
+ * lock-up: the Marmibas tile stands alone (no connector, no Voxye logo — no
+ * `partnerLogo` passed to `LockupPane`) and Voxye appears only as the project
+ * row below the intro.
  *
  * Copy provenance — no new facts, dates or numbers:
  *   - `intro` = the intro paragraph of the removed `marmibas.md` body,
@@ -23,16 +29,11 @@
  *     (`src/content/case-studies/es/voxye.mdx`, `status: "success"`,
  *     `logo: "/logos/voxye.svg"`); "en producción" mirrors that status.
  *
- * Voxye's mark (`/logos/voxye.svg`, viewBox 669.56×745.6, ~0.9:1, close to
- * square) gets the square icon-tile treatment rather than the wide wordmark
- * one Plazasys uses — a wide tile would leave visible empty padding on a
- * near-square mark.
- *
  * This component is data-only: it holds the ES copy, the one project row,
  * and this provenance note, and renders the shared `LockupPane.astro`
  * (`src/components/work/LockupPane.astro`) for markup, styles and motion —
- * the same component `FactorySoftwarePane.astro` renders. Rendered first of
- * the two lock-up panes at the top of `/experiencia`. Where this pane lands
+ * the same component `FactorySoftwarePane.astro` renders. Rendered second,
+ * right after `FactorySoftwarePane`, at the top of `/experiencia`. Where this pane lands
  * on the page (and its spacing relative to neighbouring sections) is the
  * page's own concern, not this component's — see `experience/index.astro`.
  */
@@ -83,14 +84,6 @@ const rows = [
     href: '/case-studies/voxye',
   },
 ] as const;
-
-// Voxye's mark is close to square (see docblock) — the default square icon
-// tile, not the wide wordmark treatment Plazasys uses.
-const partnerLogo = {
-  src: '/logos/voxye.svg',
-  alt: 'Logo de Voxye',
-  wide: false,
-};
 ---
 
 <LockupPane
@@ -99,7 +92,6 @@ const partnerLogo = {
   headingId={headingId}
   eyebrow={content.eyebrow}
   heading={content.heading}
-  partnerLogo={partnerLogo}
   intro={content.intro}
   fruitsIntro={content.fruitsIntro}
   statusLabel={content.statusLabel}

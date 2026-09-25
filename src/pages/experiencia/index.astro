@@ -3,11 +3,11 @@
  * /experiencia — timeline cronológico de experiencia profesional (ES) — T-35.
  *
  * Apertura de página (owner request, 2026-09-25): dos lock-up panes justo
- * después del header, antes del timeline — `<VoxyePane>`
- * (`src/components/work/VoxyePane.astro`, "Software para reformas", Marmibas
- * × Voxye) seguida de `<FactorySoftwarePane>`
+ * después del header, antes del timeline — `<FactorySoftwarePane>`
  * (`src/components/work/FactorySoftwarePane.astro`, "Software para
- * fábricas", Marmibas × Plazasys). Ambas renderizan el mismo componente
+ * fábricas", Marmibas × Plazasys) seguida de `<VoxyePane>`
+ * (`src/components/work/VoxyePane.astro`, "Software para reformas": solo el
+ * logo de Marmibas, con Voxye como fila de proyecto). Ambas renderizan el mismo componente
  * reutilizable `LockupPane.astro`; la segunda entra con un pequeño
  * `delayOffset` para no animarse en paralelo con la primera. El antiguo
  * entry "Marmibas" del timeline (`src/content/experience/es/marmibas.md`) se
@@ -85,13 +85,8 @@ const items = await Promise.all(
       <p class="experience__tagline">{t('experience.tagline')}</p>
     </header>
 
-    <VoxyePane lang={lang} />
-    <FactorySoftwarePane
-      lang={lang}
-      delayOffset={300}
-      topSpacingDesktop={48}
-      topSpacingMobile={32}
-    />
+    <FactorySoftwarePane lang={lang} />
+    <VoxyePane lang={lang} delayOffset={300} topSpacingDesktop={48} topSpacingMobile={32} />
 
     <ol class="timeline" role="list">
       {
@@ -244,7 +239,7 @@ const items = await Promise.all(
 
   /* --- Timeline ---------------------------------------------------------- */
   /* `margin-top` separates the timeline from the two lock-up panes above it
-     (VoxyePane, FactorySoftwarePane) — same 64/48 rhythm as the panes' own
+     (FactorySoftwarePane, VoxyePane) — same 64/48 rhythm as the panes' own
      default top spacing, so the transition pane→timeline reads the same as
      header→first pane. */
   .timeline {

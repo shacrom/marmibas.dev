@@ -6,7 +6,7 @@
  * fábricas" pane, owner request 2026-09-25) so the same effect — logo
  * lock-up joined by an animated dashed connector with a violet "×" badge,
  * intro copy, and a list of shipped projects with a pulsing `.t-led` +
- * status label — can be reused for a second pane (Marmibas × Voxye) without
+ * status label — can be reused for a second pane (Marmibas + Voxye) without
  * duplicating ~450 lines of markup/styles/motion. Both current consumers
  * (`FactorySoftwarePane.astro`, `VoxyePane.astro`) are data-only: they hold
  * their own copy and provenance docblocks and render this component with
@@ -17,15 +17,19 @@
  * that logo/alt/tile treatment is hardcoded here rather than threaded
  * through as a prop. Only the right-hand partner tile is configurable,
  * including whether it needs the wide wordmark treatment (e.g. Plazasys, a
- * wide logotype) or the square icon-mark treatment (e.g. Voxye, a near-
- * square mark) — pick by checking the source SVG's `viewBox` aspect ratio.
+ * wide logotype) or the square icon-mark treatment — pick by checking the
+ * source SVG's `viewBox` aspect ratio. The partner is optional: without it
+ * the Marmibas tile stands alone and the connector is not rendered (the
+ * owner asked for that on the Marmibas/Voxye pane, where Voxye is shown only
+ * as a project row).
  *
  * Visual — a `TerminalPane` (`path={path}`, no `index`: a one-off pane, same
  * convention `Footer.astro` uses for `path="contacto"`):
  *   1. `Prompt` decorative command.
  *   2. Eyebrow + `<h2>` heading, centered.
  *   3. The lock-up: the Marmibas wordmark tile × the partner tile, joined by
- *      an animated dashed connector with a violet "×" badge on top. Desktop:
+ *      an animated dashed connector with a violet "×" badge on top (or the
+ *      Marmibas tile alone when no `partnerLogo` is given). Desktop:
  *      horizontal `.t-flow` bar. Mobile (≤640px): the lock-up stacks and
  *      swaps to `.t-flow-v` — same dual-bar convention as `ProcessPane.astro`.
  *      Both utilities are already neutralised by the single reduced-motion
@@ -71,10 +75,11 @@ export interface Props {
   headingId: string;
   eyebrow: string;
   heading: string;
-  partnerLogo: {
+  /** Omit to show the Marmibas tile alone, without connector (e.g. `VoxyePane`). */
+  partnerLogo?: {
     src: string;
     alt: string;
-    /** Wide wordmark tile (e.g. Plazasys) vs. a square icon-mark tile (e.g. Voxye). */
+    /** Wide wordmark tile (e.g. Plazasys) vs. a square icon-mark tile. */
     wide: boolean;
   };
   intro: string;
@@ -128,20 +133,26 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
           loading="lazy"
         />
 
-        <span class="lockup-pane__connector" aria-hidden="true">
-          <span class="lockup-pane__connector-bar lockup-pane__connector-bar--h t-flow"></span>
-          <span class="lockup-pane__connector-bar lockup-pane__connector-bar--v t-flow-v"></span>
-          <span class="lockup-pane__connector-x">×</span>
-        </span>
+        {
+          partnerLogo && (
+            <>
+              <span class="lockup-pane__connector" aria-hidden="true">
+                <span class="lockup-pane__connector-bar lockup-pane__connector-bar--h t-flow" />
+                <span class="lockup-pane__connector-bar lockup-pane__connector-bar--v t-flow-v" />
+                <span class="lockup-pane__connector-x">×</span>
+              </span>
 
-        <img
-          class:list={['lockup-pane__logo', partnerLogo.wide && 'lockup-pane__logo--wide']}
-          src={partnerLogo.src}
-          alt={partnerLogo.alt}
-          width="48"
-          height="48"
-          loading="lazy"
-        />
+              <img
+                class:list={['lockup-pane__logo', partnerLogo.wide && 'lockup-pane__logo--wide']}
+                src={partnerLogo.src}
+                alt={partnerLogo.alt}
+                width="48"
+                height="48"
+                loading="lazy"
+              />
+            </>
+          )
+        }
       </div>
 
       <p class="lockup-pane__copy t-fade" style={`--t-delay: ${1100 + delayOffset}ms;`}>{intro}</p>
