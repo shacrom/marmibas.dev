@@ -26,6 +26,10 @@ export interface Props {
   class?: string;
   /** Forwarded `id`. */
   id?: string;
+  /** Forwarded to the rendered `<a>` — external links (case study hero W2). */
+  target?: string;
+  /** Forwarded to the rendered `<a>` — pair with `target="_blank"`. */
+  rel?: string;
 }
 
 const {

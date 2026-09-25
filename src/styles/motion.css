@@ -328,6 +328,19 @@
     transform: none;
   }
 
+  /* --- Case study results (W2, src/styles/terminal.css) final state -----
+   * `.t-grow-x` (the "diff antes.txt despues.txt" bars, BeforeAfter.astro)
+   * is the same "delayed one-shot reveal" case as `.t-grow`/`.t-slide`
+   * above: zeroing the duration tokens alone would still hold the bar at
+   * `scaleX(0)` for the whole original `--t-delay` before flashing to full
+   * width. `animation: none` bypasses the delay; `transform: none` IS the
+   * resolved end-state (the bar's own `width` inline style already carries
+   * its final size). */
+  .t-grow-x {
+    animation: none !important;
+    transform: none;
+  }
+
   .t-slide {
     animation: none !important;
     opacity: 1;
