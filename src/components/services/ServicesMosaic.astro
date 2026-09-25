@@ -565,7 +565,14 @@ const ICONS: Record<string, string> = {
     padding: 32px 36px;
   }
 
-  @media (max-width: 760px) {
+  /* 900px (not 760px): the 1.1fr/1fr/auto three-way split leaves the main
+     column too narrow in the 761-795px range, wrapping the CTA button's
+     bracket syntax onto its own line ("[ Hablemos de esto" / "]") — e.g. at
+     a 768px tablet viewport. Grid-column count for the module tiles above
+     (`.mosaic__grid`, 640/999px) is unrelated and untouched — the drawer
+     always spans the full row (`grid-column: 1 / -1`) regardless of tile
+     column count, so this only changes the drawer's own inner layout. */
+  @media (max-width: 900px) {
     .mosaic-drawer__body {
       grid-template-columns: minmax(0, 1fr);
       gap: 24px;
@@ -623,7 +630,8 @@ const ICONS: Record<string, string> = {
     min-width: 0;
   }
 
-  @media (max-width: 760px) {
+  /* Matches `.mosaic-drawer__body`'s stacking breakpoint above. */
+  @media (max-width: 900px) {
     .mosaic-drawer__includes {
       padding-left: 0;
       border-left: none;
@@ -671,7 +679,8 @@ const ICONS: Record<string, string> = {
     border-color: var(--accent-400);
   }
 
-  @media (max-width: 760px) {
+  /* Matches `.mosaic-drawer__body`'s stacking breakpoint above. */
+  @media (max-width: 900px) {
     .mosaic-drawer__close {
       justify-self: start;
     }
