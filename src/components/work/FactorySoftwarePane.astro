@@ -1,50 +1,45 @@
 ---
 /**
- * AlliancePane.astro — closing "Marmibas × Plazasys alliance" pane for
- * `/experiencia` (owner request from a screenshot review, 2026-09-25).
+ * FactorySoftwarePane.astro — closing "Software para fábricas" pane for
+ * `/experiencia` (owner requests from screenshot reviews, 2026-09-25).
  *
  * Context: the timeline's top entry
  * (`src/content/experience/es/marmibas.md`) used to show BOTH the Marmibas
- * logo and the Plazasys `partnerLogo`, plus two bullets about the alliance
- * and the case studies born from it. The owner asked to split that: the
- * timeline entry now reads as Marmibas' own step as a freelancer (Marmibas
- * logo only, Voxye bullet only — see the MDX diff), and this new pane gives
- * the alliance its own dedicated closing section, rendered right after the
- * timeline/education/CTA and before the global `<Footer>`.
+ * logo and the Plazasys `partnerLogo`, plus two bullets about the industrial
+ * work done with Plazasys and the case studies born from it. The owner asked
+ * to split that: the timeline entry now reads as Marmibas' own step as a
+ * freelancer (Marmibas logo only, Voxye bullet only), and this pane gives the
+ * industrial work its own closing section, rendered right after the
+ * timeline/education/CTA and before the global `<Footer>`. The owner does not
+ * want it framed as an "alianza" — keep the wording to "junto a Plazasys".
  *
- * Copy is reused VERBATIM from the two bullets removed from the MDX body —
- * nothing invented, no new facts/dates/numbers:
- *   - `alliance` = the exact "Para proyectos industriales..." bullet.
- *   - `fruits[].desc` = the exact parenthetical descriptions from the
+ * Copy comes from the two bullets removed from the MDX body, with "en alianza
+ * con" reworded to "junto a" at the owner's request — no new facts, dates or
+ * numbers:
+ *   - `intro` = the "Para proyectos industriales..." bullet.
+ *   - `fruits[].desc` = the parenthetical descriptions from the
  *     "Recetas Novatex (...) y Visomo's (...)" bullet.
- * `eyebrow`/`heading`/`fruitsIntro`/the prompt command are new decorative
- * framing, same convention every other pane's docblock documents (e.g.
- * `CasesPane.astro`'s "en funcionamiento" framing) — not a new factual
- * claim. "en producción" mirrors the case studies' own
- * `status: "success"` (`content.config.ts`), so it isn't new either.
+ * `eyebrow`/`heading`/`fruitsIntro`/the prompt command are decorative framing,
+ * same convention every other pane documents. "en producción" mirrors the
+ * case studies' own `status: "success"` (`content.config.ts`).
  *
- * Visual — a `TerminalPane` (`path="alianza"`, no `index`: this is a
- * one-off page-closing pane, not one of the home's numbered sections, same
- * convention `Footer.astro` uses for `path="contacto"`):
- *   1. `Prompt` decorative command (`./alianza --marmibas --plazasys`).
- *   2. Eyebrow + `<h2>` heading, centered — this pane reads as the page's
- *      closing statement, mirroring `experience/index.astro`'s own centered
- *      `.experience__cta` right above it.
+ * Visual — a `TerminalPane` (`path="fabricas"`, no `index`: a one-off
+ * page-closing pane, same convention `Footer.astro` uses for
+ * `path="contacto"`):
+ *   1. `Prompt` decorative command (`ls fabricas/`).
+ *   2. Eyebrow + `<h2>` heading, centered — the page's closing statement,
+ *      mirroring `experience/index.astro`'s centered `.experience__cta`.
  *   3. The lock-up: the Marmibas wordmark tile × the Plazasys tile, joined
  *      by an animated dashed connector with a violet "×" badge on top.
- *      Reuses the exact tile treatment (padding/radius/pill background)
- *      and the exact logo assets (`/marmibas-logo.png`,
- *      `/logos/plazasys-logo.svg`) the timeline entry already renders.
- *      Desktop: horizontal `.t-flow` bar. Mobile (≤640px, this project's
- *      own pane/timeline breakpoint): the lock-up stacks vertically and
- *      swaps to `.t-flow-v` — same dual-bar, CSS-`display`-picks-the-pair
- *      convention `ProcessPane.astro` already uses for its own connectors.
- *      Both utilities are pre-existing (terminal.css) and already
- *      neutralised by the single reduced-motion block in `motion.css`, so
- *      no new motion entry is needed here.
- *   4. The alliance sentence, then the two case studies as small "fruit"
- *      rows linking out, each with the case's own logo (same assets
- *      `CasesPane.astro` uses) and a pulsing `.t-led` + "en producción".
+ *      Reuses the exact logo assets (`/marmibas-logo.png`,
+ *      `/logos/plazasys-logo.svg`) the timeline entry used. Desktop:
+ *      horizontal `.t-flow` bar. Mobile (≤640px): the lock-up stacks and
+ *      swaps to `.t-flow-v` — same dual-bar convention as `ProcessPane.astro`.
+ *      Both utilities are already neutralised by the single reduced-motion
+ *      block in `motion.css`.
+ *   4. The intro sentence, then the two case studies as small rows linking
+ *      out, each with the case's logo (same assets as `CasesPane.astro`) and
+ *      a pulsing `.t-led` + "en producción".
  *
  * Layout: rendered by `experience/index.astro` INSIDE `.experience`'s own
  * max-width:1080px wrapper, so it shares the page's existing container
@@ -67,25 +62,25 @@ export interface Props {
 
 const { lang } = Astro.props as Props;
 
-const panePath = 'alianza';
-const promptCommand = './alianza --marmibas --plazasys';
+const panePath = 'fabricas';
+const promptCommand = 'ls fabricas/';
 
 // Copy reused verbatim from the two bullets removed from
 // `src/content/experience/es/marmibas.md` (see docblock above).
 const copy = {
   es: {
-    eyebrow: 'Alianza tecnológica',
-    heading: 'Alianza Marmibas × Plazasys',
-    alliance:
-      'Para proyectos industriales trabajo en alianza con Plazasys, mi socio tecnológico y cliente principal, que me conecta con fábricas que necesitan digitalizarse.',
-    fruitsIntro: 'Recetas Novatex y Visomo’s son fruto de esa alianza, y ambos están en producción:',
+    eyebrow: 'Proyectos industriales',
+    heading: 'Software para fábricas',
+    intro:
+      'Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico y cliente principal, que me conecta con fábricas que necesitan digitalizarse.',
+    fruitsIntro: 'Recetas Novatex y Visomo’s están en producción:',
     statusLabel: 'en producción',
   },
 } as const;
 
 const content = copy[lang];
 
-// Fruits of the alliance — same case studies + logo assets `CasesPane.astro`
+// Industrial projects in production — same case studies + logo assets `CasesPane.astro`
 // renders on the home page; descriptions copied verbatim (see docblock).
 const fruits = [
   {
@@ -104,21 +99,21 @@ const fruits = [
   },
 ] as const;
 
-const headingId = 'alliance-heading';
+const headingId = 'factory-heading';
 ---
 
-<TerminalPane path={panePath} labelledby={headingId} class="alliance-pane-shell">
-  <div class="alliance-pane">
+<TerminalPane path={panePath} labelledby={headingId} class="factory-pane-shell">
+  <div class="factory-pane">
     <Prompt command={promptCommand} delay={200} />
 
-    <div class="alliance-pane__heading-block t-show" style="--t-delay: 500ms;">
-      <p class="t-comment alliance-pane__eyebrow"># {content.eyebrow}</p>
-      <h2 id={headingId} class="alliance-pane__heading">{content.heading}</h2>
+    <div class="factory-pane__heading-block t-show" style="--t-delay: 500ms;">
+      <p class="t-comment factory-pane__eyebrow"># {content.eyebrow}</p>
+      <h2 id={headingId} class="factory-pane__heading">{content.heading}</h2>
     </div>
 
-    <div class="alliance-pane__lockup t-show" style="--t-delay: 800ms;">
+    <div class="factory-pane__lockup t-show" style="--t-delay: 800ms;">
       <img
-        class="alliance-pane__logo alliance-pane__logo--wordmark"
+        class="factory-pane__logo factory-pane__logo--wordmark"
         src="/marmibas-logo.png"
         alt="Logo de Marmibas"
         width="48"
@@ -126,14 +121,14 @@ const headingId = 'alliance-heading';
         loading="lazy"
       />
 
-      <span class="alliance-pane__connector" aria-hidden="true">
-        <span class="alliance-pane__connector-bar alliance-pane__connector-bar--h t-flow" />
-        <span class="alliance-pane__connector-bar alliance-pane__connector-bar--v t-flow-v" />
-        <span class="alliance-pane__connector-x">×</span>
+      <span class="factory-pane__connector" aria-hidden="true">
+        <span class="factory-pane__connector-bar factory-pane__connector-bar--h t-flow" />
+        <span class="factory-pane__connector-bar factory-pane__connector-bar--v t-flow-v" />
+        <span class="factory-pane__connector-x">×</span>
       </span>
 
       <img
-        class="alliance-pane__logo alliance-pane__logo--wide"
+        class="factory-pane__logo factory-pane__logo--wide"
         src="/logos/plazasys-logo.svg"
         alt="Logo de Plazasys"
         width="48"
@@ -142,23 +137,23 @@ const headingId = 'alliance-heading';
       />
     </div>
 
-    <p class="alliance-pane__copy t-fade" style="--t-delay: 1100ms;">{content.alliance}</p>
+    <p class="factory-pane__copy t-fade" style="--t-delay: 1100ms;">{content.intro}</p>
 
-    <p class="alliance-pane__fruits-intro t-fade" style="--t-delay: 1300ms;">{content.fruitsIntro}</p>
+    <p class="factory-pane__fruits-intro t-fade" style="--t-delay: 1300ms;">{content.fruitsIntro}</p>
 
-    <ul class="alliance-pane__fruits" role="list">
+    <ul class="factory-pane__fruits" role="list">
       {
         fruits.map((fruit, i) => (
           <li>
-            <a class="alliance-pane__fruit t-show" style={`--t-delay: ${1450 + i * 150}ms;`} href={fruit.href}>
-              <span class="alliance-pane__fruit-logo">
+            <a class="factory-pane__fruit t-show" style={`--t-delay: ${1450 + i * 150}ms;`} href={fruit.href}>
+              <span class="factory-pane__fruit-logo">
                 <img src={fruit.logo} alt="" width="28" height="28" loading="lazy" />
               </span>
-              <span class="alliance-pane__fruit-text">
-                <span class="alliance-pane__fruit-title">{fruit.title}</span>
-                <span class="alliance-pane__fruit-desc">{fruit.desc}</span>
+              <span class="factory-pane__fruit-text">
+                <span class="factory-pane__fruit-title">{fruit.title}</span>
+                <span class="factory-pane__fruit-desc">{fruit.desc}</span>
               </span>
-              <span class="alliance-pane__fruit-status">
+              <span class="factory-pane__fruit-status">
                 <span
                   class="t-led"
                   aria-hidden="true"
@@ -179,17 +174,17 @@ const headingId = 'alliance-heading';
      top-margin-only `:global()` pattern; no side margins here since this
      pane lives inside `.experience`'s own padded max-width:1080px wrapper,
      not directly in the page flow. */
-  :global(.alliance-pane-shell) {
+  :global(.factory-pane-shell) {
     margin-top: 64px;
   }
 
   @media (max-width: 640px) {
-    :global(.alliance-pane-shell) {
+    :global(.factory-pane-shell) {
       margin-top: 48px;
     }
   }
 
-  .alliance-pane {
+  .factory-pane {
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -197,19 +192,19 @@ const headingId = 'alliance-heading';
   }
 
   /* --- Heading ------------------------------------------------------- */
-  .alliance-pane__heading-block {
+  .factory-pane__heading-block {
     display: flex;
     flex-direction: column;
     gap: 8px;
     text-align: center;
   }
 
-  .alliance-pane__eyebrow {
+  .factory-pane__eyebrow {
     margin: 0;
     font-size: var(--text-xs);
   }
 
-  .alliance-pane__heading {
+  .factory-pane__heading {
     margin: 0;
     font-family: var(--font-display);
     font-size: 32px;
@@ -220,13 +215,13 @@ const headingId = 'alliance-heading';
   }
 
   @media (max-width: 640px) {
-    .alliance-pane__heading {
+    .factory-pane__heading {
       font-size: 24px;
     }
   }
 
   /* --- Lock-up: Marmibas × Plazasys ----------------------------------- */
-  .alliance-pane__lockup {
+  .factory-pane__lockup {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -237,7 +232,7 @@ const headingId = 'alliance-heading';
   }
 
   @media (max-width: 640px) {
-    .alliance-pane__lockup {
+    .factory-pane__lockup {
       flex-direction: column;
       gap: 12px;
     }
@@ -246,7 +241,7 @@ const headingId = 'alliance-heading';
   /* Official logos are meant for light backgrounds; the light pill
      preserves brand colours over the dark theme (same rationale as
      `timeline__logo` in `experience/index.astro`). */
-  .alliance-pane__logo {
+  .factory-pane__logo {
     width: 48px;
     height: 48px;
     flex-shrink: 0;
@@ -258,7 +253,7 @@ const headingId = 'alliance-heading';
   }
 
   /* White Marmibas wordmark: dark wide pill so it stays visible. */
-  .alliance-pane__logo--wordmark {
+  .factory-pane__logo--wordmark {
     width: auto;
     max-width: 140px;
     padding: 12px 14px;
@@ -266,13 +261,13 @@ const headingId = 'alliance-heading';
   }
 
   /* Wide Plazasys wordmark on the standard light pill. */
-  .alliance-pane__logo--wide {
+  .factory-pane__logo--wide {
     width: auto;
     max-width: 140px;
     padding: 8px 12px;
   }
 
-  .alliance-pane__connector {
+  .factory-pane__connector {
     position: relative;
     flex: 1 1 auto;
     min-width: 64px;
@@ -283,7 +278,7 @@ const headingId = 'alliance-heading';
   }
 
   @media (max-width: 640px) {
-    .alliance-pane__connector {
+    .factory-pane__connector {
       flex: 0 0 auto;
       min-width: 0;
       width: 32px;
@@ -293,12 +288,12 @@ const headingId = 'alliance-heading';
 
   /* Dual bar: only one of the two is shown per breakpoint (no background
      shorthand here — `.t-flow`/`.t-flow-v` supply `background-image`). */
-  .alliance-pane__connector-bar {
+  .factory-pane__connector-bar {
     display: none;
     position: absolute;
   }
 
-  .alliance-pane__connector-bar--h {
+  .factory-pane__connector-bar--h {
     display: block;
     inset-inline: 0;
     top: 50%;
@@ -307,11 +302,11 @@ const headingId = 'alliance-heading';
   }
 
   @media (max-width: 640px) {
-    .alliance-pane__connector-bar--h {
+    .factory-pane__connector-bar--h {
       display: none;
     }
 
-    .alliance-pane__connector-bar--v {
+    .factory-pane__connector-bar--v {
       display: block;
       inset-block: 0;
       left: 50%;
@@ -320,7 +315,7 @@ const headingId = 'alliance-heading';
     }
   }
 
-  .alliance-pane__connector-x {
+  .factory-pane__connector-x {
     position: relative;
     z-index: 1;
     display: inline-flex;
@@ -338,8 +333,8 @@ const headingId = 'alliance-heading';
   }
 
   /* --- Copy ------------------------------------------------------------ */
-  .alliance-pane__copy,
-  .alliance-pane__fruits-intro {
+  .factory-pane__copy,
+  .factory-pane__fruits-intro {
     margin: 0;
     max-width: 640px;
     margin-inline: auto;
@@ -347,17 +342,17 @@ const headingId = 'alliance-heading';
     line-height: 1.65;
   }
 
-  .alliance-pane__copy {
+  .factory-pane__copy {
     color: var(--text-1);
   }
 
-  .alliance-pane__fruits-intro {
+  .factory-pane__fruits-intro {
     color: var(--text-2);
     font-size: var(--text-sm);
   }
 
   /* --- Fruits: Recetas Novatex + Visomo's ------------------------------ */
-  .alliance-pane__fruits {
+  .factory-pane__fruits {
     margin: 0 auto;
     padding: 0;
     list-style: none;
@@ -368,7 +363,7 @@ const headingId = 'alliance-heading';
     gap: 10px;
   }
 
-  .alliance-pane__fruit {
+  .factory-pane__fruit {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -383,25 +378,25 @@ const headingId = 'alliance-heading';
       box-shadow var(--motion-base) var(--motion-ease-out);
   }
 
-  .alliance-pane__fruit:hover,
-  .alliance-pane__fruit:focus-visible {
+  .factory-pane__fruit:hover,
+  .factory-pane__fruit:focus-visible {
     border-color: var(--accent-400);
     box-shadow: var(--shadow-card-hover);
   }
 
-  .alliance-pane__fruit:focus-visible {
+  .factory-pane__fruit:focus-visible {
     outline: 2px solid var(--accent-400);
     outline-offset: 2px;
   }
 
   @media (max-width: 480px) {
-    .alliance-pane__fruit {
+    .factory-pane__fruit {
       flex-wrap: wrap;
       row-gap: 4px;
     }
   }
 
-  .alliance-pane__fruit-logo {
+  .factory-pane__fruit-logo {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
@@ -414,13 +409,13 @@ const headingId = 'alliance-heading';
     border-radius: var(--radius-sm);
   }
 
-  .alliance-pane__fruit-logo img {
+  .factory-pane__fruit-logo img {
     width: 28px;
     height: 28px;
     object-fit: contain;
   }
 
-  .alliance-pane__fruit-text {
+  .factory-pane__fruit-text {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
@@ -429,17 +424,17 @@ const headingId = 'alliance-heading';
     text-align: left;
   }
 
-  .alliance-pane__fruit-title {
+  .factory-pane__fruit-title {
     font-weight: 600;
     color: var(--text-0);
   }
 
-  .alliance-pane__fruit-desc {
+  .factory-pane__fruit-desc {
     font-size: var(--text-xs);
     color: var(--text-2);
   }
 
-  .alliance-pane__fruit-status {
+  .factory-pane__fruit-status {
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -450,7 +445,7 @@ const headingId = 'alliance-heading';
   }
 
   @media (max-width: 480px) {
-    .alliance-pane__fruit-status {
+    .factory-pane__fruit-status {
       flex: 1 0 100%;
       padding-left: 52px;
     }
