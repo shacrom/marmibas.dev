@@ -45,6 +45,8 @@ opening a module, the drawer (E4).
 | S2 | `/servicios` mosaic + drawer (E4), hash deep links, crawlable content | delegated writer (same) | [x] |
 | S3 | Remove the 7 detail pages, 301 redirects to `/servicios/#<slug>` (tested), update internal links, sitemap, `llms.txt`, SEO verify script | delegated writer (same) | [x] |
 | S4 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
+| S5 | Owner adjustments: drop the `cat idea.txt` CTA pane on `/trabajos` (footer already closes the page); compact single-row service modules on mobile | direct inline (2 small edits) | [x] |
+| S6 | Mobile pass on every page (390 / 768): home, servicios, trabajos, case studies, experiencia, contacto — fix what breaks | parent QA + delegated writer if 2+ files | [x] |
 
 Route evidence: S1–S3 touch 4+ non-trivial files → writer trigger.
 
@@ -75,6 +77,20 @@ Route evidence: S1–S3 touch 4+ non-trivial files → writer trigger.
   QA 1440 (closed + `#sistemas-de-gestion` open) and 390 (`#integraciones` open) with reduced motion.
 - Possible follow-up: modules keep their 230px height on mobile (tall single-column list).
 
+- Owner (2026-09-25): "Sí, ajústalo y prepara también todas las vistas móviles" → S5 + S6 before delivery.
+
+- S5 done — `810e6ae fix(work): drop the page CTA that repeated the footer contact pane` and `587109e
+  feat(services): compact one-row service modules on mobile` (icon · name + keyword · index, 72px rows; drawer still
+  under the tapped module). Checks: `npm test` 154/154, `npm run check` 0 errors, eslint + prettier clean; visual
+  QA 390.
+- S6 done (delegated writer, all pages at 390/360/768, 1440 regression for changed components):
+  `4ff4234 fix(case-studies): widen the before/after label column` (label clipped by the bar at every width),
+  `519a9a8 fix(work): stack the project card body earlier on tablet` (titles broke mid-word at 768),
+  `98a8d69 fix(services): stack the drawer body earlier on tablet` (CTA wrapped mid-bracket at 761–795px). Other
+  pages OK. Checks: `npm test` 154/154, `npm run check` 0 errors, eslint + prettier clean, build OK. Parent spot
+  check: `npm test` 154/154; `/trabajos` and `/servicios/#tiendas-online` at 768 OK.
+
 ## Next step
 
-Delivery (push/PR/merge) after the owner's OK — PR stacked after `feature/work-terminal`.
+Delivery after the owner's OK: PRs `fix/og-logo-only`, `feature/work-terminal`, `feature/services-mosaic`
+(stacked; retarget to `main` after the work PR merges).
