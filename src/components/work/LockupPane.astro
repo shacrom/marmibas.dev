@@ -1,47 +1,90 @@
 ---
 /**
- * LockupPane.astro — reusable "Marmibas × partner" lock-up pane.
+ * LockupPane.astro — reusable "logo lock-up" terminal pane.
  *
  * Extracted from `FactorySoftwarePane.astro` (the original "Software para
  * fábricas" pane, owner request 2026-09-25) so the same effect — logo
  * lock-up joined by an animated dashed connector with a violet "×" badge,
  * intro copy, and a list of shipped projects with a pulsing `.t-led` +
  * status label — can be reused for a second pane (Marmibas + Voxye) without
- * duplicating ~450 lines of markup/styles/motion. Both current consumers
- * (`FactorySoftwarePane.astro`, `VoxyePane.astro`) are data-only: they hold
- * their own copy and provenance docblocks and render this component with
- * resolved strings.
+ * duplicating ~450 lines of markup/styles/motion. `FactorySoftwarePane.astro`
+ * and `VoxyePane.astro` are data-only: they hold their own copy and
+ * provenance docblocks and render this component with resolved strings.
  *
- * The left tile of the lock-up is always the Marmibas wordmark — every
- * consumer of this component is a "Marmibas × X" pane by construction, so
- * that logo/alt/tile treatment is hardcoded here rather than threaded
- * through as a prop. Only the right-hand partner tile is configurable,
- * including whether it needs the wide wordmark treatment (e.g. Plazasys, a
- * wide logotype) or the square icon-mark treatment — pick by checking the
- * source SVG's `viewBox` aspect ratio. The partner is optional: without it
- * the Marmibas tile stands alone and the connector is not rendered (the
- * owner asked for that on the Marmibas/Voxye pane, where Voxye is shown only
- * as a project row).
+ * Generalised (P5, owner follow-up 2026-09-25) to also cover a single-logo
+ * pane per past role (Devoltec, Capgemini, Cleverpy — see
+ * `experiencia/index.astro`), which needs its own company logo instead of
+ * the Marmibas tile, a role subheading, stack badges, and a Markdown body
+ * (paragraph + checklist) instead of the fixed intro/rows shape:
+ *   - `logo` (optional `LockupLogo`) replaces the old hardcoded Marmibas
+ *     `<img>`: defaults to `DEFAULT_LOGO` below (the exact same wordmark
+ *     markup every existing consumer already renders), so
+ *     `FactorySoftwarePane`/`VoxyePane` need no changes. A caller with its
+ *     own logo (a role pane) passes `{ src, alt, variant, href? }` instead;
+ *     `href` wraps the tile in a link with an auto-generated accessible name
+ *     (`"Web de {heading}"`), same convention the old timeline card's own
+ *     `aria-label` used.
+ *   - `subheading` (optional) renders a smaller line under `heading` (e.g. a
+ *     role title).
+ *   - `tags` (optional `readonly string[]`) renders a centered row of
+ *     `TechBadge` (`variant="subtle"`) right below the lock-up.
+ *   - `intro`, `fruitsIntro`, `statusLabel`, `rows` are now all optional
+ *     (were required) — a role pane passes none of them and uses the
+ *     default `<slot />` instead (see below). `FactorySoftwarePane`/
+ *     `VoxyePane` keep passing all four exactly as before.
+ *   - A default `<slot />`, rendered inside a `.lockup-pane__body` wrapper,
+ *     carries a role pane's rendered MD `<Content />` (one paragraph + a
+ *     checklist). The wrapper only renders when the caller actually passed
+ *     slot content (`Astro.slots.has('default')`) so the two existing panes
+ *     — which pass nothing — get no extra empty `<div>` in their markup.
+ *     Slotted Markdown carries no classes of its own, so its `<p>`/`<ul>`/
+ *     `<li>` are styled with `:global()` selectors scoped under
+ *     `.lockup-pane__body`: the paragraph reuses the `.lockup-pane__copy`
+ *     look, each `<li>` reuses the `.lockup-pane__fruit` row's box/border/
+ *     spacing but drops the link/logo/status and gets a violet `✓` marker
+ *     (`::before`) instead — the checklist isn't clickable, unlike the
+ *     project rows below.
+ *
+ * The left tile defaults to the Marmibas wordmark, but is no longer
+ * hardcoded — see `logo`/`DEFAULT_LOGO` above. Only the right-hand partner
+ * tile stays a distinct, simpler prop (`partnerLogo`): including whether it
+ * needs the wide wordmark treatment (e.g. Plazasys, a wide logotype) or the
+ * square icon-mark treatment — pick by checking the source SVG's `viewBox`
+ * aspect ratio. The partner is optional: without it the primary tile stands
+ * alone and the connector is not rendered (the owner asked for that on the
+ * Marmibas/Voxye pane, where Voxye is shown only as a project row; every
+ * role pane also omits it — a role pane's `logo` and a `partnerLogo` were
+ * never meant to combine).
  *
  * Visual — a `TerminalPane` (`path={path}`, no `index`: a one-off pane, same
  * convention `Footer.astro` uses for `path="contacto"`):
  *   1. `Prompt` decorative command.
- *   2. Eyebrow + `<h2>` heading, centered.
- *   3. The lock-up: the Marmibas wordmark tile × the partner tile, joined by
- *      an animated dashed connector with a violet "×" badge on top (or the
- *      Marmibas tile alone when no `partnerLogo` is given). Desktop:
+ *   2. Eyebrow + `<h2>` heading (+ optional `subheading`), centered.
+ *   3. The lock-up: the primary tile × the partner tile, joined by an
+ *      animated dashed connector with a violet "×" badge on top (or the
+ *      primary tile alone when no `partnerLogo` is given). Desktop:
  *      horizontal `.t-flow` bar. Mobile (≤640px): the lock-up stacks and
  *      swaps to `.t-flow-v` — same dual-bar convention as `ProcessPane.astro`.
  *      Both utilities are already neutralised by the single reduced-motion
  *      block in `motion.css`.
- *   4. The intro sentence, then a "rows intro" line, then each row as a
+ *   4. Optional stack badges row.
+ *   5. The intro sentence, then a "rows intro" line, then each row as a
  *      small link out with its own logo and a pulsing `.t-led` + status
- *      label.
+ *      label — or, for a role pane, the default slot's MD body instead.
  *
  * Entrance motion: every entrance `--t-delay` (and the `Prompt`'s own typing
  * delay) adds `delayOffset` (ms, default `0`) so a second pane rendered
  * right after a first one can stagger its entrance instead of animating in
- * lockstep with it.
+ * lockstep with it. The slotted body's `p`/`li` reveals reuse the `t-fade`/
+ * `t-show` keyframes directly (element selectors, since slotted content
+ * carries no classes to hook `--t-delay` onto) via a single
+ * `--lockup-body-delay` custom property set on the wrapper; both the
+ * reduced-motion final-state override (`src/styles/motion.css`, appended
+ * next to the other per-component sections — the single-source-of-truth
+ * block still lives there, this only adds an entry to it) and the
+ * run-on-view pause (`:global(.t-pane.is-waiting ...)` below, mirroring
+ * `terminal.css`'s own `.is-waiting` rule for the classed `.t-*` utilities)
+ * cover it too.
  *
  * Layout: assumes it is rendered INSIDE a container that already owns its
  * own max-width and inline padding (e.g. `/experiencia`'s `.experience`
@@ -56,6 +99,7 @@
 
 import TerminalPane from '../terminal/TerminalPane.astro';
 import Prompt from '../terminal/Prompt.astro';
+import TechBadge from '../ui/TechBadge.astro';
 
 export interface LockupRow {
   slug: string;
@@ -64,6 +108,25 @@ export interface LockupRow {
   /** Public path to the row's logo (e.g. `/logos/voxye.svg`). */
   logo: string;
   href: string;
+}
+
+/**
+ * The pane's primary (left) tile — see the docblock above. Defaults to the
+ * Marmibas wordmark (`DEFAULT_LOGO`), so existing "Marmibas × X" consumers
+ * don't pass this prop at all.
+ */
+export interface LockupLogo {
+  src: string;
+  alt: string;
+  /** `wordmark` = dark wide pill (the Marmibas mark). `wide` = light wide
+   *  pill (a wide partner wordmark, e.g. Plazasys). `square` = light 48×48
+   *  pill (a roughly-square company mark). Pick by checking the source
+   *  image's aspect ratio, same rule `partnerLogo.wide` below already used. */
+  variant: 'wordmark' | 'square' | 'wide';
+  /** When set, the tile becomes a link (`target="_blank"`, accessible name
+   *  `"Web de {heading}"`). Omit for a purely decorative tile — the default
+   *  Marmibas tile is never a link. */
+  href?: string;
 }
 
 export interface Props {
@@ -75,17 +138,23 @@ export interface Props {
   headingId: string;
   eyebrow: string;
   heading: string;
-  /** Omit to show the Marmibas tile alone, without connector (e.g. `VoxyePane`). */
+  /** Primary (left) tile. Defaults to the Marmibas wordmark — see `LockupLogo`. */
+  logo?: LockupLogo;
+  /** Smaller line under `heading` (e.g. a role title). Centered, mono, `text-2`. */
+  subheading?: string;
+  /** Omit to show the primary tile alone, without connector (e.g. `VoxyePane`). */
   partnerLogo?: {
     src: string;
     alt: string;
     /** Wide wordmark tile (e.g. Plazasys) vs. a square icon-mark tile. */
     wide: boolean;
   };
-  intro: string;
-  fruitsIntro: string;
-  statusLabel: string;
-  rows: readonly LockupRow[];
+  /** Stack badges (`TechBadge`, `variant="subtle"`), centered, right below the lock-up. */
+  tags?: readonly string[];
+  intro?: string;
+  fruitsIntro?: string;
+  statusLabel?: string;
+  rows?: readonly LockupRow[];
   /** Added to every entrance `--t-delay`, ms. Defaults to `0`. */
   delayOffset?: number;
   /** Top margin above the pane, desktop px. Defaults to `64`. */
@@ -94,21 +163,43 @@ export interface Props {
   topSpacingMobile?: number;
 }
 
+const DEFAULT_LOGO: LockupLogo = {
+  src: '/marmibas-logo.png',
+  alt: 'Logo de Marmibas',
+  variant: 'wordmark',
+};
+
+const LOGO_VARIANT_CLASS: Record<LockupLogo['variant'], string | undefined> = {
+  wordmark: 'lockup-pane__logo--wordmark',
+  square: undefined,
+  wide: 'lockup-pane__logo--wide',
+};
+
 const {
   path,
   promptCommand,
   headingId,
   eyebrow,
   heading,
+  logo,
+  subheading,
   partnerLogo,
+  tags,
   intro,
   fruitsIntro,
   statusLabel,
-  rows,
+  rows = [],
   delayOffset = 0,
   topSpacingDesktop = 64,
   topSpacingMobile = 48,
 } = Astro.props as Props;
+
+const resolvedLogo = logo ?? DEFAULT_LOGO;
+
+// Only wrap the slot in its own container when a caller actually passed
+// content — `FactorySoftwarePane`/`VoxyePane` pass none, so they get no
+// extra empty `<div>` (see docblock).
+const hasBody = Astro.slots.has('default');
 
 const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mobile: ${topSpacingMobile}px;`;
 ---
@@ -121,17 +212,39 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
       <div class="lockup-pane__heading-block t-show" style={`--t-delay: ${500 + delayOffset}ms;`}>
         <p class="t-comment lockup-pane__eyebrow"># {eyebrow}</p>
         <h2 id={headingId} class="lockup-pane__heading">{heading}</h2>
+        {subheading && <p class="lockup-pane__subheading">{subheading}</p>}
       </div>
 
       <div class="lockup-pane__lockup t-show" style={`--t-delay: ${800 + delayOffset}ms;`}>
-        <img
-          class="lockup-pane__logo lockup-pane__logo--wordmark"
-          src="/marmibas-logo.png"
-          alt="Logo de Marmibas"
-          width="48"
-          height="48"
-          loading="lazy"
-        />
+        {
+          resolvedLogo.href ? (
+            <a
+              class="lockup-pane__logo-link"
+              href={resolvedLogo.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Web de ${heading}`}
+            >
+              <img
+                class:list={['lockup-pane__logo', LOGO_VARIANT_CLASS[resolvedLogo.variant]]}
+                src={resolvedLogo.src}
+                alt={resolvedLogo.alt}
+                width="48"
+                height="48"
+                loading="lazy"
+              />
+            </a>
+          ) : (
+            <img
+              class:list={['lockup-pane__logo', LOGO_VARIANT_CLASS[resolvedLogo.variant]]}
+              src={resolvedLogo.src}
+              alt={resolvedLogo.alt}
+              width="48"
+              height="48"
+              loading="lazy"
+            />
+          )
+        }
 
         {
           partnerLogo && (
@@ -155,41 +268,77 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
         }
       </div>
 
-      <p class="lockup-pane__copy t-fade" style={`--t-delay: ${1100 + delayOffset}ms;`}>{intro}</p>
+      {
+        tags && tags.length > 0 && (
+          <ul
+            class="lockup-pane__tags t-show"
+            role="list"
+            style={`--t-delay: ${950 + delayOffset}ms;`}
+          >
+            {tags.map((tag) => (
+              <li>
+                <TechBadge label={tag} variant="subtle" />
+              </li>
+            ))}
+          </ul>
+        )
+      }
 
-      <p class="lockup-pane__fruits-intro t-fade" style={`--t-delay: ${1300 + delayOffset}ms;`}>
-        {fruitsIntro}
-      </p>
+      {
+        intro && (
+          <p class="lockup-pane__copy t-fade" style={`--t-delay: ${1100 + delayOffset}ms;`}>
+            {intro}
+          </p>
+        )
+      }
 
-      <ul class="lockup-pane__fruits" role="list">
-        {
-          rows.map((row, i) => (
-            <li>
-              <a
-                class="lockup-pane__fruit t-show"
-                style={`--t-delay: ${1450 + delayOffset + i * 150}ms;`}
-                href={row.href}
-              >
-                <span class="lockup-pane__fruit-logo">
-                  <img src={row.logo} alt="" width="28" height="28" loading="lazy" />
-                </span>
-                <span class="lockup-pane__fruit-text">
-                  <span class="lockup-pane__fruit-title">{row.title}</span>
-                  <span class="lockup-pane__fruit-desc">{row.desc}</span>
-                </span>
-                <span class="lockup-pane__fruit-status">
-                  <span
-                    class="t-led"
-                    aria-hidden="true"
-                    style={i > 0 ? `animation-delay: ${i * -600}ms;` : undefined}
-                  />
-                  {statusLabel}
-                </span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      {
+        fruitsIntro && (
+          <p class="lockup-pane__fruits-intro t-fade" style={`--t-delay: ${1300 + delayOffset}ms;`}>
+            {fruitsIntro}
+          </p>
+        )
+      }
+
+      {
+        rows.length > 0 && (
+          <ul class="lockup-pane__fruits" role="list">
+            {rows.map((row, i) => (
+              <li>
+                <a
+                  class="lockup-pane__fruit t-show"
+                  style={`--t-delay: ${1450 + delayOffset + i * 150}ms;`}
+                  href={row.href}
+                >
+                  <span class="lockup-pane__fruit-logo">
+                    <img src={row.logo} alt="" width="28" height="28" loading="lazy" />
+                  </span>
+                  <span class="lockup-pane__fruit-text">
+                    <span class="lockup-pane__fruit-title">{row.title}</span>
+                    <span class="lockup-pane__fruit-desc">{row.desc}</span>
+                  </span>
+                  <span class="lockup-pane__fruit-status">
+                    <span
+                      class="t-led"
+                      aria-hidden="true"
+                      style={i > 0 ? `animation-delay: ${i * -600}ms;` : undefined}
+                    />
+                    {statusLabel}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      {
+        hasBody && (
+          <div class="lockup-pane__body" style={`--lockup-body-delay: ${delayOffset}ms;`}>
+            <slot />
+          </div>
+        )
+      }
     </div>
   </TerminalPane>
 </div>
@@ -245,7 +394,16 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
     }
   }
 
-  /* --- Lock-up: Marmibas × partner ------------------------------------ */
+  /* Role line under `heading` (e.g. a job title) — a role pane's own use,
+     see docblock. */
+  .lockup-pane__subheading {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-2);
+  }
+
+  /* --- Lock-up: primary × partner ------------------------------------- */
   .lockup-pane__lockup {
     display: flex;
     align-items: center;
@@ -290,6 +448,18 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
     width: auto;
     max-width: 140px;
     padding: 8px 12px;
+  }
+
+  /* Wraps the primary tile only when `logo.href` is set (a role pane) — the
+     default Marmibas tile is never a link. */
+  .lockup-pane__logo-link {
+    display: inline-flex;
+    border-radius: var(--radius-sm);
+  }
+
+  .lockup-pane__logo-link:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
   }
 
   .lockup-pane__connector {
@@ -355,6 +525,19 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: var(--text-base);
+  }
+
+  /* --- Stack badges ----------------------------------------------------- */
+  .lockup-pane__tags {
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    max-width: 480px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
   /* --- Copy ------------------------------------------------------------ */
@@ -474,5 +657,92 @@ const wrapStyle = `--lockup-top-desktop: ${topSpacingDesktop}px; --lockup-top-mo
       flex: 1 0 100%;
       padding-left: 52px;
     }
+  }
+
+  /* --- Body: a role pane's slotted MD (paragraph + checklist) ----------
+     Only rendered when `Astro.slots.has('default')` is true (see script).
+     Scoped styles don't reach slotted Markdown markup, so every selector
+     below targeting `p`/`ul`/`li` is `:global()` — see docblock. */
+  .lockup-pane__body {
+    display: flex;
+    flex-direction: column;
+    /* Tighter than the 28px gap between `.lockup-pane`'s own top-level
+       sections — paragraph + checklist read as one chunk, not two. */
+    gap: 24px;
+  }
+
+  .lockup-pane__body :global(p) {
+    margin: 0;
+    max-width: 640px;
+    margin-inline: auto;
+    text-align: center;
+    line-height: 1.65;
+    color: var(--text-1);
+    animation: t-fade var(--motion-duration-base) var(--motion-ease-out)
+      calc(1100ms + var(--lockup-body-delay, 0ms)) backwards;
+  }
+
+  .lockup-pane__body :global(ul) {
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Same box/border/spacing as `.lockup-pane__fruit`, minus the link/logo/
+     status columns — a violet `✓` (`::before`) replaces them. `flex-start`
+     (not `.lockup-pane__fruit`'s `center`) because these bullets are full
+     sentences that wrap to multiple lines, unlike the short project-row
+     titles. */
+  .lockup-pane__body :global(li) {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    text-align: left;
+    line-height: 1.5;
+    color: var(--text-1);
+    animation: t-show var(--motion-duration-fast) linear
+      calc(1450ms + var(--lockup-body-delay, 0ms)) backwards;
+  }
+
+  .lockup-pane__body :global(li)::before {
+    content: '✓';
+    flex-shrink: 0;
+    color: var(--accent-400);
+    font-weight: 700;
+  }
+
+  .lockup-pane__body :global(li:nth-child(2)) {
+    animation-delay: calc(1600ms + var(--lockup-body-delay, 0ms));
+  }
+
+  .lockup-pane__body :global(li:nth-child(3)) {
+    animation-delay: calc(1750ms + var(--lockup-body-delay, 0ms));
+  }
+
+  .lockup-pane__body :global(li:nth-child(4)) {
+    animation-delay: calc(1900ms + var(--lockup-body-delay, 0ms));
+  }
+
+  .lockup-pane__body :global(li:nth-child(5)) {
+    animation-delay: calc(2050ms + var(--lockup-body-delay, 0ms));
+  }
+
+  /* Run-on-view pause for the body's own `t-fade`/`t-show`-keyframed `p`/
+     `li` — same mechanism as `terminal.css`'s `.t-pane.is-waiting :is(...)`
+     rule, but that one can only match literal `.t-fade`/`.t-show` classes,
+     which slotted Markdown never carries (see docblock). Fully `:global()`
+     since both the `.t-pane` ancestor and the slotted `p`/`li` live outside
+     this component's own scoped markup. */
+  :global(.t-pane.is-waiting .lockup-pane__body :is(p, li)) {
+    animation-play-state: paused;
   }
 </style>
