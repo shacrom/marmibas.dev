@@ -392,7 +392,13 @@ const metaLabels = { client: 'cliente', year: 'año', by: 'autoría' };
     padding: 28px;
   }
 
-  @media (max-width: 640px) {
+  /* 900px (not 640px): below this, the fixed 340px meta column leaves the
+     main column too narrow for the 56px logo + title row, forcing
+     `overflow-wrap: anywhere` (global.css) to break titles mid-word (e.g.
+     "Recetas Novatex" → "Rece"/"tas"/"Nova"/"tex" at a 768px tablet
+     viewport). Same threshold `.case-hero` uses for the same
+     content/340-400px-sidebar shape (CaseStudyHero.astro). */
+  @media (max-width: 900px) {
     .work-case__body {
       grid-template-columns: 1fr;
       gap: 20px;
@@ -519,7 +525,10 @@ const metaLabels = { client: 'cliente', year: 'año', by: 'autoría' };
     font-size: var(--text-sm);
   }
 
-  @media (max-width: 640px) {
+  /* Matches `.work-case__body`'s stacking breakpoint above: once the meta
+     `<dl>` drops below the main column, its rule needs to move from the
+     left edge to the top edge too. */
+  @media (max-width: 900px) {
     .work-case__meta {
       padding-left: 0;
       border-left: none;
