@@ -35,7 +35,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
 | C2 | Remove English version (pages, content, EN copy, ES-only i18n) + 301 redirects + SEO script update | delegated writer | [x] |
 | C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [x] |
 | C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [x] |
-| C5 | Mobile header clock layout | delegated writer | [ ] |
+| C5 | Mobile header clock layout | delegated writer | [x] |
 | C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [ ] |
 
 ## Progress
@@ -189,8 +189,36 @@ keys, finish the footer polish and fix the mobile header clock layout.
   Checks: `npm test` 58/58 (unchanged — no logic touched); `npm run check` 0 errors; `npm run
   build` + `test:seo` passed; `npm run lint` unchanged (7 errors + 2 warnings, same baseline).
 
-- C4 commit: (pending — recorded after this commit).
+- C4 commit: 54c7772.
+
+- C5 done: `src/components/ui/Header.astro`, mobile-only (`@media (max-width: 900px)`) media query.
+  Root cause: `.t-header__inner` is `display: flex; align-items: stretch;` (unchanged base rule).
+  For `.t-header__mobile-clock` (auto/no explicit height), stretch grows its box to the full 56px
+  bar height, but its own `flex-direction: column` content had no `justify-content` set, so the
+  label+time stack sat at the top of that stretched box (top-flush, matching the owner's
+  screenshot). For `.t-header__menu-btn` (explicit `height: 44px`), a fixed-size flex item does
+  NOT get resized by `align-items: stretch` — per the CSS spec it falls back to `flex-start`
+  positioning instead, so the 44×44 button also sat flush at the top rather than centred. Fixed
+  both: added `justify-content: center` to `.t-header__mobile-clock` and `align-self: center` to
+  `.t-header__menu-btn` (both mobile-only, so the desktop bar — which hides both elements anyway
+  — is provably unaffected). Also bumped `.t-header__inner`'s mobile `gap` from 12px to 14px (mid
+  of the brief's 12–16px "comfortable gap" range) for a touch more breathing room before the
+  button; verified this doesn't introduce overflow at 320px (see sweep below).
+  QA (Playwright + system Chrome, dev server on :4400, screenshots at 390/320/1440): mobile clock
+  now sits vertically centred in the 56px bar at both 390 and 320, label above time, right-aligned,
+  with a clear gap before the menu button, which is itself centred with equal space above/below.
+  Desktop bar (1440) screenshotted and confirmed unchanged (5 tabs, clock, CTA button all in their
+  original positions).
+  Checks: `npm test` 58/58 (unchanged — CSS-only); `npm run check` 0 errors; `npm run build` +
+  `test:seo` passed; `npm run lint` unchanged (7 errors + 2 warnings, same baseline). Overflow
+  sweep (Playwright, `overflow.mjs`) at 1440/390/320 on `/`, `/servicios/`, `/trabajos/`,
+  `/experiencia/`, `/contacto/`: `scrollW === vw` for all 15 route×width combinations — no
+  horizontal scroll anywhere (the `.srv-index-hero__ambient` and demo-table entries the sweep
+  flags are pre-existing contained/clipped overflows per T7's fix, not page-level scroll; matches
+  terminal-redesign.md's own "0/87" baseline methodology).
+
+- C5 commit: (pending — recorded after this commit).
 
 ## Next step
 
-C5.
+C6 (parent-owned: final verification + delivery).

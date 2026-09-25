@@ -390,7 +390,7 @@ const menuLabelClose = t('header.menu.close');
 
     .t-header__inner {
       padding-inline: 16px 8px;
-      gap: 12px;
+      gap: 14px;
     }
 
     /* The mobile bar has no cell dividers: dropping the brand cell's padding
@@ -408,10 +408,19 @@ const menuLabelClose = t('header.menu.close');
 
     .t-header__mobile-clock {
       display: flex;
+      /* `.t-header__inner` stretches this item to the full 56px bar height;
+         without this the label/time stack (an auto-height column) sits at
+         the top of that box instead of centred in it. */
+      justify-content: center;
     }
 
     .t-header__menu-btn {
       display: inline-flex;
+      /* Fixed 44×44 size means `align-items: stretch` on `.t-header__inner`
+         falls back to flex-start (top) for this item's cross-axis position
+         — centre it explicitly so it sits mid-bar with equal space above
+         and below, matching the clock block. */
+      align-self: center;
     }
 
     .t-header__menu[data-open] {
