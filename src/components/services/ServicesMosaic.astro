@@ -440,6 +440,58 @@ const ICONS: Record<string, string> = {
     align-self: flex-start;
   }
 
+  /* Mobile: one compact row per module (icon · name + keyword · index)
+     instead of 230px tiles, so the seven services fit in about one screen
+     (owner review, 2026-09-25). `display: contents` lifts the icon and the
+     index out of `.mosaic__module-top` so they can be reordered around the
+     text block. */
+  @media (max-width: 640px) {
+    .mosaic__module {
+      height: auto;
+      min-height: 72px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+    }
+
+    .mosaic__module-top {
+      display: contents;
+    }
+
+    .mosaic__icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+    }
+
+    .mosaic__module-bottom {
+      order: 1;
+      flex: 1;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .mosaic__idx {
+      order: 2;
+    }
+
+    .mosaic__name {
+      font-size: 17px;
+    }
+
+    .mosaic__cta {
+      height: auto;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .mosaic__cta-title {
+      font-size: 17px;
+    }
+  }
+
   /* --- Drawers (fallback list — see docblock for the JS-driven move) ----- */
   .mosaic__drawers {
     list-style: none;
