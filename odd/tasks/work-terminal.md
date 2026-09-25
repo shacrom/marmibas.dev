@@ -38,9 +38,9 @@ tiles and the "Ver caso" button) and the case study page as drawn.
 
 | ID | Task | Route | Status |
 |----|------|-------|--------|
-| W1 | Trabajos index in terminal panes + autoría filter (pure logic tested) | delegated writer | [ ] |
-| W2 | Case study page in terminal panes (hero + stat aside, body panes, diff results, CTA, prev/next) | delegated writer (same) | [ ] |
-| W3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [ ] |
+| W1 | Trabajos index in terminal panes + autoría filter (pure logic tested) | delegated writer | [x] |
+| W2 | Case study page in terminal panes (hero + stat aside, body panes, diff results, CTA, prev/next) | delegated writer (same) | [x] |
+| W3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
 
 Route evidence: W1/W2 touch 4+ non-trivial files (WorkIndex, CaseStudyCard, CaseStudyLayout, CaseStudyHero,
 BeforeAfter, lib + tests) → writer trigger.
@@ -56,6 +56,23 @@ BeforeAfter, lib + tests) → writer trigger.
 
 - Branch `feature/work-terminal` from `origin/main` b65f075.
 
+- W1 done — `42ebc98 feat(work): show the work index as terminal panes`: `src/lib/work-attribution.ts` +
+  `src/lib/work-case-display.ts` with Vitest tests written first (RED: missing modules / missing
+  `attributionBucketId`, then GREEN); `WorkIndex.astro` rebuilt per the artboard (filter by attribution with
+  progressive enhancement, mini windows, dark logo tiles, `total N`, `cat idea.txt` CTA); `CaseStudyCard.astro`
+  deleted; optional `externalUrl` in the case-studies schema, set for Voxye (home `CasesPane` keeps its own data).
+- W2 done — `105426e feat(work): show case studies as terminal panes`: hero pane + `stat` aside, a single
+  `README.md` body pane (MDX stays the source; `##` prefix via CSS), `BeforeAfter` as a diff block with growing
+  bars (new `.t-grow-x` + reduced-motion rule), `cd ../` + next-case navigation, TOC removed; fixed the
+  pre-existing lint error in `CaseStudyLayout.astro` (base lint errors now 5).
+- Parent review fix — `12ba822 fix(work): drop the duplicated case CTA and darken the hero logo tile`: the case
+  page repeated the footer's "Cuéntame qué necesitas" pane right above the footer; the hero logo tile was light.
+- Checks: writer — `npm test` 117/117, `npm run check` 0 errors, eslint + prettier on changed files clean, build
+  OK, `test:seo` passed. Parent — `npm test` 117/117, `npm run check` 0 errors, eslint + prettier on the 2 fixed
+  files clean; visual QA 1440 (index, Voxye, Recetas Novatex) and 390 (index) with reduced motion.
+- Open note: `/trabajos` ends with its `cat idea.txt` CTA pane followed by the footer contact pane (different
+  copy; kept as approved in the artboard).
+
 ## Next step
 
-W1.
+Delivery (push/PR/merge) after the owner's OK.
