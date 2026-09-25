@@ -20,6 +20,10 @@ industrial work only as the page's closing section, the owner missed it when rev
 - Review feedback (2026-09-25, after seeing it locally): **factory pane first, Marmibas pane second**; the Marmibas
   pane drops the connector and the Voxye logo from the lock-up (Marmibas logo alone), keeps the rest of the style
   and shows Voxye only as the project row below.
+- Follow-up request (2026-09-25): give Devoltec, Capgemini and Cleverpy "more or less the same design" as the two
+  top panes — each role becomes a terminal pane (bar `~/<company>`, `ls <company>/`, period as eyebrow, company as
+  heading + role line, company logo tile linking to its site, stack badges, the MD body with bullets as ✓ rows).
+  The vertical timeline line goes away; copy stays in the `experience` MD files.
 
 ## Scope
 
@@ -51,6 +55,7 @@ industrial work only as the page's closing section, the owner missed it when rev
 | P2 | Marmibas × Voxye pane + both panes at the top + drop Marmibas from the timeline | delegated writer (same) | [x] |
 | P3 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
 | P4 | Owner feedback: swap pane order; Marmibas pane without connector/partner logo (partner optional in `LockupPane`) | direct inline (3 small edits in understood files) | [x] |
+| P5 | Past roles as terminal panes: generalise `LockupPane` (primary logo, role line, tags, body slot, optional rows) without visual change to the top panes, then replace the timeline with one pane per role | delegated writer | [ ] |
 
 Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page, content file) → writer trigger.
 
@@ -102,4 +107,4 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
 
 ## Next step
 
-Owner review; push/PR only after explicit OK.
+P5, then owner review; push/PR only after explicit OK.
