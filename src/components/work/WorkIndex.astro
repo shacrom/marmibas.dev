@@ -16,7 +16,8 @@
  *       tagline, #tags, [ Ver caso → ] + optional external link, cliente/
  *       año/autoría <dl>)
  *     total N
- *   ~/contacto CTA TerminalPane (`cat idea.txt`)
+ *   (no page CTA pane: the site-wide footer already closes the page with the
+ *   contact pane — owner review, 2026-09-25)
  *
  * DROPPED vs the previous (pre-terminal) WorkIndex:
  *   - The `projects` collection merge. That collection has zero entries
@@ -68,7 +69,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import TerminalPane from '../terminal/TerminalPane.astro';
 import Prompt from '../terminal/Prompt.astro';
 import TerminalButton from '../terminal/TerminalButton.astro';
-import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import { useTranslations } from '../../i18n/helpers';
 import { slugFromId } from '../../lib/content';
 import { toTags } from '../../lib/case-tags';
 import {
@@ -119,26 +120,16 @@ const cases = sorted.map((entry) => {
 
 const buckets = getAttributionBuckets(cases.map((c) => ({ attribution: c.data.attribution })));
 
-const contactHref = getRoutePath('contact', lang);
-
 const listHeadingId = 'work-heading';
 const filterLabelId = 'work-filter-label';
 
 // --- Decorative terminal framing (new copy, local to this component). ----
 const lsCommand = 'ls -l trabajos/';
-const catCommand = 'cat idea.txt';
 const statusLabel = 'en producción';
 const metaLabels = { client: 'cliente', year: 'año', by: 'autoría' };
-
-// --- CTA copy, duplicated verbatim from CasesPane.astro's local `midCta`. -
-const ctaHeadingParts: [string, string] = [
-  '¿Tienes una idea o un problema que quieres ',
-  'resolver?',
-];
-const ctaButtonLabel = 'Escríbeme';
 ---
 
-<TerminalPane path="trabajos" index="1/2" labelledby={listHeadingId} class="t-pane-gutter">
+<TerminalPane path="trabajos" index="1/1" labelledby={listHeadingId} class="t-pane-gutter">
   <div class="work-index">
     <Prompt command={lsCommand} />
 
@@ -262,21 +253,6 @@ const ctaButtonLabel = 'Escríbeme';
     }
 
     {cases.length > 0 && <p class="work-index__total" data-work-total>{`total ${cases.length}`}</p>}
-  </div>
-</TerminalPane>
-
-<TerminalPane path="contacto" labelledby="work-contact-heading" class="t-pane-gutter">
-  <div class="work-cta">
-    <Prompt command={catCommand} />
-
-    <h2 id="work-contact-heading" class="work-cta__heading font-display">
-      {ctaHeadingParts[0]}
-      <span class="work-cta__accent">{ctaHeadingParts[1]}</span>
-    </h2>
-
-    <TerminalButton href={contactHref} primary class="work-cta__button">
-      [ {ctaButtonLabel} → ]
-    </TerminalButton>
   </div>
 </TerminalPane>
 
@@ -577,40 +553,6 @@ const ctaButtonLabel = 'Escríbeme';
     margin: 0;
     color: var(--text-3);
     font-size: var(--text-sm);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* ~/contacto CTA pane                                                     */
-  /* ---------------------------------------------------------------------- */
-
-  .work-cta {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    font-size: 15px;
-  }
-
-  .work-cta__heading {
-    margin: 0;
-    max-width: 1000px;
-    color: var(--text-0);
-    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
-    font-weight: 700;
-    line-height: 1.15;
-  }
-
-  .work-cta__accent {
-    color: var(--accent-400);
-  }
-
-  .work-cta__button {
-    align-self: flex-start;
-  }
-
-  @media (max-width: 640px) {
-    .work-cta__button {
-      width: 100%;
-    }
   }
 </style>
 
