@@ -168,6 +168,22 @@
   }
 }
 
+/* t-grow-x: one-shot HORIZONTAL grow from the left edge — the case study
+   results "diff antes.txt despues.txt" bars (W2 terminal redesign,
+   `BeforeAfter.astro`). Distinct from `.t-grow` (vertical, bottom origin,
+   T5 chart bars): these bars already carry their final `width` as a
+   percentage via inline style, so only the X scale animates in, matching
+   the approved mockup's own `.grow`/`@keyframes grow` (scaleX 0 -> 1,
+   `transform-origin: left center`). */
+@keyframes t-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* t-slide: one-shot row/line entrance — opacity + a short leftward-origin
    slide (T5 demo pane list/table rows). Named distinctly from `.t-fade`
    (which rises vertically) since this one moves horizontally. */
@@ -211,11 +227,7 @@
 }
 
 .t-flow {
-  background-image: repeating-linear-gradient(
-    90deg,
-    var(--accent-400) 0 6px,
-    transparent 6px 16px
-  );
+  background-image: repeating-linear-gradient(90deg, var(--accent-400) 0 6px, transparent 6px 16px);
   background-size: 16px 2px;
   background-repeat: repeat-x;
   animation: t-flow 600ms linear infinite;
@@ -365,11 +377,7 @@
    `.t-scan` above — a consumer removes the class entirely when the machine
    stops rather than pausing it, so no fill-mode/`--t-delay` axis is needed. */
 .t-stripes {
-  background-image: repeating-linear-gradient(
-    90deg,
-    var(--accent-400) 0 2px,
-    transparent 2px 7px
-  );
+  background-image: repeating-linear-gradient(90deg, var(--accent-400) 0 2px, transparent 2px 7px);
   background-size: 14px 100%;
   animation: t-stripes 500ms linear infinite;
 }
@@ -381,6 +389,13 @@
 .t-grow {
   transform-origin: center bottom;
   animation: t-grow var(--t-dur, 700ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
+}
+
+/* t-grow-x: one-shot horizontal bar reveal, left-anchored (W2 results
+   diff). See the `@keyframes t-grow-x` docblock above. */
+.t-grow-x {
+  transform-origin: left center;
+  animation: t-grow-x var(--t-dur, 700ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
 }
 
 /* t-slide: one-shot row/line entrance (T5 demo pane machine/doc-line/table
@@ -469,7 +484,8 @@
    not include U+2500–U+259F, so those glyphs would fall back to a font with
    different metrics and break the art; system monospace fonts ship them. */
 :root {
-  --font-glyphs: ui-monospace, 'SFMono-Regular', Menlo, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono',
+  --font-glyphs:
+    ui-monospace, 'SFMono-Regular', Menlo, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono',
     'Liberation Mono', monospace;
 }
 
@@ -516,6 +532,7 @@
     .t-tick,
     .t-reveal,
     .t-grow,
+    .t-grow-x,
     .t-slide
   ) {
   animation-play-state: paused;

@@ -1,70 +1,105 @@
 ---
 /**
- * BeforeAfter.astro — before/after comparison bars for case study results.
+ * BeforeAfter.astro — case study results as a `diff antes.txt despues.txt`
+ * block (W2 terminal redesign — `odd/tasks/work-terminal.md`).
  *
- * Renders one row per dimension (e.g. "Time per quote") with a muted
- * reference bar (before) and an accent bar (after), scaled to the larger
- * value of the pair. Follows the bullet-chart convention: the reference is
- * deliberately neutral, the current value carries the brand accent.
+ * Rewritten to match the owner-approved mockup's "Resultados" section
+ * (`CasoVoxye.dc.html`, `~/trabajos/voxye/resultados` pane): per row, a
+ * label, then two lines — a muted `- <before>` line with a grey bar at
+ * FULL width (the fixed reference/baseline), and an accent `+ <after>`
+ * line with a bar scaled to `afterValue / beforeValue` (a floor keeps a
+ * tiny ratio visible instead of vanishing). `afterValue === 0` renders a
+ * `✓` instead of a bar/percentage — matches Voxye's own "Presupuestos con
+ * errores de cálculo" row (`beforeValue: 10, afterValue: 0`).
  *
- * Accessibility: identity is never color-alone — every bar has a visible
- * text tag ("Antes"/"Ahora") and its value as plain text. The bars are
- * decorative reinforcement of data already present as text.
+ * DROPPED vs the previous version: the boxed/padded panel background, the
+ * `Antes`/`Ahora` word tags, and the before-bar's own proportional width
+ * (it used to shrink when `after > before`, which never happens in this
+ * component's real usage and isn't what a bullet-chart reference bar is
+ * for). The `-`/`+` sign now carries the same "never color-alone" identity
+ * job the word tags used to — each line also keeps a screen-reader-only
+ * "Antes: " / "Ahora: " prefix so the meaning survives without the visual
+ * sign glyph.
+ *
+ * Bars grow on entrance via `.t-grow-x` (terminal.css, added for this
+ * task — a horizontal counterpart to the existing vertical `.t-grow`);
+ * reduced-motion final state lives in the single source of truth,
+ * `motion.css`, per that file's own contract.
+ *
+ * Accessibility: identity is never color-alone (sign glyph + sr-only word +
+ * plain-text value, not just bar color), and every value is real,
+ * selectable text.
  *
  * Props:
  *   - rows: comparison rows. `beforeValue`/`afterValue` share a unit within
- *     the row (any unit — only their ratio matters for bar widths).
- *   - beforeTag/afterTag: series tags, overridable per language.
+ *     the row (any unit — only their ratio matters for the after-bar's
+ *     width).
  */
 export interface Row {
-  /** Dimension being compared ("Hacer un presupuesto"). */
+  /** Dimension being compared ("Hacer y enviar un presupuesto"). */
   label: string;
-  /** Human value for the before bar ("2 horas"). */
+  /** Human value for the before line ("~2 horas"). */
   before: string;
-  /** Human value for the after bar ("15 minutos"). */
+  /** Human value for the after line ("~30 min"). */
   after: string;
   /** Numeric magnitude behind `before`, same unit as `afterValue`. */
   beforeValue: number;
-  /** Numeric magnitude behind `after`, same unit as `beforeValue`. */
+  /** Numeric magnitude behind `after`, same unit as `beforeValue`; `0` renders a ✓. */
   afterValue: number;
 }
 
 export interface Props {
   rows: Row[];
-  beforeTag?: string;
-  afterTag?: string;
 }
 
-const { rows, beforeTag = 'Antes', afterTag = 'Ahora' } = Astro.props;
+const { rows } = Astro.props;
 
-/** Bar width as % of the row maximum; tiny values keep a visible sliver. */
-const width = (value: number, other: number): number =>
-  Math.max(4, Math.round((value / Math.max(value, other, 1)) * 100));
+/** After-bar width as a % of the before value; a floor keeps tiny ratios visible. */
+const afterWidth = (row: Row): number => {
+  if (row.beforeValue <= 0) return 100;
+  return Math.max(2, Math.round((row.afterValue / row.beforeValue) * 100));
+};
 ---
 
 <div class="before-after">
   {
-    rows.map((row) => (
+    rows.map((row, i) => (
       <div class="before-after__row">
-        <p class="before-after__label">{row.label}</p>
-        <div class="before-after__pair">
-          <span class="before-after__tag">{beforeTag}</span>
-          <span class="before-after__track">
-            <span
-              class="before-after__bar before-after__bar--before"
-              style={`width: ${width(row.beforeValue, row.afterValue)}%`}
-            />
-          </span>
-          <span class="before-after__value">{row.before}</span>
+        <strong class="before-after__label">{row.label}</strong>
+        <div class="before-after__lines">
+          <div class="before-after__line">
+            <span class="before-after__text before-after__text--before">
+              <span aria-hidden="true">- </span>
+              <span class="sr-only">Antes: </span>
+              {row.before}
+            </span>
+            <span class="before-after__bar-track" aria-hidden="true">
+              <span
+                class="before-after__bar before-after__bar--before t-grow-x"
+                style={`width: 100%; --t-delay: ${i * 120}ms;`}
+              />
+            </span>
+          </div>
 
-          <span class="before-after__tag">{afterTag}</span>
-          <span class="before-after__track">
-            <span
-              class="before-after__bar before-after__bar--after"
-              style={`width: ${width(row.afterValue, row.beforeValue)}%`}
-            />
-          </span>
-          <span class="before-after__value before-after__value--after">{row.after}</span>
+          <div class="before-after__line">
+            <span class="before-after__text before-after__text--after">
+              <span aria-hidden="true">+ </span>
+              <span class="sr-only">Ahora: </span>
+              {row.after}
+            </span>
+            {row.afterValue === 0 ? (
+              <span class="before-after__check" aria-hidden="true">
+                ✓
+              </span>
+            ) : (
+              <span class="before-after__bar-track" aria-hidden="true">
+                <span
+                  class="before-after__bar before-after__bar--after t-grow-x"
+                  style={`width: ${afterWidth(row)}%; --t-delay: ${i * 120 + 150}ms;`}
+                />
+              </span>
+            )}
+          </div>
         </div>
       </div>
     ))
@@ -73,67 +108,95 @@ const width = (value: number, other: number): number =>
 
 <style>
   .before-after {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    margin-block: 1.5rem;
+  }
+
+  .before-after__row {
     display: grid;
-    gap: 1.5rem;
-    margin-block: 2rem;
-    padding: 1.5rem;
-    background: color-mix(in oklch, var(--bg-1) 80%, var(--bg-0));
-    border: 1px solid color-mix(in oklch, var(--border) 86%, transparent);
-    border-radius: var(--radius-lg);
+    grid-template-columns: minmax(200px, 320px) minmax(0, 1fr);
+    align-items: center;
+    gap: 24px 32px;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  @media (max-width: 640px) {
+    .before-after__row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
   }
 
   .before-after__label {
-    margin: 0 0 0.625rem;
-    color: var(--text-1);
-    font-size: var(--text-sm);
+    color: var(--text-0);
+    font-size: var(--text-base);
     font-weight: 600;
   }
 
-  .before-after__pair {
+  .before-after__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .before-after__line {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(120px, 160px) minmax(0, 1fr);
     align-items: center;
-    gap: 0.375rem 0.75rem;
+    gap: 16px;
   }
 
-  .before-after__tag {
-    color: var(--text-3);
+  .before-after__text {
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.02em;
+    font-size: var(--text-sm);
+    white-space: nowrap;
   }
 
-  .before-after__track {
+  .before-after__text--before {
+    color: var(--text-3);
+  }
+
+  .before-after__text--after {
+    color: var(--accent-300);
+    font-weight: 600;
+  }
+
+  .before-after__bar-track {
     display: block;
     min-width: 0;
   }
 
   .before-after__bar {
     display: block;
-    height: 8px;
-    border-radius: 4px;
+    height: 10px;
+    border-radius: 1px;
   }
 
-  /* Reference (before): neutral on purpose — the bullet-chart convention.
-     Mixed above text-3 so it clears 3:1 against the page surface. */
   .before-after__bar--before {
-    background: color-mix(in oklch, var(--text-2) 55%, var(--text-3));
+    background: var(--border-strong);
   }
 
   .before-after__bar--after {
     background: var(--accent-400);
   }
 
-  .before-after__value {
-    color: var(--text-2);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+  .before-after__check {
+    color: var(--accent-300);
+    font-size: var(--text-sm);
   }
 
-  .before-after__value--after {
-    color: var(--text-0);
-    font-weight: 600;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>

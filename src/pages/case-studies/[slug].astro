@@ -17,15 +17,15 @@
  *   so the URL stays clean and matches the i18n routes table
  *   (`routes.caseStudies.es === '/case-studies'`).
  *
- * prev / next siblings:
- *   Sorted by `year` DESC across all ES case-studies. From the perspective of
- *   the current entry:
- *     - prev = the case study with a HIGHER year (more recent / previous in
- *       the listing).
- *     - next = the case study with a LOWER year (older / next in the listing).
- *   This mirrors the natural left-to-right reading order of a chronological
- *   grid where the most recent work sits first. CaseStudyLayout receives
- *   `null` when there is no neighbour, which hides the corresponding link.
+ * next sibling (W2 terminal redesign — `odd/tasks/work-terminal.md`):
+ *   The approved mockup's prev/next nav is not a bidirectional sibling
+ *   pair — the LEFT card is always "cd ../" back to the `/trabajos` index
+ *   (`CaseStudyLayout.astro` renders that itself, no data needed), and the
+ *   RIGHT card is the NEXT case study in `/trabajos`'s own display order
+ *   (`order` frontmatter ascending, same sort `WorkIndex.astro` uses) — the
+ *   mockup's own example (drawn for Voxye, `order: 1`) points to
+ *   "Recetas Novatex" (`order: 2`), confirming this is `order`-based, not
+ *   the old year-based prev/next. `null` when the current entry is last.
  *
  * Empty collection:
  *   T-44 / T-45 author the actual MDX content in parallel. While those tasks
@@ -46,33 +46,30 @@ import { slugFromId } from '../../lib/content';
 
 type CaseStudyEntry = CollectionEntry<'case-studies'>;
 
-
 export async function getStaticPaths() {
   const entries = await getCollection(
     'case-studies',
-    (entry: CaseStudyEntry) => entry.data.lang === 'es',
+    (entry: CaseStudyEntry) => entry.data.lang === 'es'
   );
 
   // Sort once, here, so the same ordered list drives both `getStaticPaths`
-  // output AND the prev / next computation for each page.
-  const sorted: CaseStudyEntry[] = [...entries].sort(
-    (a, b) => b.data.year - a.data.year,
-  );
+  // output AND the `next` computation for each page — `order` ascending
+  // (year desc tiebreak), matching `WorkIndex.astro`'s own sort exactly so
+  // "next" means "the following card in /trabajos".
+  const sorted: CaseStudyEntry[] = [...entries].sort((a, b) => {
+    const aOrder = a.data.order ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = b.data.order ?? Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return b.data.year - a.data.year;
+  });
 
   return sorted.map((entry, index) => {
-    const prev = index > 0 ? sorted[index - 1] : null;
     const next = index < sorted.length - 1 ? sorted[index + 1] : null;
 
     return {
       params: { slug: slugFromId(entry.id) },
       props: {
         entry,
-        prev: prev
-          ? {
-              url: `/case-studies/${slugFromId(prev.id)}`,
-              title: prev.data.title,
-            }
-          : null,
         next: next
           ? {
               url: `/case-studies/${slugFromId(next.id)}`,
@@ -91,20 +88,14 @@ interface SiblingRef {
 
 interface Props {
   entry: CaseStudyEntry;
-  prev: SiblingRef | null;
   next: SiblingRef | null;
 }
 
-const { entry, prev, next } = Astro.props as Props;
-const { Content, headings } = await render(entry);
+const { entry, next } = Astro.props as Props;
+const { Content } = await render(entry);
+const slug = slugFromId(entry.id);
 ---
 
-<CaseStudyLayout
-  frontmatter={entry.data}
-  headings={headings}
-  lang="es"
-  prev={prev}
-  next={next}
->
+<CaseStudyLayout frontmatter={entry.data} slug={slug} lang="es" next={next}>
   <Content components={{ Callout, MetricsGrid }} />
 </CaseStudyLayout>
