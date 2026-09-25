@@ -51,16 +51,10 @@
  * of the old year-based prev/next pair. The LEFT "cd ../" card is constant
  * (always back to `/trabajos`) and needs no data.
  *
- * CTA pane copy — the task brief asks for "the case's closing call to
- * action if it exists in content, else the generic 'Hablemos' CTA already
- * used on the site". The real content's own closing sentence is prose
- * embedded in the last MDX paragraph (no structured field to lift it from
- * without fragile text-parsing), so this renders the SITE'S established
- * generic CTA instead — the exact copy `Footer.astro` already uses
- * (`capture.heading`/`capture.sub`/`t('cta.contact')`), duplicated here the
- * same way `WorkIndex.astro` (W1) duplicated `CasesPane.astro`'s own CTA
- * copy: no shared copy module exists for this, every terminal pane owns
- * its local copy per the established convention.
+ * No CTA pane of its own: the site-wide `Footer.astro` already closes every
+ * page with the "Cuéntame qué necesitas" contact pane, and the MDX body ends
+ * with its own "Hablemos de tu proyecto" line. A second copy of the footer
+ * CTA right above the footer read as a duplicate (owner review, 2026-09-25).
  *
  * Source of truth:
  *   - `odd/tasks/work-terminal.md` W2.
@@ -79,8 +73,7 @@ import BaseLayout from './BaseLayout.astro';
 import CaseStudyHero from '../components/ui/CaseStudyHero.astro';
 import TerminalPane from '../components/terminal/TerminalPane.astro';
 import Prompt from '../components/terminal/Prompt.astro';
-import TerminalButton from '../components/terminal/TerminalButton.astro';
-import { getLangFromUrl, getRoutePath, useTranslations } from '../i18n/helpers';
+import { getLangFromUrl, getRoutePath } from '../i18n/helpers';
 import type { Language } from '../i18n/ui';
 
 /**
@@ -126,7 +119,6 @@ const { frontmatter, slug, lang: langProp, next = null } = Astro.props;
 // (always resolves to 'es' — the only published locale, see
 // `odd/tasks/site-cleanup.md` C2).
 const lang: Language = langProp ?? getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
 
 // Convert ImageMetadata → string URL for SeoHead's ogImage prop. SeoHead
 // expects a string (absolute or root-relative path); ImageMetadata exposes
@@ -135,17 +127,8 @@ const t = useTranslations(lang);
 const ogImageUrl: string | undefined = frontmatter.ogImage?.src ?? frontmatter.heroImage?.src;
 
 const workHref = getRoutePath('work', lang);
-const contactHref = getRoutePath('contact', lang);
 
 const bodyPromptCommand = `less ${slug}/README.md`;
-
-// CTA copy, duplicated verbatim from Footer.astro's own `capture` object —
-// see docblock above.
-const ctaCopy = {
-  eyebrow: '# ¿Empezamos?',
-  heading: 'Cuéntame qué necesitas',
-  sub: 'La primera llamada es gratis y sin compromiso.',
-};
 ---
 
 <BaseLayout
@@ -189,18 +172,6 @@ const ctaCopy = {
         <div class="case-body__content">
           <slot />
         </div>
-      </div>
-    </TerminalPane>
-
-    <TerminalPane path="contacto" scan={false} labelledby="case-cta-heading" class="t-pane-gutter">
-      <div class="case-cta">
-        <Prompt command="./hablemos" />
-        <p class="t-comment case-cta__eyebrow">{ctaCopy.eyebrow}</p>
-        <h2 id="case-cta-heading" class="case-cta__heading font-display">{ctaCopy.heading}</h2>
-        <p class="case-cta__sub">{ctaCopy.sub}</p>
-        <TerminalButton href={contactHref} primary class="case-cta__button">
-          [ {t('cta.contact')} ]
-        </TerminalButton>
       </div>
     </TerminalPane>
 
@@ -304,49 +275,6 @@ const ctaCopy = {
   .case-body__content :global(a:hover),
   .case-body__content :global(a:focus-visible) {
     color: var(--text-0);
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* CTA pane                                                                 */
-  /* ----------------------------------------------------------------------- */
-
-  .case-cta {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    font-size: 15px;
-  }
-
-  .case-cta__eyebrow {
-    margin: 0;
-    font-size: var(--text-xs);
-  }
-
-  .case-cta__heading {
-    margin: 0;
-    max-width: 1000px;
-    color: var(--text-0);
-    font-size: clamp(1.5rem, 3vw + 1rem, 2rem);
-    font-weight: 700;
-    line-height: 1.3;
-  }
-
-  .case-cta__sub {
-    margin: 0;
-    color: var(--text-2);
-    font-size: var(--text-lg);
-    line-height: 1.6;
-  }
-
-  .case-cta__button {
-    align-self: flex-start;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 640px) {
-    .case-cta__button {
-      width: 100%;
-    }
   }
 
   /* ----------------------------------------------------------------------- */

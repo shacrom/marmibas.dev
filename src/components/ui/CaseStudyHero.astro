@@ -210,9 +210,8 @@ const headingId = 'case-title';
     gap: 24px;
   }
 
-  /* Light tile — logos are designed for light backgrounds; matches the
-     established sitewide convention (CaseStudyCard/ProjectCard/LockupPane
-     all use `--text-0`), unlike the /trabajos index's own DARK tile. */
+  /* Dark tile, same treatment as the /trabajos index cards: the owner found
+     light tiles looked pasted onto the dark UI (review, 2026-09-25). */
   .case-hero__logo-tile {
     flex-shrink: 0;
     width: 88px;
@@ -222,8 +221,8 @@ const headingId = 'case-title';
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: var(--text-0);
-    border: 1px solid var(--border);
+    background: var(--bg-2);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
   }
 
