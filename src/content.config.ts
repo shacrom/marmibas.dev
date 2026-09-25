@@ -22,10 +22,10 @@
  * private internals, which breaks across versions. The non-image shared
  * fields are lifted into `sharedBase` instead.
  */
-import { defineCollection, z } from "astro:content";
-import { glob } from "astro/loaders";
+import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
-const LANGS = ["es"] as const;
+const LANGS = ['es'] as const;
 
 /**
  * Project-wide frontmatter every collection inherits — except for the image
@@ -46,8 +46,8 @@ const sharedBase = z.object({
  */
 const caseStudies = defineCollection({
   loader: glob({
-    base: "./src/content/case-studies",
-    pattern: "**/*.{md,mdx}",
+    base: './src/content/case-studies',
+    pattern: '**/*.{md,mdx}',
   }),
   schema: ({ image }) =>
     sharedBase.extend({
@@ -62,10 +62,16 @@ const caseStudies = defineCollection({
       // Short attribution shown next to the card meta ("Con Plazasys",
       // "Producto propio").
       attribution: z.string().optional(),
+      // Public URL of the shipped product/site itself (e.g. the app a
+      // visitor can actually try), NOT the client's own company website.
+      // Rendered as an external text link ("voxye.es ↗") on the /trabajos
+      // card and case study hero when present — omitted entirely
+      // otherwise (T-34/T-36 terminal redesign).
+      externalUrl: z.string().url().optional(),
       year: z.number().int(),
       role: z.string(),
       stack: z.array(z.string()).min(1),
-      status: z.literal("success"),
+      status: z.literal('success'),
       results: z.array(z.string()).optional(),
       metrics: z
         .array(
@@ -86,8 +92,8 @@ const caseStudies = defineCollection({
  */
 const projects = defineCollection({
   loader: glob({
-    base: "./src/content/projects",
-    pattern: "**/*.{md,mdx}",
+    base: './src/content/projects',
+    pattern: '**/*.{md,mdx}',
   }),
   schema: ({ image }) =>
     sharedBase.extend({
@@ -97,7 +103,7 @@ const projects = defineCollection({
       // Public path to the project logo (e.g. "/logos/visomos.svg").
       logo: z.string().optional(),
       stack: z.array(z.string()).min(1),
-      status: z.enum(["in-development", "side-project", "paused"]),
+      status: z.enum(['in-development', 'side-project', 'paused']),
       year: z.number().int().optional(),
       repo: z.string().url().optional(),
       liveUrl: z.string().url().optional(),
@@ -120,8 +126,8 @@ const projects = defineCollection({
  */
 const experience = defineCollection({
   loader: glob({
-    base: "./src/content/experience",
-    pattern: "**/*.{md,mdx}",
+    base: './src/content/experience',
+    pattern: '**/*.{md,mdx}',
   }),
   schema: ({ image }) =>
     sharedBase.extend({
@@ -147,7 +153,7 @@ const experience = defineCollection({
 });
 
 export const collections = {
-  "case-studies": caseStudies,
+  'case-studies': caseStudies,
   projects,
   experience,
 };

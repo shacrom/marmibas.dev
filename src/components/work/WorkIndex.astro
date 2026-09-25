@@ -1,49 +1,82 @@
 ---
 /**
- * WorkIndex.astro — sección principal del índice de trabajos (T-34).
+ * WorkIndex.astro — `/trabajos` index in the "B3 · Terminal" language (W1,
+ * terminal redesign — `odd/tasks/work-terminal.md`).
  *
- * Renderiza el listado completo de:
- *   - Case studies (`getCollection('case-studies')`).
- *   - Projects (`getCollection('projects')`).
+ * Renders the owner-approved Claude Design canvas artboard "Trabajos —
+ * índice" (`Trabajos.dc.html`, source of truth for structure/spacing/copy
+ * treatment — hardcoded hex values there map 1:1 to this project's
+ * `--bg-*`/`--text-*`/`--accent-*`/`--border*` tokens, see
+ * `src/styles/global.css`):
  *
- * Filtrado por `status` con progressive enhancement:
- *   - Sin JS: el `<form method="GET">` recarga la página con `?status=...`.
- *     El servidor (build estático) no filtra: serializa TODOS los entries
- *     dentro del HTML y deja el filtrado al cliente. Cuando JS está apagado,
- *     `<noscript>` hace visibles todas las cards y los filtros vuelven a
- *     funcionar como un select normal de form GET (que solo cambia la URL).
- *   - Con JS: un script vanilla (~50 líneas) lee el `value` del select,
- *     actualiza la URL via `history.replaceState`, y muestra/oculta las
- *     cards según el atributo `data-status` de cada artículo. No hay
- *     fetch ni recarga.
+ *   ~/trabajos TerminalPane (`ls -l trabajos/`)
+ *     # Proyectos comment + h1 (`work.heading`) + tagline (`work.tagline`)
+ *     grep --autoria filter group (todos · N / <attribution> · N)
+ *     one mini window per case study (bar, 56px dark logo tile + h2 title,
+ *       tagline, #tags, [ Ver caso → ] + optional external link, cliente/
+ *       año/autoría <dl>)
+ *     total N
+ *   ~/contacto CTA TerminalPane (`cat idea.txt`)
  *
- * Estados de filtro:
- *   - `all` (default)            → todo visible
- *   - `success`                  → status === 'success' (case studies)
- *   - `in-development`           → status === 'in-development'
- *   - `side-project`             → status ∈ {'side-project', 'paused'}
+ * DROPPED vs the previous (pre-terminal) WorkIndex:
+ *   - The `projects` collection merge. That collection has zero entries
+ *     today (`src/content/projects/es/` holds only a `.gitkeep`) and the
+ *     approved mockup has no visual spec for a "project" item at all — the
+ *     whole page is case-study shaped now (a `grep --autoria` filter reads
+ *     the case-studies-only `attribution` field; there is no
+ *     `status`-based filter). Dropping the merge is a behavioural no-op
+ *     today (0 projects rendered before, 0 after) and does NOT touch the
+ *     `projects` collection schema, `ProjectDetailLayout.astro`, or the
+ *     still-live `/proyectos/[slug]` route — only this page stops listing
+ *     them. `ProjectCard.astro` (this component's only consumer) is left
+ *     in the tree unused rather than deleted, since a future project
+ *     listing may still want it and deleting a working component wasn't
+ *     asked for — see the task report for this call.
+ *   - The `<form method="GET">` / `?status=` fallback and its docblock.
+ *     The rendered markup never actually had a `<form>` or a status
+ *     `<select>` (dead documentation, not dead code) — the filter is a
+ *     `grep --autoria` button group instead, matching the mockup.
+ *   - `CaseStudyCard.astro` (deleted — its only consumer was this file,
+ *     confirmed by a repo-wide search before removing it). The per-case
+ *     mini window below is bespoke markup: it needs a status-bar LED, a
+ *     dark (not white) logo tile with an optional cover-fit logo, and a
+ *     two-column body that doesn't match that card's shape.
  *
- * Orden:
- *   1. status priority desc: success > in-development > side-project > paused.
- *   2. year desc (entries con year explícito primero).
- *   3. order asc (frontmatter custom).
+ * Filtering — pure grouping/counting/slug logic lives in
+ * `src/lib/work-attribution.ts` (TDD, `tests/lib/work-attribution.test.ts`,
+ * written first). Progressive enhancement: every `<li>` renders visible by
+ * default (no `hidden` without JS); the inline `<script>` below only ever
+ * *adds* `hidden` and updates `aria-pressed`/`total N` once it runs.
  *
- * Layout:
- *   - 2 columnas desktop (≥768px), 1 columna mobile.
- *   - Featured case studies ocupan 2 columnas en desktop (full width row).
+ * Tags (`#presupuestos #facturas …`) reuse `toTags` from
+ * `src/lib/case-tags.ts` (already built + tested for `CasesPane.astro`,
+ * T6) — same hashtag formatting rule, no duplicate logic.
  *
- * Tokens DESIGN.md:
- *   §2 → --bg-0/1, --text-0/1/2, --accent-400, --border
- *   §4 → --font-display (h1), --font-sans, --font-mono (filter)
- *   §5 → padding 96-128px, gap 32px
- *   §6 → --motion-fast, --motion-ease-out
+ * Logo tile fit (`contain` vs `cover` for `recetas-novatex`'s own
+ * dark-background JPEG) and the external link's bare-domain label
+ * (`voxye.es`, from `externalUrl`) are `src/lib/work-case-display.ts`
+ * (TDD too) — shared with the case study hero (W2).
+ *
+ * CTA pane copy ("¿Tienes una idea o un problema que quieres resolver?" /
+ * "Escríbeme") is duplicated verbatim from `CasesPane.astro`'s own local
+ * `midCta` object, not extracted into a shared module — matching that
+ * component's own established convention (every terminal pane owns its
+ * local copy consts; see `CasesPane.astro`'s docblock).
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-import CaseStudyCard from '../ui/CaseStudyCard.astro';
-import ProjectCard from '../ui/ProjectCard.astro';
-import Reveal from '../ui/Reveal.astro';
-import { useTranslations } from '../../i18n/helpers';
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import { slugFromId } from '../../lib/content';
+import { toTags } from '../../lib/case-tags';
+import {
+  ALL_BUCKET_ID,
+  attributionBucketId,
+  getAttributionBuckets,
+} from '../../lib/work-attribution';
+import { getLogoFit, hostnameLabel } from '../../lib/work-case-display';
 import type { Language } from '../../i18n/ui';
 
 export interface Props {
@@ -54,172 +87,173 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-// ---------------------------------------------------------------------------
-// Carga + normalización de entries.
-// ---------------------------------------------------------------------------
-//
-// Mezclamos case studies + projects en un solo array `items` con shape
-// uniforme (`kind`, `entry`, `status`) para poder ordenarlos juntos. Cada
-// item guarda su `kind` así el render decide qué card usar.
-
 type CaseStudyEntry = CollectionEntry<'case-studies'>;
-type ProjectEntry = CollectionEntry<'projects'>;
-
-type WorkItem =
-  | { kind: 'case-study'; entry: CaseStudyEntry; status: 'success' }
-  | {
-      kind: 'project';
-      entry: ProjectEntry;
-      status: 'in-development' | 'side-project' | 'paused';
-    };
 
 const isProd = import.meta.env.PROD;
 
-const caseStudies = await getCollection(
-  'case-studies',
-  (entry: CaseStudyEntry) => {
-    if (entry.data.lang !== lang) return false;
-    if (isProd && entry.data.draft) return false;
-    return true;
-  },
-);
-
-const projects = await getCollection(
-  'projects',
-  (entry: ProjectEntry) => {
-    if (entry.data.lang !== lang) return false;
-    if (isProd && entry.data.draft) return false;
-    return true;
-  },
-);
-
-const items: WorkItem[] = [
-  ...caseStudies.map(
-    (entry: CaseStudyEntry): WorkItem => ({
-      kind: 'case-study',
-      entry,
-      status: 'success',
-    }),
-  ),
-  ...projects.map(
-    (entry: ProjectEntry): WorkItem => ({
-      kind: 'project',
-      entry,
-      status: entry.data.status,
-    }),
-  ),
-];
-
-// Status priority — success arriba, paused abajo. Se aplica como primer
-// criterio de sort. Year desc y order asc desempatan después.
-const STATUS_PRIORITY: Record<WorkItem['status'], number> = {
-  success: 4,
-  'in-development': 3,
-  'side-project': 2,
-  paused: 1,
-};
-
-items.sort((a, b) => {
-  const priorityDelta = STATUS_PRIORITY[b.status] - STATUS_PRIORITY[a.status];
-  if (priorityDelta !== 0) return priorityDelta;
-
-  // year desc: entries sin year quedan al final del bucket de su status.
-  const aYear = (a.entry.data as { year?: number }).year ?? -Infinity;
-  const bYear = (b.entry.data as { year?: number }).year ?? -Infinity;
-  if (bYear !== aYear) return bYear - aYear;
-
-  // order asc: frontmatter custom para fijar orden manual dentro del bucket.
-  const aOrder = a.entry.data.order ?? Number.MAX_SAFE_INTEGER;
-  const bOrder = b.entry.data.order ?? Number.MAX_SAFE_INTEGER;
-  return aOrder - bOrder;
+const entries = await getCollection('case-studies', (entry: CaseStudyEntry) => {
+  if (entry.data.lang !== lang) return false;
+  if (isProd && entry.data.draft) return false;
+  return true;
 });
 
-// ---------------------------------------------------------------------------
-// Helpers de render.
-// ---------------------------------------------------------------------------
+// order asc (frontmatter), year desc as a tiebreaker for entries sharing an
+// order value — mirrors the previous index's own tiebreak rule.
+const sorted = [...entries].sort((a, b) => {
+  const aOrder = a.data.order ?? Number.MAX_SAFE_INTEGER;
+  const bOrder = b.data.order ?? Number.MAX_SAFE_INTEGER;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+  return b.data.year - a.data.year;
+});
 
-/**
- * Construye la ruta del detalle del item según colección.
- * Case studies viven en `/case-studies/<slug>`.
- * Projects viven en `/proyectos/<slug>`.
- */
-function getHref(item: WorkItem): string {
-  const slug = item.entry.id.split('/').pop() ?? item.entry.id;
-  if (item.kind === 'case-study') {
-    return `/case-studies/${slug}`;
-  }
-  return `/proyectos/${slug}`;
-}
+const cases = sorted.map((entry) => {
+  const slug = slugFromId(entry.id);
+  return {
+    slug,
+    href: `/case-studies/${slug}`,
+    data: entry.data,
+    bucketId: attributionBucketId(entry.data.attribution),
+    logoFit: getLogoFit(slug),
+  };
+});
 
-/**
- * Mapea status semántico → bucket del filtro UI. Side-project y paused
- * comparten bucket porque conceptualmente son "side projects" en el filtro.
- */
-function getFilterBucket(status: WorkItem['status']): string {
-  if (status === 'success') return 'success';
-  if (status === 'in-development') return 'in-development';
-  return 'side-project';
-}
+const buckets = getAttributionBuckets(cases.map((c) => ({ attribution: c.data.attribution })));
 
+const contactHref = getRoutePath('contact', lang);
+
+const listHeadingId = 'work-heading';
+const filterLabelId = 'work-filter-label';
+
+// --- Decorative terminal framing (new copy, local to this component). ----
+const lsCommand = 'ls -l trabajos/';
+const catCommand = 'cat idea.txt';
+const statusLabel = 'en producción';
+const metaLabels = { client: 'cliente', year: 'año', by: 'autoría' };
+
+// --- CTA copy, duplicated verbatim from CasesPane.astro's local `midCta`. -
+const ctaHeadingParts: [string, string] = [
+  '¿Tienes una idea o un problema que quieres ',
+  'resolver?',
+];
+const ctaButtonLabel = 'Escríbeme';
 ---
 
-<section class="work-index" aria-labelledby="work-heading">
-  <Reveal as="header" class="work-index__hero">
-    <h1 id="work-heading" class="work-index__title font-display">
-      {t('work.heading')}
-    </h1>
-    <p class="work-index__tagline">{t('work.tagline')}</p>
-  </Reveal>
+<TerminalPane path="trabajos" index="1/2" labelledby={listHeadingId} class="t-pane-gutter">
+  <div class="work-index">
+    <Prompt command={lsCommand} />
 
-  <Reveal as="div" class="work-index__grid-wrapper">
+    <div class="work-index__intro">
+      <p class="t-comment"># Proyectos</p>
+      <h1 id={listHeadingId} class="work-index__title font-display">{t('work.heading')}</h1>
+      <p class="work-index__tagline">{t('work.tagline')}</p>
+    </div>
+
     {
-      items.length === 0 ? (
+      cases.length > 0 && (
+        <div
+          class="work-index__filter"
+          role="group"
+          aria-labelledby={filterLabelId}
+          data-work-filter
+        >
+          <span id={filterLabelId} class="work-index__filter-label">
+            grep --autoria
+          </span>
+          {buckets.map((bucket) => (
+            <button
+              type="button"
+              class="work-index__filter-btn"
+              data-bucket-id={bucket.id}
+              aria-pressed={bucket.id === ALL_BUCKET_ID ? 'true' : 'false'}
+            >
+              {bucket.label} · {bucket.count}
+            </button>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      cases.length === 0 ? (
         <p class="work-index__empty" data-work-empty>
           {t('work.empty')}
         </p>
       ) : (
-        <ul class="work-index__grid" role="list" data-work-grid>
-          {items.map((item) => {
-            const href = getHref(item);
-            const bucket = getFilterBucket(item.status);
-            const itemClasses = 'work-index__item';
+        <ul class="work-index__list" role="list" data-work-list>
+          {cases.map((item) => {
+            const { data, slug, href, bucketId, logoFit } = item;
+            const externalLabel = data.externalUrl ? hostnameLabel(data.externalUrl) : null;
+            const titleId = `work-${slug}-title`;
+
             return (
-              <li
-                class={itemClasses}
-                data-work-item
-                data-status={item.status}
-                data-bucket={bucket}
-              >
-                {item.kind === 'case-study' ? (
-                  <CaseStudyCard
-                    title={item.entry.data.title}
-                    tagline={item.entry.data.tagline}
-                    client={item.entry.data.client}
-                    attribution={item.entry.data.attribution}
-                    logo={item.entry.data.logo}
-                    clientLogo={item.entry.data.clientLogo}
-                    year={item.entry.data.year}
-                    stack={item.entry.data.stack}
-                    lang={lang}
-                    href={href}
-                    heroImage={item.entry.data.heroImage}
-                    featured={item.entry.data.featured ?? false}
-                  />
-                ) : (
-                  <ProjectCard
-                    title={item.entry.data.title}
-                    description={item.entry.data.description}
-                    pitch={item.entry.data.pitch}
-                    stack={item.entry.data.stack}
-                    status={item.entry.data.status}
-                    logo={item.entry.data.logo}
-                    year={item.entry.data.year}
-                    lang={lang}
-                    href={href}
-                    repo={item.entry.data.repo}
-                    liveUrl={item.entry.data.liveUrl}
-                  />
-                )}
+              <li class="work-case" data-work-item data-bucket={bucketId ?? ''}>
+                <div class="work-case__bar">
+                  <span>{slug}/</span>
+                  {data.status === 'success' && (
+                    <span class="work-case__status">
+                      <span class="t-led" aria-hidden="true" />
+                      {statusLabel}
+                    </span>
+                  )}
+                </div>
+
+                <div class="work-case__body">
+                  <div class="work-case__main">
+                    <div class="work-case__head">
+                      {data.logo && (
+                        <span class="work-case__logo-tile">
+                          <img
+                            class:list={[
+                              'work-case__logo',
+                              logoFit === 'cover' && 'work-case__logo--cover',
+                            ]}
+                            src={data.logo}
+                            alt=""
+                            width="38"
+                            height="38"
+                            loading="lazy"
+                          />
+                        </span>
+                      )}
+                      <h2 id={titleId} class="work-case__title font-display">
+                        <a href={href}>{data.title}</a>
+                      </h2>
+                    </div>
+
+                    <p class="work-case__tagline">{data.tagline}</p>
+
+                    {data.stack.length > 0 && <p class="work-case__tags">{toTags(data.stack)}</p>}
+
+                    <div class="work-case__actions">
+                      <TerminalButton href={href} class="work-case__cta">
+                        [ Ver caso → ]
+                      </TerminalButton>
+                      {externalLabel && (
+                        <a
+                          class="t-link work-case__external"
+                          href={data.externalUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {externalLabel} ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <dl class="work-case__meta">
+                    <dt>{metaLabels.client}</dt>
+                    <dd>{data.client}</dd>
+                    <dt>{metaLabels.year}</dt>
+                    <dd>{data.year}</dd>
+                    {data.attribution && (
+                      <>
+                        <dt>{metaLabels.by}</dt>
+                        <dd>{data.attribution}</dd>
+                      </>
+                    )}
+                  </dl>
+                </div>
               </li>
             );
           })}
@@ -227,104 +261,418 @@ function getFilterBucket(status: WorkItem['status']): string {
       )
     }
 
-  </Reveal>
-</section>
+    {cases.length > 0 && <p class="work-index__total" data-work-total>{`total ${cases.length}`}</p>}
+  </div>
+</TerminalPane>
+
+<TerminalPane path="contacto" labelledby="work-contact-heading" class="t-pane-gutter">
+  <div class="work-cta">
+    <Prompt command={catCommand} />
+
+    <h2 id="work-contact-heading" class="work-cta__heading font-display">
+      {ctaHeadingParts[0]}
+      <span class="work-cta__accent">{ctaHeadingParts[1]}</span>
+    </h2>
+
+    <TerminalButton href={contactHref} primary class="work-cta__button">
+      [ {ctaButtonLabel} → ]
+    </TerminalButton>
+  </div>
+</TerminalPane>
 
 <style>
   /* ---------------------------------------------------------------------- */
-  /* Section wrapper                                                         */
+  /* ~/trabajos pane                                                         */
   /* ---------------------------------------------------------------------- */
 
   .work-index {
-    padding-block: clamp(64px, 10vw, 128px);
-    padding-inline: clamp(16px, 4vw, 32px);
-    max-width: 1200px;
-    margin-inline: auto;
-    display: grid;
-    row-gap: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    font-size: 15px;
   }
 
-  /* ---------------------------------------------------------------------- */
-  /* Hero                                                                    */
-  /* ---------------------------------------------------------------------- */
-
-  .work-index__hero {
-    display: grid;
+  .work-index__intro {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    max-width: 720px;
   }
 
   .work-index__title {
     margin: 0;
     color: var(--text-0);
-    /* Hero pequeño — h1 más contenido que en home: 39-56px clamp. */
-    font-size: clamp(2.25rem, 5vw + 0.5rem, 3.5rem);
-    font-weight: 600;
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-tighter);
+    font-size: clamp(2rem, 4vw + 1rem, 3.25rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
   .work-index__tagline {
     margin: 0;
-    color: var(--text-2);
+    max-width: 820px;
+    color: var(--text-1);
     font-size: var(--text-lg);
-    line-height: var(--leading-normal);
-    text-wrap: pretty;
+    line-height: 1.6;
   }
 
-  /* ---------------------------------------------------------------------- */
-  /* Grid                                                                    */
-  /* ---------------------------------------------------------------------- */
-
-  .work-index__grid-wrapper {
-    /* Container del grid + empty state. Permite que el mensaje "no hay…" se
-       posicione cuando JS oculta todas las cards del filtro. */
-    position: relative;
+  /* --- Filter group -------------------------------------------------------- */
+  .work-index__filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
   }
 
-  .work-index__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .work-index__filter-label {
+    color: var(--text-3);
+    font-family: var(--font-mono);
   }
 
-  @media (min-width: 768px) {
-    .work-index__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  .work-index__filter-btn {
+    min-height: 36px;
+    padding-inline: 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-1);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease-out),
+      border-color var(--motion-fast) var(--motion-ease-out),
+      color var(--motion-fast) var(--motion-ease-out);
+  }
+
+  .work-index__filter-btn:hover {
+    border-color: var(--accent-400);
+    color: var(--text-0);
+  }
+
+  .work-index__filter-btn:focus-visible {
+    outline: 2px solid var(--accent-400);
+    outline-offset: 2px;
+  }
+
+  .work-index__filter-btn[aria-pressed='true'] {
+    border-color: var(--accent-400);
+    background: var(--accent-400);
+    color: var(--bg-0);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .work-index__filter-btn {
+      min-height: 44px;
     }
   }
 
-  .work-index__item {
+  /* --- Case list ------------------------------------------------------------ */
+  .work-index__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
     display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .work-index__item :global(.case-study-card),
-  .work-index__item :global(.project-card) {
-    width: 100%;
-  }
-
-  /* Cuando JS esconde un item del filtro, se quita del flow del grid
-     completamente para que el grid se reconfigure sin huecos. */
-  .work-index__item[hidden] {
+  .work-index__list [hidden] {
     display: none;
   }
 
-  /* ---------------------------------------------------------------------- */
-  /* Empty state                                                             */
-  /* ---------------------------------------------------------------------- */
+  .work-case {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-2);
+    overflow: hidden;
+  }
 
+  .work-case__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 36px;
+    padding-inline: 18px;
+    background: var(--bg-inset);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  .work-case__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-300);
+  }
+
+  .work-case__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 40px;
+    padding: 28px;
+  }
+
+  @media (max-width: 640px) {
+    .work-case__body {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+  }
+
+  .work-case__main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .work-case__head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  /* Dark tile (mockup: bg ≈ #16151d) — nearest existing token is `--bg-2`
+     (#0e0d14, same darkness family; see docblock). Distinct on purpose from
+     the light/`--text-0` tile every other logo placement on this site uses
+     (CaseStudyCard, ProjectCard, LockupPane) — this mockup draws the
+     `/trabajos` index tile dark specifically. */
+  .work-case__logo-tile {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bg-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+  }
+
+  .work-case__logo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* recetas-novatex's own logo already fills a dark square end-to-end —
+     cover it edge-to-edge instead of containing it with extra padding
+     (src/lib/work-case-display.ts owns the per-slug decision). */
+  .work-case__logo--cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .work-case__title {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  @media (max-width: 640px) {
+    .work-case__title {
+      font-size: 26px;
+    }
+  }
+
+  .work-case__title a {
+    color: var(--text-0);
+    text-decoration: none;
+  }
+
+  .work-case__title a:hover,
+  .work-case__title a:focus-visible {
+    color: var(--accent-300);
+  }
+
+  .work-case__tagline {
+    margin: 0;
+    max-width: 720px;
+    color: var(--text-1);
+    font-size: var(--text-base);
+    line-height: 1.55;
+  }
+
+  .work-case__tags {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    color: var(--text-3);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  .work-case__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 22px;
+    padding-top: 6px;
+  }
+
+  .work-case__cta {
+    border-color: var(--accent-400);
+    color: var(--accent-300);
+    white-space: nowrap;
+  }
+
+  .work-case__external {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
+  .work-case__meta {
+    margin: 0;
+    align-self: start;
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 12px;
+    padding-left: 32px;
+    border-left: 1px solid var(--border);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 640px) {
+    .work-case__meta {
+      padding-left: 0;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+  }
+
+  .work-case__meta dt {
+    color: var(--text-3);
+  }
+
+  .work-case__meta dd {
+    margin: 0;
+    color: var(--text-1);
+    overflow-wrap: anywhere;
+  }
+
+  /* --- Empty state / total ---------------------------------------------- */
   .work-index__empty {
     margin: 0;
-    padding: 64px 24px;
+    padding: 48px 24px;
     text-align: center;
     color: var(--text-3);
-    font-family: var(--font-sans);
-    font-size: var(--text-base);
-    background: var(--bg-1);
+    background: var(--bg-2);
     border: 1px dashed var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
+  }
+
+  .work-index__total {
+    margin: 0;
+    color: var(--text-3);
+    font-size: var(--text-sm);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* ~/contacto CTA pane                                                     */
+  /* ---------------------------------------------------------------------- */
+
+  .work-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 15px;
+  }
+
+  .work-cta__heading {
+    margin: 0;
+    max-width: 1000px;
+    color: var(--text-0);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .work-cta__accent {
+    color: var(--accent-400);
+  }
+
+  .work-cta__button {
+    align-self: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .work-cta__button {
+      width: 100%;
+    }
   }
 </style>
+
+<script>
+  /**
+   * Client-side `grep --autoria` filter — progressive enhancement.
+   *
+   * Without JS every `<li data-work-item>` stays visible (server-rendered
+   * final state). With JS, clicking a filter button toggles `hidden` on the
+   * non-matching `<li>`s, flips `aria-pressed` across the button group, and
+   * updates the `total N` line to the visible count. Follows the same
+   * dataset-guard + `astro:page-load` re-init pattern as `Reveal.astro` /
+   * `TerminalPane.astro`'s own client scripts.
+   */
+  function initWorkFilter(root: HTMLElement): void {
+    if (root.dataset.workFilterInit) return;
+    root.dataset.workFilterInit = '1';
+
+    const list = root.parentElement?.querySelector<HTMLElement>('[data-work-list]');
+    const total = root.parentElement?.querySelector<HTMLElement>('[data-work-total]');
+    if (!list) return;
+
+    const items = Array.from(list.querySelectorAll<HTMLElement>('[data-work-item]'));
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-bucket-id]'));
+
+    function applyFilter(bucketId: string): void {
+      let visible = 0;
+
+      for (const item of items) {
+        const matches = bucketId === 'todos' || item.dataset.bucket === bucketId;
+        item.hidden = !matches;
+        if (matches) visible += 1;
+      }
+
+      for (const button of buttons) {
+        button.setAttribute(
+          'aria-pressed',
+          button.dataset.bucketId === bucketId ? 'true' : 'false'
+        );
+      }
+
+      if (total) total.textContent = `total ${visible}`;
+    }
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        const bucketId = button.dataset.bucketId;
+        if (bucketId) applyFilter(bucketId);
+      });
+    }
+  }
+
+  function initAllWorkFilters(): void {
+    document.querySelectorAll<HTMLElement>('[data-work-filter]').forEach(initWorkFilter);
+  }
+
+  initAllWorkFilters();
+
+  type WorkFilterWindow = Window & { __marmibasWorkFilterBound?: boolean };
+
+  if (!(window as WorkFilterWindow).__marmibasWorkFilterBound) {
+    (window as WorkFilterWindow).__marmibasWorkFilterBound = true;
+    document.addEventListener('astro:page-load', initAllWorkFilters);
+  }
+</script>
