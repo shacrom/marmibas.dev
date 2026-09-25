@@ -112,7 +112,7 @@ export function getRoutePath(routeKey: RouteKey, lang: Language): string {
 /**
  * Añade el prefijo `/en` a un path si lang === 'en' y el path no lo lleva
  * todavía. Útil para construir URLs ad-hoc cuando no hay una `RouteKey`
- * declarada (ejemplo: `/blog/${slug}`).
+ * declarada (ejemplo: `/case-studies/${slug}`).
  *
  * Notas:
  * - Si lang === 'es', devuelve el path sin tocar (ES no lleva prefijo).
@@ -120,10 +120,10 @@ export function getRoutePath(routeKey: RouteKey, lang: Language): string {
  * - Normaliza el leading slash si falta.
  *
  * Ejemplos:
- *   localePath('/blog/post-1', 'es')   -> '/blog/post-1'
- *   localePath('/blog/post-1', 'en')   -> '/en/blog/post-1'
- *   localePath('/en/blog/post-1', 'en')-> '/en/blog/post-1' (no duplica)
- *   localePath('blog/post-1', 'en')    -> '/en/blog/post-1'
+ *   localePath('/case-studies/voxye', 'es')    -> '/case-studies/voxye'
+ *   localePath('/case-studies/voxye', 'en')    -> '/en/case-studies/voxye'
+ *   localePath('/en/case-studies/voxye', 'en') -> '/en/case-studies/voxye' (no duplica)
+ *   localePath('case-studies/voxye', 'en')     -> '/en/case-studies/voxye'
  */
 export function localePath(path: string, lang: Language): string {
   const normalized = path.startsWith('/') ? path : `/${path}`;
@@ -152,11 +152,11 @@ export function localePath(path: string, lang: Language): string {
  *   - LangSwitcher (T-19).
  *
  * Ejemplos:
- *   /trabajos          + 'en' -> '/en/work'
- *   /trabajos/voxye    + 'en' -> '/en/work/voxye'
- *   /en/blog/post-1    + 'es' -> '/blog/post-1'
- *   /                  + 'en' -> '/en/'
- *   /ruta-inventada    + 'en' -> '/en/' (fallback home)
+ *   /trabajos              + 'en' -> '/en/work'
+ *   /trabajos/voxye        + 'en' -> '/en/work/voxye'
+ *   /en/case-studies/voxye + 'es' -> '/case-studies/voxye'
+ *   /                      + 'en' -> '/en/'
+ *   /ruta-inventada        + 'en' -> '/en/' (fallback home)
  */
 export function getAlternateUrl(currentUrl: URL, targetLang: Language): string {
   const currentLang = getLangFromUrl(currentUrl);
@@ -181,7 +181,7 @@ export function getAlternateUrl(currentUrl: URL, targetLang: Language): string {
       return routes[key][targetLang];
     }
 
-    // Match por prefijo (ruta dinámica: /trabajos/voxye, /en/blog/post-1).
+    // Match por prefijo (ruta dinámica: /trabajos/voxye, /en/case-studies/voxye).
     // Excluimos `home` porque su path ('/' o '/en/') matchearía cualquier
     // pathname y rompería la detección de las demás rutas.
     if (key === 'home') continue;
@@ -216,7 +216,7 @@ export function getAlternateUrl(currentUrl: URL, targetLang: Language): string {
  *
  * Ejemplos (con SITE_URL = 'https://marmibas.dev'):
  *   new URL('http://localhost:4321/trabajos')        -> 'https://marmibas.dev/trabajos'
- *   new URL('https://x.dev/en/blog/post-1?utm=x')    -> 'https://marmibas.dev/en/blog/post-1'
+ *   new URL('https://x.dev/en/case-studies/voxye?utm=x') -> 'https://marmibas.dev/en/case-studies/voxye'
  *   new URL('https://x.dev/')                        -> 'https://marmibas.dev/'
  */
 export function getCanonicalUrl(currentUrl: URL): string {
@@ -245,7 +245,7 @@ export function getCanonicalUrl(currentUrl: URL): string {
  *   isCurrentRoute('/trabajos', 'home', 'es')          -> false
  *   isCurrentRoute('/trabajos', 'work', 'es')          -> true
  *   isCurrentRoute('/trabajos/voxye', 'work', 'es')    -> true
- *   isCurrentRoute('/en/blog/post-1', 'blog', 'en')    -> true
+ *   isCurrentRoute('/en/work/voxye', 'work', 'en')     -> true
  *   isCurrentRoute('/en', 'home', 'en')                -> true
  *   isCurrentRoute('/en/', 'home', 'en')               -> true
  */

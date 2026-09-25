@@ -243,7 +243,7 @@ Los siguientes componentes materializan la estética terminal en el resto del si
 
 ### Container
 
-Max-width 720px (prose pages: case studies, blog), 1080px (home, grid). Padding lateral fluido con clamp. Sin cambios.
+Max-width 720px (prose pages: case studies), 1080px (home, grid). Padding lateral fluido con clamp. Sin cambios.
 
 ### Grid del portfolio (`/trabajos`)
 
@@ -282,7 +282,6 @@ Desktop: 128px. Mobile: 64px. Sin cambios.
 - Validar tipografías Space Mono + IBM Plex Mono en mockup real a escala completa (home entero, no solo hero).
 - Definir el patrón visual final de `TerminalPane`/`Prompt` en su tarea de implementación (T2) — este documento fija el contrato, no el marcado exacto.
 - Revisar si el acento magenta/pink (`--color-accent-magenta`, `--color-accent-pink`, sin uso actual) se retira del tema o se reserva para un caso futuro.
-- Definir patrón visual para el blog (¿hero por post? ¿solo título?).
 
 ---
 

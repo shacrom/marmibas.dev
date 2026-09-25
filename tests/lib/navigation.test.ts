@@ -36,7 +36,6 @@ describe('getPrimaryNav', () => {
       'services',
       'work',
       'experience',
-      'blog',
       'contact',
     ]);
 
@@ -45,7 +44,6 @@ describe('getPrimaryNav', () => {
       '/servicios',
       '/trabajos',
       '/experiencia',
-      '/blog',
       '/contacto',
     ]);
 
@@ -54,7 +52,6 @@ describe('getPrimaryNav', () => {
       '~/servicios',
       '~/trabajos',
       '~/experiencia',
-      '~/blog',
       '~/contacto',
     ]);
   });
@@ -62,23 +59,16 @@ describe('getPrimaryNav', () => {
   it('returns the EN nav without a services item, in Header order, with hrefs and tabs', () => {
     const nav = getPrimaryNav('en', '/en/');
 
-    expect(nav.map((item) => item.key)).toEqual(['home', 'work', 'experience', 'blog', 'contact']);
+    expect(nav.map((item) => item.key)).toEqual(['home', 'work', 'experience', 'contact']);
 
     expect(nav.map((item) => item.href)).toEqual([
       '/en/',
       '/en/work',
       '/en/experience',
-      '/en/blog',
       '/en/contact',
     ]);
 
-    expect(nav.map((item) => item.tab)).toEqual([
-      '~/home',
-      '~/work',
-      '~/experience',
-      '~/blog',
-      '~/contact',
-    ]);
+    expect(nav.map((item) => item.tab)).toEqual(['~/home', '~/work', '~/experience', '~/contact']);
   });
 
   it('marks only the home item as current when currentPath is the ES home', () => {

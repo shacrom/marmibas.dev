@@ -25,7 +25,6 @@ export const routes = {
   home: { es: '/', en: '/en/' },
   work: { es: '/trabajos', en: '/en/work' },
   projects: { es: '/proyectos', en: '/en/projects' },
-  blog: { es: '/blog', en: '/en/blog' },
   experience: { es: '/experiencia', en: '/en/experience' },
   contact: { es: '/contacto', en: '/en/contact' },
   caseStudies: { es: '/case-studies', en: '/en/case-studies' },

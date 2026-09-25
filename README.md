@@ -66,12 +66,12 @@ Auto-deploy en [Vercel](https://vercel.com/) en cada push a `main`. Las branches
 │   ├── favicon.svg
 │   └── robots.txt
 ├── src/
-│   ├── content/           # MDX collections: case-studies, projects, experience, posts
+│   ├── content/           # MDX collections: case-studies, projects, experience
 │   ├── components/        # layout/, ui/, home/, interactive/
 │   ├── i18n/              # ui.ts (diccionarios), routes.ts, helpers.ts
-│   ├── layouts/           # BaseLayout, CaseStudyLayout, PostLayout, ProjectDetailLayout
+│   ├── layouts/           # BaseLayout, CaseStudyLayout, ProjectDetailLayout
 │   ├── lib/               # content.ts (helpers de collections)
-│   ├── pages/             # index, trabajos/, blog/, experiencia/, contacto, en/, api/
+│   ├── pages/             # index, trabajos/, experiencia/, contacto, en/, api/
 │   └── styles/            # global.css, motion.css, prose.css
 ├── vercel.json            # framework + security headers + font cache
 └── package.json

@@ -122,7 +122,7 @@ const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
 
 // --- JSON-LD structured data (T-50) --------------------------------------
 // Detect the home: ES home is exactly `/`; EN home is `/en` or `/en/`.
-// Anything else (e.g. `/trabajos`, `/en/work/voxye`, `/blog/post-x`) falls
+// Anything else (e.g. `/trabajos`, `/en/work/voxye`, `/case-studies/post-x`) falls
 // through to the Article branch (when `type === 'article'`) or to no
 // structured data at all for generic landing pages.
 const pathname = currentUrl.pathname;
@@ -350,18 +350,3 @@ const faqSchema =
    */
 }
 {faqSchema && <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
-
-{/* --- RSS feed discovery ------------------------------------------- */}
-{
-  /*
-   * Per language. Falls back to ES feed when EN is unavailable. The endpoint
-   * lives at /rss.xml (T-52); browsers + feed readers auto-discover via this
-   * link relation.
-   */
-}
-<link
-  rel="alternate"
-  type="application/rss+xml"
-  title={`marmibas.dev — ${lang === 'es' ? 'Blog' : 'Blog'}`}
-  href={lang === 'es' ? '/rss.xml' : '/en/rss.xml'}
-/>

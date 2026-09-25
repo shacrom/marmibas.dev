@@ -9,7 +9,7 @@
  * `src/lib/content.ts` filter by it); the folder split is purely organizational.
  *
  * Schemas follow TASKS.md T-15 as the canonical spec (case-studies / projects
- * / experience / posts) plus the project-wide shared fields (lang, draft,
+ * / experience) plus the project-wide shared fields (lang, draft,
  * featured, order, heroImage, ogImage) layered on top via `sharedBase`.
  *
  * Note on the `image()` helper: Astro injects it via `schema: ({ image }) =>`.
@@ -142,30 +142,8 @@ const experience = defineCollection({
     }),
 });
 
-/**
- * Posts — blog entries. Empty initially; grows over time.
- * `publishedAt` is required (sort key); `updatedAt` optional (article meta).
- */
-const posts = defineCollection({
-  loader: glob({
-    base: "./src/content/posts",
-    pattern: "**/*.{md,mdx}",
-  }),
-  schema: ({ image }) =>
-    sharedBase.extend({
-      heroImage: image().optional(),
-      ogImage: image().optional(),
-      publishedAt: z.coerce.date(),
-      updatedAt: z.coerce.date().optional(),
-      tags: z.array(z.string()).optional(),
-      readingTime: z.number().optional(),
-      canonical: z.string().url().optional(),
-    }),
-});
-
 export const collections = {
   "case-studies": caseStudies,
   projects,
   experience,
-  posts,
 };

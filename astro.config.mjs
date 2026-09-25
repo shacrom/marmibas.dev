@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 // The sitemap integration's `serialize` only receives the page URL — it does
 // NOT have access to Astro's content layer. To set a meaningful `lastmod` per
 // collection page we pre-build a Map<pathname, ISOString> at config init by
-// scanning `src/content/{case-studies,posts}/**` and reading either:
+// scanning `src/content/case-studies/**` and reading either:
 //   1) `publishedAt` / `updatedAt` from the YAML frontmatter (if present), or
 //   2) the file's `mtime` as a sensible fallback.
 // The map is resolved once at config load and reused for every page that
@@ -51,13 +51,12 @@ function readFrontmatterDate(raw, key) {
 }
 
 /**
- * Build URL pathname → lastmod (Date) map for case-studies + posts.
+ * Build URL pathname → lastmod (Date) map for case-studies.
  *
  * Route reality (per `src/pages/`):
  *   - case-studies → `/case-studies/<slug>` (ES) and `/en/case-studies/<slug>`
  *     (EN). The user-facing aliases `/trabajos` and `/en/work` are LIST
  *     pages only; detail pages live under `/case-studies/`.
- *   - posts        → `/blog/<slug>` (ES) and `/en/blog/<slug>` (EN).
  *
  * If detail-page routes are renamed in the future (e.g. moved under
  * `/trabajos/<slug>`), update the `pathFor` callbacks below in lockstep.
@@ -76,16 +75,6 @@ function buildLastmodMap() {
       collection: 'case-studies',
       langDir: 'en',
       pathFor: (slug) => `/en/case-studies/${slug}`,
-    },
-    {
-      collection: 'posts',
-      langDir: 'es',
-      pathFor: (slug) => `/blog/${slug}`,
-    },
-    {
-      collection: 'posts',
-      langDir: 'en',
-      pathFor: (slug) => `/en/blog/${slug}`,
     },
   ];
 

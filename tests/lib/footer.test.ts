@@ -8,13 +8,9 @@
  * ordered list of `{label, href, external?, ariaLabel?}` items.
  *
  * `site` reuses `getPrimaryNav` (T2) so the footer's site links always
- * stay in the same order as the header's — this is a deliberate choice:
- * the approved mockup happens to list `blog` before `experiencia`, but the
- * T3 task brief explicitly said to derive `site` "from getPrimaryNav", so
- * header/footer order consistency wins over that one mockup ordering
- * detail. `social`/`more` reuse the exact hrefs/constants the previous
- * (pre-terminal) `Footer.astro` used — same GitHub/LinkedIn/email/
- * phone/WhatsApp URLs, same RSS/cookie-policy paths.
+ * stay in the same order as the header's. `social`/`more` reuse the exact
+ * hrefs/constants the previous (pre-terminal) `Footer.astro` used — same
+ * GitHub/LinkedIn/email/phone/WhatsApp URLs, same cookie-policy path.
  *
  * Plan (strict TDD — written and observed RED before `src/lib/footer.ts`
  * exists):
@@ -23,12 +19,12 @@
  *   2. EN: same 3 groups, EN headings/aria-labels, no ES-only strings.
  *   3. ES `site` group: labels/hrefs/order mirror
  *      `getPrimaryNav('es', '')` lower-cased (home, services, work,
- *      experience, blog, contact).
+ *      experience, contact).
  *   4. EN `site` group: mirrors `getPrimaryNav('en', '')` (no services).
  *   5. ES `social` group: exact hrefs/order/external flags for
  *      GitHub/LinkedIn/email/phone/WhatsApp.
- *   6. ES `more` group: RSS href `/rss.xml`, cookie policy href
- *      `/politica-cookies`. EN: `/en/rss.xml`, `/en/cookie-policy`.
+ *   6. ES `more` group: cookie policy href `/politica-cookies` only (no RSS
+ *      link — the blog/RSS feed was removed). EN: `/en/cookie-policy`.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -61,13 +57,12 @@ describe('getFooterTree', () => {
       expectedNav.map((item) => item.label.toLowerCase())
     );
     expect(site?.items.map((item) => item.href)).toEqual(expectedNav.map((item) => item.href));
-    // Sanity: 6 items, services included, in Header order (home first).
+    // Sanity: 5 items, services included, in Header order (home first).
     expect(site?.items.map((item) => item.label)).toEqual([
       'inicio',
       'servicios',
       'trabajos',
       'experiencia',
-      'blog',
       'contacto',
     ]);
   });
@@ -80,7 +75,6 @@ describe('getFooterTree', () => {
       'home',
       'work',
       'experience',
-      'blog',
       'contact',
     ]);
   });
@@ -119,11 +113,11 @@ describe('getFooterTree', () => {
     expect(social?.items[3]?.external).toBeFalsy();
   });
 
-  it("ES 'more' group has the RSS and cookie-policy hrefs; EN uses the /en/ prefix", () => {
+  it("ES 'more' group has only the cookie-policy href (no RSS link); EN uses the /en/ prefix", () => {
     const esMore = getFooterTree('es').find((group) => group.key === 'more');
-    expect(esMore?.items.map((item) => item.href)).toEqual(['/rss.xml', '/politica-cookies']);
+    expect(esMore?.items.map((item) => item.href)).toEqual(['/politica-cookies']);
 
     const enMore = getFooterTree('en').find((group) => group.key === 'more');
-    expect(enMore?.items.map((item) => item.href)).toEqual(['/en/rss.xml', '/en/cookie-policy']);
+    expect(enMore?.items.map((item) => item.href)).toEqual(['/en/cookie-policy']);
   });
 });

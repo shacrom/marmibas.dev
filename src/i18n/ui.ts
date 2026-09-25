@@ -29,7 +29,6 @@ export const ui = {
     'nav.home': 'Inicio',
     'nav.work': 'Trabajos',
     'nav.projects': 'Proyectos',
-    'nav.blog': 'Blog',
     'nav.services': 'Servicios',
     'nav.experience': 'Experiencia',
     'nav.about': 'Sobre mí',
@@ -42,7 +41,6 @@ export const ui = {
 
     // -- Footer ---------------------------------------------------------------
     'footer.copyright': 'marmibas',
-    'footer.rss': 'RSS',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
     'footer.social.email': 'Email',
@@ -189,12 +187,6 @@ export const ui = {
     'experience.education.years': '2018 — 2023',
     'experience.fallback': 'Experience details only available in Spanish for now.',
 
-    // -- Blog (T-36 / T-37) ---------------------------------------------------
-    'blog.heading': 'Notas sobre software y digitalización',
-    'blog.tagline': 'Notas técnicas, decisiones y aprendizajes desde el camino.',
-    'blog.empty': 'Pronto subo el primer post.',
-    'blog.readingTime': '{n} min de lectura',
-
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Esta página no existe',
     'notFound.description':
@@ -207,7 +199,6 @@ export const ui = {
     'nav.home': 'Home',
     'nav.work': 'Work',
     'nav.projects': 'Projects',
-    'nav.blog': 'Blog',
     'nav.services': 'Services',
     'nav.experience': 'Experience',
     'nav.about': 'About',
@@ -220,7 +211,6 @@ export const ui = {
 
     // -- Footer ---------------------------------------------------------------
     'footer.copyright': 'marmibas',
-    'footer.rss': 'RSS',
     'footer.social.github': 'GitHub',
     'footer.social.linkedin': 'LinkedIn',
     'footer.social.email': 'Email',
@@ -364,12 +354,6 @@ export const ui = {
     'experience.education.school': 'ETSE Universidad de Valencia',
     'experience.education.years': '2018 — 2023',
     'experience.fallback': 'Experience details only available in Spanish for now.',
-
-    // -- Blog (T-36 / T-37) ---------------------------------------------------
-    'blog.heading': 'Notes on software and digitization',
-    'blog.tagline': 'Technical notes, decisions and lessons from the road.',
-    'blog.empty': 'First post coming soon.',
-    'blog.readingTime': '{n} min read',
 
     // -- 404 ------------------------------------------------------------------
     'notFound.title': 'Page not found',

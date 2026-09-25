@@ -6,20 +6,18 @@
  * a `tree`-style listing (DESIGN.md §8 pane contract,
  * `FooterTerminal.dc.html` mockup): `site` (primary nav, reusing
  * `getPrimaryNav` from T2 so header/footer link order always stays in
- * sync — deliberately overriding the mockup's own `blog`-before-
- * `experiencia` ordering, per the T3 task brief's explicit "site items
- * from getPrimaryNav" instruction), `social` (GitHub/LinkedIn/email/
- * phone/WhatsApp — same hrefs/constants as the pre-terminal
- * `Footer.astro`), and `more` (RSS + cookie policy — same hrefs as
- * today).
+ * sync), `social` (GitHub/LinkedIn/email/phone/WhatsApp — same
+ * hrefs/constants as the pre-terminal `Footer.astro`), and `more` (cookie
+ * policy — same href as today; the blog/RSS feed was removed, so `more`
+ * no longer lists an RSS link).
  *
  * Visible labels are intentionally all lower-case (`inicio`, `github`,
- * `rss`...), matching the mockup's literal `tree`/path-listing aesthetic —
+ * `whatsapp`...), matching the mockup's literal `tree`/path-listing aesthetic —
  * this is a deliberate typographic choice for this component, not
  * sentence-casing carried over from the rest of the site's copy.
  */
 
-import { useTranslations, localePath } from '../i18n/helpers';
+import { useTranslations } from '../i18n/helpers';
 import { getPrimaryNav } from './navigation';
 import type { Language } from '../i18n/ui';
 
@@ -112,16 +110,10 @@ function getSocialGroup(lang: Language, t: Translate): FooterTreeGroup {
   };
 }
 
-function getMoreGroup(lang: Language, t: Translate): FooterTreeGroup {
-  const rssHref = localePath('/rss.xml', lang);
+function getMoreGroup(lang: Language): FooterTreeGroup {
   const cookiePolicyHref = lang === 'es' ? '/politica-cookies' : '/en/cookie-policy';
 
   const items: FooterTreeItem[] = [
-    {
-      label: 'rss',
-      href: rssHref,
-      ariaLabel: t('footer.rss'),
-    },
     {
       label: lang === 'es' ? 'política de cookies' : 'cookie policy',
       href: cookiePolicyHref,
@@ -143,5 +135,5 @@ function getMoreGroup(lang: Language, t: Translate): FooterTreeGroup {
 export function getFooterTree(lang: Language): FooterTreeGroup[] {
   const t = useTranslations(lang);
 
-  return [getSiteGroup(lang), getSocialGroup(lang, t), getMoreGroup(lang, t)];
+  return [getSiteGroup(lang), getSocialGroup(lang, t), getMoreGroup(lang)];
 }
