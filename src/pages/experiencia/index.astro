@@ -2,6 +2,18 @@
 /**
  * /experiencia — timeline cronológico de experiencia profesional (ES) — T-35.
  *
+ * Apertura de página (owner request, 2026-09-25): dos lock-up panes justo
+ * después del header, antes del timeline — `<VoxyePane>`
+ * (`src/components/work/VoxyePane.astro`, "Software para reformas", Marmibas
+ * × Voxye) seguida de `<FactorySoftwarePane>`
+ * (`src/components/work/FactorySoftwarePane.astro`, "Software para
+ * fábricas", Marmibas × Plazasys). Ambas renderizan el mismo componente
+ * reutilizable `LockupPane.astro`; la segunda entra con un pequeño
+ * `delayOffset` para no animarse en paralelo con la primera. El antiguo
+ * entry "Marmibas" del timeline (`src/content/experience/es/marmibas.md`) se
+ * eliminó: su copy vive ahora en `VoxyePane`, así que el timeline empieza en
+ * Devoltec.
+ *
  * Carga `getCollection('experience', e => e.data.lang === 'es')`, ordena por
  * `order` ascendente (1 = más reciente) y renderiza cada entrada como una card
  * compacta: stack como TechBadges arriba, período, título (company · role) y
@@ -13,13 +25,6 @@
  * Sección de educación al final, hardcoded en `ui.ts` (no es content
  * collection): Grado en Ingeniería Informática · ETSE Universidad de Valencia
  * · 2018 — 2023.
- *
- * Cierre de página: `<FactorySoftwarePane>`
- * (`src/components/work/FactorySoftwarePane.astro`) — sección "Software para
- * fábricas" sobre el trabajo junto a Plazasys, separada del entry "Marmibas"
- * del timeline (owner request, 2026-09-25): el entry ahora solo lleva el logo
- * de Marmibas y el bullet de Voxye; los proyectos industriales y sus dos casos
- * (Recetas Novatex, Visomo's) se cuentan una sola vez, aquí.
  *
  * Visual:
  *   - Desktop ≥768px: línea vertical (border-left 1px sólido) que conecta los
@@ -37,6 +42,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import TechBadge from '../../components/ui/TechBadge.astro';
 import Prose from '../../components/ui/Prose.astro';
 import Reveal from '../../components/ui/Reveal.astro';
+import VoxyePane from '../../components/work/VoxyePane.astro';
 import FactorySoftwarePane from '../../components/work/FactorySoftwarePane.astro';
 import { useTranslations, getRoutePath } from '../../i18n/helpers';
 
@@ -78,6 +84,14 @@ const items = await Promise.all(
       </h1>
       <p class="experience__tagline">{t('experience.tagline')}</p>
     </header>
+
+    <VoxyePane lang={lang} />
+    <FactorySoftwarePane
+      lang={lang}
+      delayOffset={300}
+      topSpacingDesktop={48}
+      topSpacingMobile={32}
+    />
 
     <ol class="timeline" role="list">
       {
@@ -183,8 +197,6 @@ const items = await Promise.all(
         >
       </p>
     </aside>
-
-    <FactorySoftwarePane lang={lang} />
   </section>
 </BaseLayout>
 
@@ -231,15 +243,25 @@ const items = await Promise.all(
   }
 
   /* --- Timeline ---------------------------------------------------------- */
+  /* `margin-top` separates the timeline from the two lock-up panes above it
+     (VoxyePane, FactorySoftwarePane) — same 64/48 rhythm as the panes' own
+     default top spacing, so the transition pane→timeline reads the same as
+     header→first pane. */
   .timeline {
     list-style: none;
-    margin: 0 0 64px;
+    margin: 64px 0 64px;
     padding: 0;
     max-width: 760px;
     margin-inline: auto;
     display: flex;
     flex-direction: column;
     gap: 32px;
+  }
+
+  @media (max-width: 640px) {
+    .timeline {
+      margin-top: 48px;
+    }
   }
 
   .timeline__item {

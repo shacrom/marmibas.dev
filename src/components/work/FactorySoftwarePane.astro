@@ -26,9 +26,11 @@
  * this provenance note, and renders the shared `LockupPane.astro`
  * (`src/components/work/LockupPane.astro`) for markup, styles and motion —
  * the same component `VoxyePane.astro` renders for the Marmibas × Voxye
- * pane. Where this pane lands on the page (and its spacing relative to
- * neighbouring sections) is the page's own concern, not this component's —
- * see `experience/index.astro`.
+ * pane. Rendered second of the two lock-up panes at the top of
+ * `/experiencia`, right after `VoxyePane` (owner decision 2026-09-25: both
+ * panes open the page, ahead of the timeline). Where this pane lands on the
+ * page (and its spacing relative to neighbouring sections) is the page's own
+ * concern, not this component's — see `experience/index.astro`.
  */
 
 import LockupPane from './LockupPane.astro';
@@ -37,9 +39,14 @@ import type { Language } from '../../i18n/ui';
 export interface Props {
   /** Active language. Drives copy (ES-only today, see DESIGN.md §13). */
   lang: Language;
+  /** Forwarded to `LockupPane` so this pane's entrance can stagger after `VoxyePane`'s. Defaults to `0`. */
+  delayOffset?: number;
+  /** Forwarded to `LockupPane`'s own top-spacing props — see that component for defaults. */
+  topSpacingDesktop?: number;
+  topSpacingMobile?: number;
 }
 
-const { lang } = Astro.props as Props;
+const { lang, delayOffset = 0, topSpacingDesktop, topSpacingMobile } = Astro.props as Props;
 
 const panePath = 'fabricas';
 const promptCommand = 'ls fabricas/';
@@ -99,4 +106,7 @@ const partnerLogo = {
   fruitsIntro={content.fruitsIntro}
   statusLabel={content.statusLabel}
   rows={rows}
+  delayOffset={delayOffset}
+  topSpacingDesktop={topSpacingDesktop}
+  topSpacingMobile={topSpacingMobile}
 />
