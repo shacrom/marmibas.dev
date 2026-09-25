@@ -34,7 +34,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
 | C1 | Remove blog + 301 redirects + RSS/dependency cleanup | delegated writer | [x] |
 | C2 | Remove English version (pages, content, EN copy, ES-only i18n) + 301 redirects + SEO script update | delegated writer | [x] |
 | C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [x] |
-| C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [ ] |
+| C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [x] |
 | C5 | Mobile header clock layout | delegated writer | [ ] |
 | C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [ ] |
 
@@ -161,8 +161,36 @@ keys, finish the footer polish and fix the mobile header clock layout.
   routes); `npm run lint` 7 errors + 2 warnings (unchanged from C2 baseline — no lint impact from a
   dictionary-only change).
 
-- C3 commit: (pending — recorded after this commit).
+- C3 commit: c10fc2e.
+
+- C4 done: `src/components/ui/Footer.astro`. Heading glow: `.footer-capture__heading` gets
+  `text-shadow: 0 0 24px rgba(167, 139, 250, 0.25)` — the exact value copied from
+  `HeroPane.astro`'s `.hero-pane__title` rule (verified via `getComputedStyle` in a headless
+  Chrome check: `rgba(167, 139, 250, 0.25) 0px 0px 24px`). Tree rows: each `.footer-tree__row`
+  gets `class="t-show"` + `style="--t-delay: <n>ms"`, computed as `TREE_ROW_BASE_DELAY +
+  TREE_ROW_STEP * globalIndex` where `TREE_ROW_BASE_DELAY` = the `tree marmibas.dev` prompt's
+  own typing duration (`Math.max(220, 17 * 38) = 646ms`, mirroring `Prompt.astro`'s own default
+  formula since this call passes neither `delay` nor `duration`) + 150ms = 796ms, `TREE_ROW_STEP`
+  = 40ms, and `globalIndex` runs continuously across all 3 columns in DOM/reading order (site's 5
+  rows, then social's 5, then more's 1 — 11 rows total, delays 796ms→1196ms). No new CSS utility
+  needed — reused the existing `.t-show` (terminal.css), which the footer's `TerminalPane` already
+  pauses via the run-on-view `.is-waiting` mechanism, and whose reduced-motion final-state
+  guarantee is already covered by `motion.css`'s single global block (verified: with
+  `reducedMotion: 'reduce'` emulated, all 11 rows read `opacity: 1` within 50ms of the footer
+  entering view — no extra motion.css entry required, confirming the task brief's expectation).
+  TDD note: this is CSS/markup, not pure logic — verified via `npm run check` (astro/tsc) +
+  visual QA (Playwright + system Chrome), not `npm test` (no new unit-testable logic).
+  Bug fixed along the way: `treeGroupStartIndex[groupIndex]` indexed a `number[]` under
+  `noUncheckedIndexedAccess`, giving `number | undefined` → `ts(2532)` error; added `?? 0`.
+  QA (Playwright + system Chrome, dev server on :4400): confirmed via `getComputedStyle` that all
+  rows sit at `opacity: 0` immediately after the footer scrolls into view (before any `--t-delay`
+  elapses) and reach `opacity: 1` once their delay + 60ms fade complete — the "backwards" fill
+  mode + increasing per-row delay is correctly wired end to end, screenshotted at 1440/390.
+  Checks: `npm test` 58/58 (unchanged — no logic touched); `npm run check` 0 errors; `npm run
+  build` + `test:seo` passed; `npm run lint` unchanged (7 errors + 2 warnings, same baseline).
+
+- C4 commit: (pending — recorded after this commit).
 
 ## Next step
 
-C4.
+C5.
