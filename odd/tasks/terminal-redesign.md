@@ -142,7 +142,14 @@ look so navigation stays coherent.
   sweep = 0/87 route×width combos over viewport (was 5 before this task: 2 known issues + 3 found by the
   sweep). No commit yet — parent (T8) owns delivery.
 
+- T7 commit: e0787a5.
+- T8 verification (2026-09-25, branch at e0787a5): npm test 63/63 (8 files); astro check 0 errors / 0 warnings;
+  test:seo passed (10 ES routes); lint = the 12 known base problems, identical list. Overflow sweep 0/87
+  (29 routes ES+EN × 1440/390/320). Home with reduced motion and with JS disabled: all 359 text nodes visible
+  except the 7 hover-only "→ ver servicio" hints (by design); clock shows `--:--:--` without JS.
+- Delivery: single PR to main with `size:exception` (8 work-unit commits, 90 files, +7393/−5160). Pending owner OK
+  for: push (→ Vercel preview), PR, merge (→ production).
+
 ## Next step
 
-T8: verification + delivery (full checks already green from T7; visual QA desktop/mobile done during T7;
-push/PR/preview/production still need explicit owner OK per each outward step).
+T8 delivery: ask owner to push `feature/terminal-redesign`; share the Vercel preview; open the PR; merge only on OK.
