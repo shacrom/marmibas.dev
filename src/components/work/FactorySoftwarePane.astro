@@ -15,7 +15,8 @@
  * Copy comes from the two bullets removed from the MDX body, with "en alianza
  * con" reworded to "junto a" at the owner's request — no new facts, dates or
  * numbers:
- *   - `intro` = the "Para proyectos industriales..." bullet.
+ *   - `intro` = the "Para proyectos industriales..." bullet, without "y
+ *     cliente principal" (dropped at the owner's request).
  *   - `rows[].desc` = the parenthetical descriptions from the
  *     "Recetas Novatex (...) y Visomo's (...)" bullet.
  * `eyebrow`/`heading`/`fruitsIntro`/the prompt command are decorative framing,
@@ -48,8 +49,8 @@ export interface Props {
 
 const { lang, delayOffset = 0, topSpacingDesktop, topSpacingMobile } = Astro.props as Props;
 
-const panePath = 'fabricas';
-const promptCommand = 'ls fabricas/';
+const panePath = 'plazasys';
+const promptCommand = 'ls plazasys/';
 const headingId = 'factory-heading';
 
 // Copy reused verbatim from the two bullets removed from
@@ -59,7 +60,7 @@ const copy = {
     eyebrow: 'Proyectos industriales',
     heading: 'Software para fábricas',
     intro:
-      'Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico y cliente principal, que me conecta con fábricas que necesitan digitalizarse.',
+      'Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico, que me conecta con fábricas que necesitan digitalizarse.',
     fruitsIntro: 'Recetas Novatex y Visomo’s están en producción:',
     statusLabel: 'en producción',
   },
