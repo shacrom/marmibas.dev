@@ -41,10 +41,10 @@ opening a module, the drawer (E4).
 
 | ID | Task | Route | Status |
 |----|------|-------|--------|
-| S1 | Services data: add the 4 "incluye" items + keyword/icon per service in `src/lib/services.ts` (tested) | delegated writer | [ ] |
-| S2 | `/servicios` mosaic + drawer (E4), hash deep links, crawlable content | delegated writer (same) | [ ] |
-| S3 | Remove the 7 detail pages, 301 redirects to `/servicios/#<slug>` (tested), update internal links, sitemap, `llms.txt`, SEO verify script | delegated writer (same) | [ ] |
-| S4 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [ ] |
+| S1 | Services data: add the 4 "incluye" items + keyword/icon per service in `src/lib/services.ts` (tested) | delegated writer | [x] |
+| S2 | `/servicios` mosaic + drawer (E4), hash deep links, crawlable content | delegated writer (same) | [x] |
+| S3 | Remove the 7 detail pages, 301 redirects to `/servicios/#<slug>` (tested), update internal links, sitemap, `llms.txt`, SEO verify script | delegated writer (same) | [x] |
+| S4 | Verification (checks, build, visual QA 1440/390) + delivery (asked) | parent | [~] verified, delivery pending |
 
 Route evidence: S1–S3 touch 4+ non-trivial files → writer trigger.
 
@@ -59,6 +59,22 @@ Route evidence: S1–S3 touch 4+ non-trivial files → writer trigger.
 
 - Branch `feature/services-mosaic` stacked on `feature/work-terminal` (805e462) so the local preview shows both.
 
+- S1 done — `e5fc406 feat(services): add the included items to the services data`: 4 "incluye" items per service,
+  mosaic display names/order, `drawerInsertIndex`/`drawerNotchPercent` helpers; tests first (17/22 RED → GREEN).
+- S2 done — `d1849b1 feat(services): show the services as a terminal mosaic with a drawer`: new
+  `src/components/services/ServicesMosaic.astro`; drawers server-rendered in a fallback list (no-JS: all visible),
+  JS moves the open one after the module's visual row (columns read from computed style), hash deep links, focus
+  + Esc handling; `ItemList` of `Service` JSON-LD on `/servicios`. Contact has no prefill → plain `/contacto`.
+- S3 done — `c20517e feat(services): redirect the service pages to the mosaic`: 7 detail pages deleted; 14
+  permanent redirects (`/servicios/<slug>` and trailing slash → `/servicios/#<slug>`) with tests first (RED →
+  GREEN); home `ServicesPane`, `llms.txt`, SEO verify script (now 3 public routes) updated.
+- Parent review fix — `fb34049 fix(services): hide the parked drawers once the mosaic takes over`: with JS on, the
+  collapsed drawers still painted border + notch below the grid.
+- Checks: writer — `npm test` 154/154, `npm run check` 0 errors, eslint + prettier clean, build OK, `test:seo`
+  passed. Parent — `npm test` 154/154, `npm run check` 0 errors, eslint + prettier on the fixed file clean; visual
+  QA 1440 (closed + `#sistemas-de-gestion` open) and 390 (`#integraciones` open) with reduced motion.
+- Possible follow-up: modules keep their 230px height on mobile (tall single-column list).
+
 ## Next step
 
-S1.
+Delivery (push/PR/merge) after the owner's OK — PR stacked after `feature/work-terminal`.
