@@ -317,6 +317,12 @@ h6 {
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   text-wrap: balance;
+  /* Monospace (Space Mono/IBM Plex Mono) is wider per character than the
+     proportional fonts this scale was tuned against — a single long word
+     (e.g. "digitalización") that fit a sans heading can overflow a narrow
+     mobile viewport here. Break only when a word truly doesn't fit; normal
+     word-boundary wrapping is untouched everywhere else. */
+  overflow-wrap: anywhere;
 }
 
 p {

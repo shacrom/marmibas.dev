@@ -3,7 +3,7 @@
  * PostLayout.astro — page-level layout for `posts/**` MDX (T-27).
  *
  * Slimmer than CaseStudyLayout: a blog post is a single column of long-form
- * prose with a sticky TOC on the side. Hero is text-only — title (Fraunces,
+ * prose with a sticky TOC on the side. Hero is text-only — title (Space Mono,
  * clamp 40-64px) + meta (publishedAt + readingTime).
  *
  * Composition tree:
@@ -39,7 +39,7 @@
  *
  * Source of truth:
  *   - TASKS.md T-27 (the layout spec).
- *   - DESIGN.md §4 (Fraunces hero), §9 (prose 720px).
+ *   - DESIGN.md §4 (Space Mono hero), §9 (prose 720px).
  *   - content.config.ts → `posts` schema.
  */
 
@@ -185,7 +185,7 @@ const backToBlogLabel = t('common.backTo') + ' ' + t('nav.blog');
 
   /* ----------------------------------------------------------------------- */
   /* Hero — text-only header with title + meta                               */
-  /* DESIGN.md §4: Fraunces hero, line-height 1, color --text-0.             */
+  /* DESIGN.md §4: Space Mono hero, line-height 1, color --text-0.           */
   /* Clamp 40-64px per T-27 spec.                                            */
   /* ----------------------------------------------------------------------- */
 

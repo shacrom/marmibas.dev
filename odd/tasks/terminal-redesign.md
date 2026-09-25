@@ -57,7 +57,7 @@ look so navigation stays coherent.
 | T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [x] |
 | T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [x] |
 | T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [x] |
-| T7 | Inner pages pass: fix breakages from the new tokens (contact danger colours, overflow with monospace) | delegated writer | [ ] |
+| T7 | Inner pages pass: fix breakages from the new tokens (contact danger colours, overflow with monospace) | delegated writer | [x] |
 | T8 | Verification + delivery: full checks, visual QA desktop/mobile, push, PR, preview, production (each outward step asked) | parent | [ ] |
 
 ## Progress
@@ -116,8 +116,33 @@ look so navigation stays coherent.
   known base; no horizontal scroll at 320.
 - Follow-up: `ui.ts` about.stats.* keys now unused (left in place).
 
+- T6 commit: f1a2d3c.
+- T7 done: fixed the 4 known-issue classes + a sweep-found overflow-wrap gap.
+  1. `/experiencia` (+ `/en/experience` fallback data) timeline header: `.timeline__head` stacks to a column
+     (logos → period → role) under 640px; the Marmibas × Plazasys logo pair additionally shrinks its
+     `max-width` under 400px (two 140px pills + `×` no longer fit at 320px even stacked).
+  2. `/servicios` + all 7 slug pages: `.srv-hero`/`.srv-index-hero` (the `__ambient` positioned ancestor) gained
+     `overflow: clip` — the ambient's `-10vw` bleed was pushing scrollWidth to 429 at 390px.
+  3. Contrast: grepped every `--gradient-cta`/`--gradient-cta-hover` usage (12 hits) and switched
+     `color: var(--text-0)` → `var(--bg-0)` on the primary-CTA rule in BaseLayout (cookie consent), 404,
+     `/servicios` index + all 6 slug pages' `.srv-cta--primary`, `desarrollo-aplicaciones-web.astro`'s `.cta`,
+     `contacto.astro` + `en/contact.astro`'s `.contact__submit`, and the orphaned `LeadCTA.astro` (not currently
+     imported anywhere, fixed anyway per the brief's explicit mention). Hover states inherit the same `color`
+     (no separate hover color rule existed), so one line per file fixes both states.
+  4. Stale Geist/Inter/JetBrains/Fraunces comments updated to Space Mono / IBM Plex Mono across 13 files
+     (prose.css, SeoHead, TechBadge, LangSwitcher, ProjectCard, CaseStudyHero, TableOfContents, MetricsGrid,
+     CaseStudyCard, PostLayout, 404.astro, contacto.astro, blog/index.astro). No stale hits left (verified by
+     re-grep).
+  5. Sweep (Playwright, system Chrome, 1440/390/320, 29 routes incl. EN) found 3 more overflow cases at 320,
+     all the same root cause: `text-wrap: balance` doesn't stop a single long word from overflowing, and
+     Space Mono is wide enough that some ES headings (`digitalización`, `desarrollador`, `aplicaciones`) no
+     longer fit one word at the mobile clamp size. Added `overflow-wrap: anywhere` to the shared
+     `h1..h6` rule in global.css (one line, no visual change where text already fits — confirmed at 390/1440).
+  Checks: npm test 63/63; check 0 errors; test:seo passed (10 ES routes); lint = known base failures only;
+  sweep = 0/87 route×width combos over viewport (was 5 before this task: 2 known issues + 3 found by the
+  sweep). No commit yet — parent (T8) owns delivery.
+
 ## Next step
 
-T7: inner pages — /experiencia timeline header overflows at 390 (role text), /servicios* decorative `__ambient`
-overflows at 390, legacy violet buttons use light text on violet (≈2.2:1, fails AA; terminal uses bg-0 text),
-stale Geist/Inter/JetBrains comments (prose.css and others).
+T8: verification + delivery (full checks already green from T7; visual QA desktop/mobile done during T7;
+push/PR/preview/production still need explicit owner OK per each outward step).

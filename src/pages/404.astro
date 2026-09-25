@@ -10,9 +10,9 @@
  * locale at runtime.
  *
  * Structure (top → bottom):
- *   1. Eyebrow "404" (JetBrains Mono uppercase, --accent-400).
+ *   1. Eyebrow "404" (IBM Plex Mono uppercase, --accent-400).
  *   2. Bilingual heading: ES "Página no encontrada" / EN "Page not found"
- *      stacked, Fraunces display weight 600.
+ *      stacked, Space Mono display weight 600.
  *   3. Bilingual subtagline: ES + EN, --text-2.
  *   4. CTA row: "Volver al inicio" / "Back to home" → /
  *                "Trabajos" / "Work" → /trabajos
@@ -134,7 +134,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* --- Title ----------------------------------------------------------- */
   /*
-   * Display heading (Fraunces). Uses --text-display (clamp 48-72px) for the
+   * Display heading (Space Mono). Uses --text-display (clamp 48-72px) for the
    * giant feel requested by the brief. ES + EN stack on mobile, sit inline
    * on desktop separated by a · divider.
    */
@@ -211,7 +211,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* --- Primary --------------------------------------------------------- */
   .cta--primary {
-    color: var(--text-0);
+    color: var(--bg-0);
     background: var(--gradient-cta);
     border: 1px solid transparent;
     background-size: 200% 200%;
