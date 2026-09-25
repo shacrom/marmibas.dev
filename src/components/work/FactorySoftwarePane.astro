@@ -1,6 +1,6 @@
 ---
 /**
- * FactorySoftwarePane.astro — closing "Software para fábricas" pane for
+ * FactorySoftwarePane.astro — "Software para fábricas" pane for
  * `/experiencia` (owner requests from screenshot reviews, 2026-09-25).
  *
  * Context: the timeline's top entry
@@ -9,61 +9,49 @@
  * work done with Plazasys and the case studies born from it. The owner asked
  * to split that: the timeline entry now reads as Marmibas' own step as a
  * freelancer (Marmibas logo only, Voxye bullet only), and this pane gives the
- * industrial work its own closing section, rendered right after the
- * timeline/education/CTA and before the global `<Footer>`. The owner does not
- * want it framed as an "alianza" — keep the wording to "junto a Plazasys".
+ * industrial work its own section. The owner does not want it framed as an
+ * "alianza" — keep the wording to "junto a Plazasys".
  *
  * Copy comes from the two bullets removed from the MDX body, with "en alianza
  * con" reworded to "junto a" at the owner's request — no new facts, dates or
  * numbers:
- *   - `intro` = the "Para proyectos industriales..." bullet.
- *   - `fruits[].desc` = the parenthetical descriptions from the
+ *   - `intro` = the "Para proyectos industriales..." bullet, without "y
+ *     cliente principal" (dropped at the owner's request).
+ *   - `rows[].desc` = the parenthetical descriptions from the
  *     "Recetas Novatex (...) y Visomo's (...)" bullet.
  * `eyebrow`/`heading`/`fruitsIntro`/the prompt command are decorative framing,
  * same convention every other pane documents. "en producción" mirrors the
  * case studies' own `status: "success"` (`content.config.ts`).
  *
- * Visual — a `TerminalPane` (`path="fabricas"`, no `index`: a one-off
- * page-closing pane, same convention `Footer.astro` uses for
- * `path="contacto"`):
- *   1. `Prompt` decorative command (`ls fabricas/`).
- *   2. Eyebrow + `<h2>` heading, centered — the page's closing statement,
- *      mirroring `experience/index.astro`'s centered `.experience__cta`.
- *   3. The lock-up: the Marmibas wordmark tile × the Plazasys tile, joined
- *      by an animated dashed connector with a violet "×" badge on top.
- *      Reuses the exact logo assets (`/marmibas-logo.png`,
- *      `/logos/plazasys-logo.svg`) the timeline entry used. Desktop:
- *      horizontal `.t-flow` bar. Mobile (≤640px): the lock-up stacks and
- *      swaps to `.t-flow-v` — same dual-bar convention as `ProcessPane.astro`.
- *      Both utilities are already neutralised by the single reduced-motion
- *      block in `motion.css`.
- *   4. The intro sentence, then the two case studies as small rows linking
- *      out, each with the case's logo (same assets as `CasesPane.astro`) and
- *      a pulsing `.t-led` + "en producción".
- *
- * Layout: rendered by `experience/index.astro` INSIDE `.experience`'s own
- * max-width:1080px wrapper, so it shares the page's existing container
- * width instead of the home panes' full-bleed 40px `.t-pane-gutter`
- * margins (that utility's own docblock says it's for a pane placed
- * directly in the page flow, NOT already inside a padded container — this
- * one is). Only a top margin is added, via a component-local `:global()`
- * class on the `TerminalPane` root, the same technique
- * `HeroPane.astro` uses for its own top-spacing-only case.
+ * This component is data-only: it holds the ES copy, the project rows, and
+ * this provenance note, and renders the shared `LockupPane.astro`
+ * (`src/components/work/LockupPane.astro`) for markup, styles and motion —
+ * the same component `VoxyePane.astro` renders for the Marmibas pane.
+ * Rendered first of the two lock-up panes at the top of `/experiencia`,
+ * followed by `VoxyePane` (owner decision 2026-09-25: both panes open the
+ * page, ahead of the timeline, industrial work first). Where this pane lands on the
+ * page (and its spacing relative to neighbouring sections) is the page's own
+ * concern, not this component's — see `experience/index.astro`.
  */
 
-import TerminalPane from '../terminal/TerminalPane.astro';
-import Prompt from '../terminal/Prompt.astro';
+import LockupPane from './LockupPane.astro';
 import type { Language } from '../../i18n/ui';
 
 export interface Props {
   /** Active language. Drives copy (ES-only today, see DESIGN.md §13). */
   lang: Language;
+  /** Forwarded to `LockupPane` so this pane's entrance can stagger after `VoxyePane`'s. Defaults to `0`. */
+  delayOffset?: number;
+  /** Forwarded to `LockupPane`'s own top-spacing props — see that component for defaults. */
+  topSpacingDesktop?: number;
+  topSpacingMobile?: number;
 }
 
-const { lang } = Astro.props as Props;
+const { lang, delayOffset = 0, topSpacingDesktop, topSpacingMobile } = Astro.props as Props;
 
-const panePath = 'fabricas';
-const promptCommand = 'ls fabricas/';
+const panePath = 'plazasys';
+const promptCommand = 'ls plazasys/';
+const headingId = 'factory-heading';
 
 // Copy reused verbatim from the two bullets removed from
 // `src/content/experience/es/marmibas.md` (see docblock above).
@@ -72,7 +60,7 @@ const copy = {
     eyebrow: 'Proyectos industriales',
     heading: 'Software para fábricas',
     intro:
-      'Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico y cliente principal, que me conecta con fábricas que necesitan digitalizarse.',
+      'Para proyectos industriales trabajo junto a Plazasys, mi socio tecnológico, que me conecta con fábricas que necesitan digitalizarse.',
     fruitsIntro: 'Recetas Novatex y Visomo’s están en producción:',
     statusLabel: 'en producción',
   },
@@ -82,7 +70,7 @@ const content = copy[lang];
 
 // Industrial projects in production — same case studies + logo assets `CasesPane.astro`
 // renders on the home page; descriptions copied verbatim (see docblock).
-const fruits = [
+const rows = [
   {
     slug: 'recetas-novatex',
     title: 'Recetas Novatex',
@@ -99,355 +87,27 @@ const fruits = [
   },
 ] as const;
 
-const headingId = 'factory-heading';
+// Plazasys is a wide logotype (viewBox 4662×1428, ~3.3:1) — needs the wide
+// wordmark tile treatment, same as the Marmibas tile.
+const partnerLogo = {
+  src: '/logos/plazasys-logo.svg',
+  alt: 'Logo de Plazasys',
+  wide: true,
+};
 ---
 
-<TerminalPane path={panePath} labelledby={headingId} class="factory-pane-shell">
-  <div class="factory-pane">
-    <Prompt command={promptCommand} delay={200} />
-
-    <div class="factory-pane__heading-block t-show" style="--t-delay: 500ms;">
-      <p class="t-comment factory-pane__eyebrow"># {content.eyebrow}</p>
-      <h2 id={headingId} class="factory-pane__heading">{content.heading}</h2>
-    </div>
-
-    <div class="factory-pane__lockup t-show" style="--t-delay: 800ms;">
-      <img
-        class="factory-pane__logo factory-pane__logo--wordmark"
-        src="/marmibas-logo.png"
-        alt="Logo de Marmibas"
-        width="48"
-        height="48"
-        loading="lazy"
-      />
-
-      <span class="factory-pane__connector" aria-hidden="true">
-        <span class="factory-pane__connector-bar factory-pane__connector-bar--h t-flow" />
-        <span class="factory-pane__connector-bar factory-pane__connector-bar--v t-flow-v" />
-        <span class="factory-pane__connector-x">×</span>
-      </span>
-
-      <img
-        class="factory-pane__logo factory-pane__logo--wide"
-        src="/logos/plazasys-logo.svg"
-        alt="Logo de Plazasys"
-        width="48"
-        height="48"
-        loading="lazy"
-      />
-    </div>
-
-    <p class="factory-pane__copy t-fade" style="--t-delay: 1100ms;">{content.intro}</p>
-
-    <p class="factory-pane__fruits-intro t-fade" style="--t-delay: 1300ms;">{content.fruitsIntro}</p>
-
-    <ul class="factory-pane__fruits" role="list">
-      {
-        fruits.map((fruit, i) => (
-          <li>
-            <a class="factory-pane__fruit t-show" style={`--t-delay: ${1450 + i * 150}ms;`} href={fruit.href}>
-              <span class="factory-pane__fruit-logo">
-                <img src={fruit.logo} alt="" width="28" height="28" loading="lazy" />
-              </span>
-              <span class="factory-pane__fruit-text">
-                <span class="factory-pane__fruit-title">{fruit.title}</span>
-                <span class="factory-pane__fruit-desc">{fruit.desc}</span>
-              </span>
-              <span class="factory-pane__fruit-status">
-                <span
-                  class="t-led"
-                  aria-hidden="true"
-                  style={i > 0 ? `animation-delay: ${i * -600}ms;` : undefined}
-                />
-                {content.statusLabel}
-              </span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
-</TerminalPane>
-
-<style>
-  /* Top spacing only — see docblock. Mirrors HeroPane.astro's own
-     top-margin-only `:global()` pattern; no side margins here since this
-     pane lives inside `.experience`'s own padded max-width:1080px wrapper,
-     not directly in the page flow. */
-  :global(.factory-pane-shell) {
-    margin-top: 64px;
-  }
-
-  @media (max-width: 640px) {
-    :global(.factory-pane-shell) {
-      margin-top: 48px;
-    }
-  }
-
-  .factory-pane {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    font-size: 15px;
-  }
-
-  /* --- Heading ------------------------------------------------------- */
-  .factory-pane__heading-block {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .factory-pane__eyebrow {
-    margin: 0;
-    font-size: var(--text-xs);
-  }
-
-  .factory-pane__heading {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: var(--text-0);
-  }
-
-  @media (max-width: 640px) {
-    .factory-pane__heading {
-      font-size: 24px;
-    }
-  }
-
-  /* --- Lock-up: Marmibas × Plazasys ----------------------------------- */
-  .factory-pane__lockup {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    width: 100%;
-    max-width: 480px;
-    margin-inline: auto;
-  }
-
-  @media (max-width: 640px) {
-    .factory-pane__lockup {
-      flex-direction: column;
-      gap: 12px;
-    }
-  }
-
-  /* Official logos are meant for light backgrounds; the light pill
-     preserves brand colours over the dark theme (same rationale as
-     `timeline__logo` in `experience/index.astro`). */
-  .factory-pane__logo {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    object-fit: contain;
-    padding: 6px;
-    border-radius: var(--radius-sm);
-    background: var(--text-0);
-    border: 1px solid var(--border);
-  }
-
-  /* White Marmibas wordmark: dark wide pill so it stays visible. */
-  .factory-pane__logo--wordmark {
-    width: auto;
-    max-width: 140px;
-    padding: 12px 14px;
-    background: var(--bg-0);
-  }
-
-  /* Wide Plazasys wordmark on the standard light pill. */
-  .factory-pane__logo--wide {
-    width: auto;
-    max-width: 140px;
-    padding: 8px 12px;
-  }
-
-  .factory-pane__connector {
-    position: relative;
-    flex: 1 1 auto;
-    min-width: 64px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  @media (max-width: 640px) {
-    .factory-pane__connector {
-      flex: 0 0 auto;
-      min-width: 0;
-      width: 32px;
-      height: 56px;
-    }
-  }
-
-  /* Dual bar: only one of the two is shown per breakpoint (no background
-     shorthand here — `.t-flow`/`.t-flow-v` supply `background-image`). */
-  .factory-pane__connector-bar {
-    display: none;
-    position: absolute;
-  }
-
-  .factory-pane__connector-bar--h {
-    display: block;
-    inset-inline: 0;
-    top: 50%;
-    height: 2px;
-    transform: translateY(-50%);
-  }
-
-  @media (max-width: 640px) {
-    .factory-pane__connector-bar--h {
-      display: none;
-    }
-
-    .factory-pane__connector-bar--v {
-      display: block;
-      inset-block: 0;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%);
-    }
-  }
-
-  .factory-pane__connector-x {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius-full);
-    background: var(--bg-1);
-    border: 1px solid var(--border-strong);
-    color: var(--accent-400);
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: var(--text-base);
-  }
-
-  /* --- Copy ------------------------------------------------------------ */
-  .factory-pane__copy,
-  .factory-pane__fruits-intro {
-    margin: 0;
-    max-width: 640px;
-    margin-inline: auto;
-    text-align: center;
-    line-height: 1.65;
-  }
-
-  .factory-pane__copy {
-    color: var(--text-1);
-  }
-
-  .factory-pane__fruits-intro {
-    color: var(--text-2);
-    font-size: var(--text-sm);
-  }
-
-  /* --- Fruits: Recetas Novatex + Visomo's ------------------------------ */
-  .factory-pane__fruits {
-    margin: 0 auto;
-    padding: 0;
-    list-style: none;
-    width: 100%;
-    max-width: 640px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .factory-pane__fruit {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 44px;
-    padding: 10px 14px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    color: inherit;
-    text-decoration: none;
-    transition:
-      border-color var(--motion-fast) var(--motion-ease-out),
-      box-shadow var(--motion-base) var(--motion-ease-out);
-  }
-
-  .factory-pane__fruit:hover,
-  .factory-pane__fruit:focus-visible {
-    border-color: var(--accent-400);
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .factory-pane__fruit:focus-visible {
-    outline: 2px solid var(--accent-400);
-    outline-offset: 2px;
-  }
-
-  @media (max-width: 480px) {
-    .factory-pane__fruit {
-      flex-wrap: wrap;
-      row-gap: 4px;
-    }
-  }
-
-  .factory-pane__fruit-logo {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    box-sizing: border-box;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ffffff;
-    border-radius: var(--radius-sm);
-  }
-
-  .factory-pane__fruit-logo img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-  }
-
-  .factory-pane__fruit-text {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    text-align: left;
-  }
-
-  .factory-pane__fruit-title {
-    font-weight: 600;
-    color: var(--text-0);
-  }
-
-  .factory-pane__fruit-desc {
-    font-size: var(--text-xs);
-    color: var(--text-2);
-  }
-
-  .factory-pane__fruit-status {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--text-xs);
-    color: var(--accent-300);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 480px) {
-    .factory-pane__fruit-status {
-      flex: 1 0 100%;
-      padding-left: 52px;
-    }
-  }
-</style>
+<LockupPane
+  path={panePath}
+  promptCommand={promptCommand}
+  headingId={headingId}
+  eyebrow={content.eyebrow}
+  heading={content.heading}
+  partnerLogo={partnerLogo}
+  intro={content.intro}
+  fruitsIntro={content.fruitsIntro}
+  statusLabel={content.statusLabel}
+  rows={rows}
+  delayOffset={delayOffset}
+  topSpacingDesktop={topSpacingDesktop}
+  topSpacingMobile={topSpacingMobile}
+/>

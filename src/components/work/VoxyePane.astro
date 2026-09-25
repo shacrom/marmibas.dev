@@ -1,0 +1,102 @@
+---
+/**
+ * VoxyePane.astro — "Software a medida" pane for `/experiencia`:
+ * Marmibas' own work, with Voxye as its project row (owner decision
+ * 2026-09-25).
+ *
+ * Context: the owner liked the effect built for `FactorySoftwarePane.astro`
+ * (Marmibas × Plazasys — logo lock-up, animated connector, case-study rows
+ * with a pulsing "en producción" LED) and asked for the same treatment for
+ * Marmibas' own product, Voxye. Both panes now open `/experiencia`, ahead of
+ * the timeline; the timeline's former top entry
+ * (`src/content/experience/es/marmibas.md`) is removed rather than
+ * duplicated, since this pane now carries that copy.
+ *
+ * After reviewing it locally the owner dropped the "Marmibas × Voxye"
+ * lock-up: the Marmibas tile stands alone (no connector, no Voxye logo — no
+ * `partnerLogo` passed to `LockupPane`) and Voxye appears only as the project
+ * row below the intro.
+ *
+ * Copy provenance — no new facts, dates or numbers:
+ *   - `intro` = the intro paragraph of the removed `marmibas.md` body,
+ *     verbatim.
+ *   - `rows[0].desc` = the parenthetical from that file's Voxye bullet
+ *     ("presupuestos, facturas y gestión documental sin Word ni Excel"),
+ *     verbatim.
+ *   - `eyebrow`/`heading`/`fruitsIntro`/the prompt command are decorative
+ *     framing, same convention every other pane documents.
+ *   - `href`/`status` come from the Voxye case study
+ *     (`src/content/case-studies/es/voxye.mdx`, `status: "success"`,
+ *     `logo: "/logos/voxye.svg"`); "en producción" mirrors that status.
+ *
+ * This component is data-only: it holds the ES copy, the one project row,
+ * and this provenance note, and renders the shared `LockupPane.astro`
+ * (`src/components/work/LockupPane.astro`) for markup, styles and motion —
+ * the same component `FactorySoftwarePane.astro` renders. Rendered second,
+ * right after `FactorySoftwarePane`, at the top of `/experiencia`. Where this pane lands
+ * on the page (and its spacing relative to neighbouring sections) is the
+ * page's own concern, not this component's — see `experience/index.astro`.
+ */
+
+import LockupPane from './LockupPane.astro';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives copy (ES-only today, see DESIGN.md §13). */
+  lang: Language;
+  /** Forwarded to `LockupPane` so this pane's entrance can stagger against another. Defaults to `0`. */
+  delayOffset?: number;
+  /** Forwarded to `LockupPane`'s own top-spacing props — see that component for defaults. */
+  topSpacingDesktop?: number;
+  topSpacingMobile?: number;
+}
+
+const { lang, delayOffset = 0, topSpacingDesktop, topSpacingMobile } = Astro.props as Props;
+
+const panePath = 'marmibas';
+const promptCommand = 'ls marmibas/';
+const headingId = 'voxye-heading';
+
+// Copy reused verbatim from the removed `src/content/experience/es/marmibas.md`
+// body (see docblock above).
+const copy = {
+  es: {
+    eyebrow: 'Marca propia',
+    heading: 'Software a medida',
+    intro:
+      'Hoy trabajo como autónomo bajo mi propia marca, Marmibas, diseñando y construyendo herramientas a medida para empresas que quieren digitalizar su día a día. Mi flujo de trabajo se apoya en desarrollo asistido por inteligencia artificial para entregar más rápido sin renunciar a la calidad.',
+    fruitsIntro: 'Voxye está en producción:',
+    statusLabel: 'en producción',
+  },
+} as const;
+
+const content = copy[lang];
+
+// Own product in production — case study + logo asset from
+// `src/content/case-studies/es/voxye.mdx`; description copied verbatim
+// (see docblock).
+const rows = [
+  {
+    slug: 'voxye',
+    title: 'Voxye',
+    desc: 'presupuestos, facturas y gestión documental sin Word ni Excel',
+    logo: '/logos/voxye.svg',
+    href: '/case-studies/voxye',
+  },
+] as const;
+---
+
+<LockupPane
+  path={panePath}
+  promptCommand={promptCommand}
+  headingId={headingId}
+  eyebrow={content.eyebrow}
+  heading={content.heading}
+  intro={content.intro}
+  fruitsIntro={content.fruitsIntro}
+  statusLabel={content.statusLabel}
+  rows={rows}
+  delayOffset={delayOffset}
+  topSpacingDesktop={topSpacingDesktop}
+  topSpacingMobile={topSpacingMobile}
+/>

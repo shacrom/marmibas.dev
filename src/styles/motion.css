@@ -364,4 +364,21 @@
     opacity: 1;
     transform: none;
   }
+
+  /* --- Lock-up pane body (LockupPane.astro, role panes) final state -----
+   * A role pane's slotted MD body (paragraph + checklist,
+   * `.lockup-pane__body` in `LockupPane.astro`) reuses the `t-fade`/
+   * `t-show` keyframes directly via plain element selectors — not the
+   * `.t-fade`/`.t-show` classes, since slotted Markdown carries no classes
+   * to hook onto — with a non-zero `--lockup-body-delay`-based
+   * `animation-delay` and `backwards` fill mode. Same "zeroing the
+   * duration tokens alone isn't enough" case as `.t-grow`/`.t-slide`
+   * above: without this explicit override, `backwards` would still hold
+   * the paragraph/checklist at their hidden "from" frame for the whole
+   * original delay before flashing to visible. */
+  .lockup-pane__body :is(p, li) {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
 }
