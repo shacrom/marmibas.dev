@@ -159,8 +159,10 @@ const contactHref = getRoutePath('contact', lang);
     </ul>
 
     <div class="services-pane__final t-show" style="--t-delay: 1500ms;">
-      <span class="services-pane__user">marcos@marmibas</span><span class="services-pane__sep"
-        >:~$ </span
+      <span class="services-pane__prompt"
+        ><span class="services-pane__user">marcos@marmibas</span><span class="services-pane__sep"
+          >:~$</span
+        ></span
       >
       <TerminalButton href={contactHref} primary class="services-pane__cta">
         [ {t('cta.contact')} ]
@@ -358,6 +360,7 @@ const contactHref = getRoutePath('contact', lang);
 
   .services-pane__final {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 16px;
     margin-top: 6px;

@@ -392,6 +392,13 @@ const menuLabelClose = t('header.menu.close');
       gap: 12px;
     }
 
+    /* The mobile bar has no cell dividers: dropping the brand cell's padding
+       and border keeps logo + clock + menu button within 320px viewports. */
+    .t-header__brand {
+      padding-inline: 0;
+      border-right: 0;
+    }
+
     .t-header__tabs,
     .t-header__clock--desktop,
     .t-header__cta {

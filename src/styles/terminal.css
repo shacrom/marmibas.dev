@@ -145,26 +145,93 @@
   }
 }
 
+/* t-stripes: scrolling diagonal-free stripe pattern — "running" activity
+   bars (T5 demo pane). Shifts `background-position` only; the striped
+   `background-image` itself is set by `.t-stripes` below, not here. */
+@keyframes t-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 14px 0;
+  }
+}
+
+/* t-grow: one-shot vertical grow from a fixed bottom origin — chart bars
+   revealing their height (T5 demo pane). */
+@keyframes t-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* t-slide: one-shot row/line entrance — opacity + a short leftward-origin
+   slide (T5 demo pane list/table rows). Named distinctly from `.t-fade`
+   (which rises vertically) since this one moves horizontally. */
+@keyframes t-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* t-glitch: short color/position flicker for "broken data" cells (T5 demo
+   pane spreadsheet mock). `steps(4, end)` so each of the 4 iterations reads
+   as a discrete flicker frame, not a smooth wobble; fill-mode is
+   deliberately the default (`none`) so once it ends the element settles
+   back on whatever colour its own markup set (danger red for `#ERROR`,
+   warning terracotta for `Duplicado`) rather than the keyframe's hardcoded
+   colour. */
+@keyframes t-glitch {
+  0% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
 /* ----------------------------------------------------------------------- */
 /* 2. Utility classes — timing-parametrised via custom properties.         */
 /* ----------------------------------------------------------------------- */
 
+/* Fill mode is `backwards`, never `both`: every element's base style IS its
+   final state, so once an animation ends the base style takes over. With
+   `both`, Chrome can end a `steps()` animation at progress 0.9999… and keep
+   the last step (e.g. the final typed character) clipped forever. */
+
 .t-type {
   display: inline-block;
-  animation: t-type var(--t-dur, 500ms) steps(var(--t-steps, 12), end) var(--t-delay, 0ms) both;
+  animation: t-type var(--t-dur, 500ms) steps(var(--t-steps, 12), end) var(--t-delay, 0ms) backwards;
 }
 
 .t-print {
   display: inline-block;
-  animation: t-print var(--t-dur, 240ms) steps(var(--t-steps, 3), end) var(--t-delay, 0ms) both;
+  animation: t-print var(--t-dur, 240ms) steps(var(--t-steps, 3), end) var(--t-delay, 0ms) backwards;
 }
 
 .t-show {
-  animation: t-show var(--t-dur, 60ms) linear var(--t-delay, 0ms) both;
+  animation: t-show var(--t-dur, 60ms) linear var(--t-delay, 0ms) backwards;
 }
 
 .t-fade {
-  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) both;
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
 }
 
 /* t-reveal: generic opacity+rise reveal, identical to `.t-fade` under a
@@ -173,7 +240,7 @@
    later tasks (T3+). Included now because the run-on-view pause rule below
    already needs to cover it. */
 .t-reveal {
-  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) both;
+  animation: t-fade var(--t-dur, 400ms) var(--motion-ease-out) var(--t-delay, 0ms) backwards;
 }
 
 /* t-cursor: violet block caret. Appears at `--t-delay` (via `t-show`, 1ms)
@@ -212,7 +279,7 @@
 .t-tick {
   display: inline-block;
   color: var(--accent-400);
-  animation: t-show 1ms linear var(--t-done, 0ms) both;
+  animation: t-show 1ms linear var(--t-done, 0ms) backwards;
 }
 
 /* t-led: small pulsing status dot (DESIGN.md §8 pane-bar "LED"). */
