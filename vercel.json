@@ -18,6 +18,76 @@
       "permanent": true
     },
     {
+      "source": "/servicios/tiendas-online",
+      "destination": "/servicios/#tiendas-online",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/tiendas-online/",
+      "destination": "/servicios/#tiendas-online",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/sistemas-de-gestion",
+      "destination": "/servicios/#sistemas-de-gestion",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/sistemas-de-gestion/",
+      "destination": "/servicios/#sistemas-de-gestion",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/aplicaciones-moviles",
+      "destination": "/servicios/#aplicaciones-moviles",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/aplicaciones-moviles/",
+      "destination": "/servicios/#aplicaciones-moviles",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/automatizaciones",
+      "destination": "/servicios/#automatizaciones",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/automatizaciones/",
+      "destination": "/servicios/#automatizaciones",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/webs-corporativas",
+      "destination": "/servicios/#webs-corporativas",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/webs-corporativas/",
+      "destination": "/servicios/#webs-corporativas",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/desarrollo-aplicaciones-web",
+      "destination": "/servicios/#desarrollo-aplicaciones-web",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/desarrollo-aplicaciones-web/",
+      "destination": "/servicios/#desarrollo-aplicaciones-web",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/integraciones",
+      "destination": "/servicios/#integraciones",
+      "permanent": true
+    },
+    {
+      "source": "/servicios/integraciones/",
+      "destination": "/servicios/#integraciones",
+      "permanent": true
+    },
+    {
       "source": "/proyectos/jinba",
       "destination": "/trabajos/",
       "permanent": true

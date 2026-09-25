@@ -2,7 +2,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dist = resolve('dist/client');
-const services = [
+// The 7 dedicated /servicios/<slug>/ landing pages were removed (S3,
+// `odd/tasks/services-mosaic.md`) and folded into /servicios' mosaic
+// drawers; they now 301-redirect to /servicios/#<slug> (tested in
+// tests/config/vercel-redirects.test.ts), so this list is only used below
+// to assert they no longer produce build output or sitemap entries.
+const removedServiceSlugs = [
   'tiendas-online',
   'sistemas-de-gestion',
   'aplicaciones-moviles',
@@ -11,12 +16,7 @@ const services = [
   'desarrollo-aplicaciones-web',
   'integraciones',
 ];
-const publicSpanishRoutes = [
-  '/',
-  '/experiencia/',
-  '/servicios/',
-  ...services.map((slug) => `/servicios/${slug}/`),
-];
+const publicSpanishRoutes = ['/', '/experiencia/', '/servicios/'];
 
 function outputFile(route) {
   if (route.endsWith('.html')) return resolve(dist, route.slice(1));
@@ -91,14 +91,38 @@ assert(
   '404 must remain noindex, nofollow'
 );
 
-for (const slug of services) {
-  const html = readRoute(`/servicios/${slug}/`);
+// /servicios/ carries an ItemList of Service ListItems — the structured-
+// data replacement for the Service schema the removed detail pages used to
+// emit individually (see SeoHead.astro). One entry per removed slug, each
+// pointing at that service's mosaic drawer hash.
+{
+  const html = readRoute('/servicios/');
   const schemas = [
     ...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi),
   ].map(([, json]) => JSON.parse(json));
+  const itemList = schemas.find((schema) => schema['@type'] === 'ItemList');
+  assert(itemList, '/servicios/ needs an ItemList JSON-LD block');
   assert(
-    schemas.some((schema) => schema['@type'] === 'Service'),
-    `/servicios/${slug}/ needs Service JSON-LD`
+    itemList.itemListElement.length === removedServiceSlugs.length,
+    `/servicios/ ItemList must have ${removedServiceSlugs.length} items`
+  );
+  for (const slug of removedServiceSlugs) {
+    assert(
+      itemList.itemListElement.some(
+        (entry) =>
+          entry.item?.['@type'] === 'Service' &&
+          entry.item.url === `https://marmibas.dev/servicios/#${slug}`
+      ),
+      `/servicios/ ItemList must include a Service item for #${slug}`
+    );
+  }
+}
+
+// The removed detail pages must not produce build output any more.
+for (const slug of removedServiceSlugs) {
+  assert(
+    !existsSync(outputFile(`/servicios/${slug}/`)),
+    `/servicios/${slug}/ must no longer be built (removed in S3)`
   );
 }
 
@@ -108,6 +132,12 @@ for (const route of publicSpanishRoutes) {
 }
 for (const excluded of ['/en/', '/blog', '/contacto/', '/politica-cookies/', '/404']) {
   assert(!sitemap.includes(`https://marmibas.dev${excluded}`), `Sitemap must exclude ${excluded}`);
+}
+for (const slug of removedServiceSlugs) {
+  assert(
+    !sitemap.includes(`https://marmibas.dev/servicios/${slug}/`),
+    `Sitemap must exclude the removed /servicios/${slug}/`
+  );
 }
 
 const robots = readFileSync(resolve(dist, 'robots.txt'), 'utf8');

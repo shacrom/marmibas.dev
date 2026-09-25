@@ -42,11 +42,14 @@
  * both rows). Named areas let one flat DOM regroup visually per
  * breakpoint without duplicating markup.
  *
- * Rows render as the row's own `<a href>` (linking to `/servicios/<slug>`,
- * exactly as `ServicesSection.astro` did) — hover/focus visuals below are
- * scoped to `a.services-row` specifically. `isLink`/`RowTag` stay in place
- * (rather than hardcoding an `<a>`) so a future non-linking locale can drop
- * in without restructuring this component.
+ * Rows render as the row's own `<a href>`, linking to
+ * `/servicios/#<slug>` — the mosaic's own drawer deep link (S3,
+ * `odd/tasks/services-mosaic.md`; the 7 dedicated detail pages this used to
+ * link to were removed and folded into `/servicios`' mosaic drawers) —
+ * hover/focus visuals below are scoped to `a.services-row` specifically.
+ * `isLink`/`RowTag` stay in place (rather than hardcoding an `<a>`) so a
+ * future non-linking locale can drop in without restructuring this
+ * component.
  */
 
 import TerminalPane from '../terminal/TerminalPane.astro';
@@ -91,7 +94,9 @@ const ICONS: Record<string, string> = {
 
 const services = spanishServices.map((service) => ({
   ...service,
-  path: `/servicios/${service.slug}`,
+  // The mosaic's own drawer deep link (S3, `odd/tasks/services-mosaic.md`) —
+  // the dedicated /servicios/<slug> pages this used to link to were removed.
+  path: `/servicios/#${service.slug}`,
   title: t(`services.${service.key}.title`),
   description: t(`services.${service.key}.description`),
 }));
@@ -139,10 +144,7 @@ const contactHref = getRoutePath('contact', lang);
               <span class="services-row__dsc">{service.description}</span>
               {isLink && (
                 <>
-                  <span
-                    class="services-row__go services-row__go--desktop"
-                    aria-hidden="true"
-                  >
+                  <span class="services-row__go services-row__go--desktop" aria-hidden="true">
                     → {arrowLabel[lang]}
                   </span>
                   <span class="services-row__go services-row__go--mobile" aria-hidden="true">

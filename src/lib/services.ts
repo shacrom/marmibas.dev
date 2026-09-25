@@ -131,14 +131,6 @@ export const spanishServices = [
 
 export type SpanishService = (typeof spanishServices)[number];
 
-export const spanishServicePaths = new Set(
-  spanishServices.map((service) => `/servicios/${service.slug}`)
-);
-
-export function isSpanishServicePath(pathname: string): boolean {
-  return spanishServicePaths.has(pathname.replace(/\/$/, ''));
-}
-
 /** The mosaic module's display name: `shortTitle` when set, `title` otherwise. */
 export function mosaicDisplayName(service: SpanishService): string {
   return service.shortTitle ?? service.title;
