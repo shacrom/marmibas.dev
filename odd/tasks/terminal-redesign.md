@@ -54,7 +54,7 @@ look so navigation stays coherent.
 | T1 | Foundation: terminal tokens (colours, radii, gradients, danger token), self-hosted IBM Plex Mono + Space Mono, font preloads, theme-color, DESIGN.md rewrite | delegated writer (4+ files) | [x] |
 | T2 | Terminal primitives: terminal motion CSS, `TerminalPane`/`Prompt` components, `src/lib/clock.ts` (TDD) | delegated writer | [x] |
 | T3 | Global chrome: Header (tabs, clock, mobile menu), Footer (capture, tree, status bar), BaseLayout overlays, logo | delegated writer | [x] |
-| T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [ ] |
+| T4 | Home: hero, diagnosis, services (ES/EN) | delegated writer | [x] |
 | T5 | Home: interactive demo (Showcase) with logic in `src/lib/showcase-demo.ts` (TDD) | delegated writer | [ ] |
 | T6 | Home: MidCta + case studies, process, about (neofetch), FAQ | delegated writer | [ ] |
 | T7 | Inner pages pass: fix breakages from the new tokens (contact danger colours, overflow with monospace) | delegated writer | [ ] |
@@ -86,6 +86,12 @@ look so navigation stays coherent.
   (BaseLayout prefer-rest-params moved 207→203).
 - Follow-up (polish, T8): staggered entrance in mobile dropdown and footer tree rows; violet glow on footer h2.
 
+- T3 commit: ff5a3c7.
+- T4 done: `HeroPane` (~/inicio [1/7]: whoami/cat/uptime session, single h1, diagnosis aside with spinners→✓) and
+  `ServicesPane` (~/servicios [2/7], its own pane so it animates on view; ES rows link to /servicios/<slug>, EN plain
+  rows as before). Old Hero/HeroIntro/ServicesSection deleted. Copy reused verbatim; framing strings per-lang consts.
+  Checks: npm test 33/33; check 0 errors; test:seo passed; build OK (one h1, 7 ES service hrefs); lint = known base.
+
 ## Next step
 
-T4.
+T5.

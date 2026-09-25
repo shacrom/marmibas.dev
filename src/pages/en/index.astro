@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/home/Hero.astro';
+import HeroPane from '../../components/home/HeroPane.astro';
 import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
 import AboutSection from '../../components/home/AboutSection.astro';
-import ServicesSection from '../../components/home/ServicesSection.astro';
+import ServicesPane from '../../components/home/ServicesPane.astro';
 import ShowcaseSection from '../../components/home/ShowcaseSection.astro';
 import ProcessSection from '../../components/home/ProcessSection.astro';
 import FAQSection from '../../components/home/FAQSection.astro';
@@ -35,8 +35,8 @@ const midCtaLink = "Let's talk";
   noindex
   faqs={faqs}
 >
-  <Hero lang={lang} />
-  <ServicesSection lang={lang} />
+  <HeroPane lang={lang} />
+  <ServicesPane lang={lang} />
   <ShowcaseSection lang={lang} />
   <MidCta text={midCtaText} cta={midCtaLink} href={contactHref} lang={lang} />
   <FeaturedProjects lang={lang} />

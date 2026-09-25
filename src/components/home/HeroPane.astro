@@ -1,0 +1,461 @@
+---
+/**
+ * HeroPane.astro — Home hero + diagnosis pane (T4 terminal redesign).
+ *
+ * Renders the FIRST home `TerminalPane` (`~/inicio` | `~/home`, `[1/7]`),
+ * replacing the pre-terminal `Hero.astro` + `HeroIntro.astro`. Two-column
+ * body: left "session" (prompt-led hero copy, the page's ONLY `<h1>`,
+ * tagline, proof line, CTAs) + right "diagnosis" aside (checklist + CTA),
+ * matching `Terminal.dc.html` (desktop 1440) / `TerminalMovil.dc.html`
+ * (mobile 390) — the read-only visual spec under the design scratchpad.
+ * Their header tab bar is ignored (already built in T3's `Header.astro`).
+ *
+ * Copy is reused VERBATIM from the pre-terminal `Hero.astro` (heroLines,
+ * tagline, proofPoints, diagnosis object) — nothing invented. Only the
+ * terminal framing strings below (`cat enfoque.txt`/`cat approach.txt`,
+ * `./diagnostico --primera-llamada`/`./diagnosis --first-call`; `whoami`
+ * and `uptime` are identical in both langs) are new, decorative, and
+ * localised per lang. Per T4's brief (new UI copy → `ui.ts` OR a per-lang
+ * object inside the component — pick one, be consistent): kept as per-lang
+ * consts here, matching the pre-existing precedent in `Hero.astro`
+ * (heroLines/tagline/diagnosis) and `Footer.astro` (T3's `capture` object),
+ * neither of which put local/decorative copy in `ui.ts`.
+ *
+ * The two-column grid breaks out of `TerminalPane`'s own `.t-pane__body`
+ * padding (36/48/40 desktop, 20/16/28 mobile — see `TerminalPane.astro`)
+ * via negative margins on `.hero-pane__grid`, so the aside's border and the
+ * session/aside split reach the pane's edges exactly like the mockup's
+ * flush two-column section, without editing the shared `TerminalPane`
+ * primitive (T2/T3, already relied on by `Footer.astro`). That breakout
+ * uses TerminalPane's OWN fixed 640px padding breakpoint; the session/aside
+ * stacking below uses a separate, wider 900px breakpoint (aside moves
+ * below the session, border switches from left to top) — the two
+ * breakpoints are independent on purpose (see the two `@media` blocks in
+ * the style tag below).
+ *
+ * Timings below are read directly off `Terminal.dc.html`'s inline
+ * `animation-delay`/`animation-duration` (ms) — the visual spec explicitly
+ * calls these out as authoritative, not just the markup shape. `.t-print`
+ * lines keep terminal.css's own default duration/steps (240ms/3) rather
+ * than the mockup's slightly different 220ms desktop value — a
+ * documented, imperceptible simplification so both breakpoints share one
+ * timing without a duplicate media-scoped override.
+ */
+
+import TerminalPane from '../terminal/TerminalPane.astro';
+import Prompt from '../terminal/Prompt.astro';
+import TerminalButton from '../terminal/TerminalButton.astro';
+import { useTranslations, getRoutePath } from '../../i18n/helpers';
+import type { Language } from '../../i18n/ui';
+
+export interface Props {
+  /** Active language. Drives copy + CTA hrefs. */
+  lang: Language;
+}
+
+const { lang } = Astro.props as Props;
+const t = useTranslations(lang);
+
+const panePath = lang === 'es' ? 'inicio' : 'home';
+
+// --- Decorative terminal framing (new copy, per-lang, local to this
+// component — see docblock above for why not ui.ts). -----------------------
+const fileCommand: Record<Language, string> = {
+  es: 'cat enfoque.txt',
+  en: 'cat approach.txt',
+};
+
+const diagnosisCommand: Record<Language, string> = {
+  es: './diagnostico --primera-llamada',
+  en: './diagnosis --first-call',
+};
+
+// --- Real copy, reused verbatim from the pre-terminal Hero.astro. ----------
+// Third line split into [prefix, accent] so only the last word renders in
+// --accent-400 (Terminal.dc.html: "que quieren <span accent>crecer.</span>").
+const heroTitleLines: Record<Language, [string, string, [string, string]]> = {
+  es: ['Software a medida', 'para negocios', ['que quieren ', 'crecer.']],
+  en: ['Custom software', 'for businesses', ['ready to ', 'grow.']],
+};
+
+const tagline: Record<Language, string> = {
+  es: 'Diseño y construyo webs, apps y sistemas internos para captar clientes, ahorrar horas y ordenar el trabajo diario. Sin jerga técnica: problema, solución y próximos pasos claros.',
+  en: 'I design and build websites, apps and internal systems to win clients, save hours and organize daily work. No technical jargon: clear problem, solution and next steps.',
+};
+
+const proof: Record<Language, { value: string; label: string }> = {
+  es: { value: '5+ años', label: 'creando productos reales' },
+  en: { value: '5+ years', label: 'building real products' },
+};
+
+const diagnosis = {
+  label: lang === 'es' ? 'Primera llamada gratuita' : 'Free first call',
+  title:
+    lang === 'es'
+      ? 'Convierte una idea suelta en un plan claro.'
+      : 'Turn a rough idea into a clear plan.',
+  description:
+    lang === 'es'
+      ? 'En una conversación rápida aterrizamos qué construir, qué evitar y por dónde empezar para que el software tenga impacto real.'
+      : 'In one short conversation we define what to build, what to avoid and where to start so the software has real impact.',
+  items:
+    lang === 'es'
+      ? ['Prioridad del negocio', 'MVP posible', 'Coste y tiempos orientativos']
+      : ['Business priority', 'Possible MVP', 'Indicative cost and timeline'],
+  cta: lang === 'es' ? 'Pedir diagnóstico' : 'Request a diagnosis',
+};
+
+// Checklist reveal timings (Terminal.dc.html): each `<li>` fades in, then
+// its spinner resolves into a `✓` tick at `done`.
+const checklist = diagnosis.items.map((item, i) => ({
+  item,
+  show: 1100 + i * 150,
+  done: 1500 + i * 400,
+}));
+
+const contactHref = getRoutePath('contact', lang);
+const workHref = getRoutePath('work', lang);
+const [line1, line2, [line3Prefix, line3Accent]] = heroTitleLines[lang];
+---
+
+<TerminalPane
+  path={panePath}
+  index="1/7"
+  labelledby="hero-title"
+  class="t-pane-gutter hero-pane-gutter"
+>
+  <div class="hero-pane__grid">
+    <div class="hero-pane__session">
+      <Prompt command="whoami" delay={200} duration={360} />
+
+      <h1 id="hero-title" class="hero-pane__title">
+        <span class="t-print" style="--t-delay: 650ms;">{line1}</span>
+        <span class="t-print" style="--t-delay: 800ms;">{line2}</span>
+        <span class="t-print" style="--t-delay: 950ms;"
+          >{line3Prefix}<span class="hero-pane__accent">{line3Accent}</span></span
+        >
+      </h1>
+
+      <Prompt command={fileCommand[lang]} showAt={1150} delay={1200} duration={600} />
+
+      <p class="hero-pane__tagline t-show" style="--t-delay: 1900ms;">{tagline[lang]}</p>
+
+      <Prompt command="uptime" showAt={2050} delay={2100} duration={300} />
+
+      <p class="hero-pane__proof t-show" style="--t-delay: 2450ms;">
+        <span class="hero-pane__proof-value">{proof[lang].value}</span> {proof[lang].label}
+      </p>
+
+      <div class="hero-pane__ctas t-show" style="--t-delay: 2600ms;">
+        <TerminalButton href={contactHref} primary class="hero-pane__cta">
+          [ {t('cta.contact')} ]
+        </TerminalButton>
+        <TerminalButton href={workHref} class="hero-pane__cta">
+          [ {t('cta.viewWork')} ]
+        </TerminalButton>
+      </div>
+
+      <p class="hero-pane__final t-show" style="--t-delay: 2700ms;">
+        <span class="hero-pane__user">marcos@marmibas</span><span class="hero-pane__sep"
+          >:~$ </span
+        ><span class="t-cursor" aria-hidden="true" style="--t-delay: 2700ms;"></span>
+      </p>
+    </div>
+
+    <aside class="hero-pane__aside" aria-label={diagnosis.label}>
+      <div class="hero-pane__aside-bar">
+        <span
+          class="t-type"
+          style={`--t-delay: 300ms; --t-dur: 700ms; --t-steps: ${diagnosisCommand[lang].length};`}
+        >
+          {diagnosisCommand[lang]}
+        </span>
+      </div>
+
+      <div class="hero-pane__aside-body">
+        <p class="t-comment hero-pane__aside-comment t-show" style="--t-delay: 1000ms;">
+          # {diagnosis.label}
+        </p>
+
+        <ul class="hero-pane__checklist" role="list">
+          {
+            checklist.map(({ item, show, done }) => (
+              <li class="t-show" style={`--t-delay: ${show}ms;`}>
+                <span class="hero-pane__check" aria-hidden="true">
+                  <span class="t-spinner" style={`--t-done: ${done}ms;`} />
+                  <span class="t-tick" style={`--t-done: ${done}ms;`}>
+                    ✓
+                  </span>
+                </span>
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="hero-pane__diagnosis t-fade" style="--t-delay: 2450ms;">
+          <h2 class="hero-pane__diagnosis-title">{diagnosis.title}</h2>
+          <p class="hero-pane__diagnosis-description">{diagnosis.description}</p>
+          <TerminalButton href={contactHref} primary class="hero-pane__diagnosis-cta">
+            <span>{diagnosis.cta}</span><span aria-hidden="true">↵</span>
+          </TerminalButton>
+        </div>
+      </div>
+    </aside>
+  </div>
+</TerminalPane>
+
+<style>
+  /* --------------------------------------------------------------------
+   * First-pane top spacing — `.t-pane-gutter` (terminal.css, T3) sets
+   * `margin: 0 40px 40px`, top intentionally 0 because its only consumer
+   * so far (Footer, the LAST thing on the page) doesn't need one. HeroPane
+   * is the FIRST pane under the sticky header, which has no bottom margin
+   * of its own, so it needs its own +40px top margin to land "~40px below
+   * the header" per the task brief. A component-local `:global()` class
+   * (rather than editing the shared `.t-pane-gutter` utility, which would
+   * also add unwanted top margin to Footer) keeps this scoped to only
+   * this pane. Scoped to >640px on purpose: below that, `.t-pane-gutter`
+   * itself collapses to `margin: 0` (full-bleed mobile pane, T3 rule) and
+   * this pane stays flush against the header, consistent with that
+   * convention rather than fighting it. --------------------------------- */
+  @media (min-width: 641px) {
+    /* Doubled class raises specificity above `.t-pane-gutter`'s single-
+       class rule regardless of stylesheet source order. */
+    :global(.hero-pane-gutter.hero-pane-gutter) {
+      margin-top: 40px;
+    }
+  }
+
+  /* --------------------------------------------------------------------
+   * Breakout — cancel TerminalPane's own `.t-pane__body` padding so the
+   * two-column grid (and the aside's border) reach the pane's edges, like
+   * the mockup's flush section. Two independent breakpoints on purpose:
+   * this one (640px) mirrors TerminalPane's OWN fixed mobile padding
+   * switch; the session/aside stacking breakpoint below is 900px.
+   * ------------------------------------------------------------------ */
+  .hero-pane__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    margin: -36px -48px -40px;
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-pane__grid {
+      margin: -20px -16px -28px;
+    }
+  }
+
+  /* --- Session (left column) -------------------------------------------- */
+  .hero-pane__session {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 40px 48px 44px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__session {
+      padding: 24px 16px 28px;
+    }
+  }
+
+  .hero-pane__title {
+    margin: 0 0 6px;
+    font-family: var(--font-display);
+    font-size: 58px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--text-0);
+    text-shadow: 0 0 24px rgba(167, 139, 250, 0.25);
+  }
+
+  .hero-pane__title span.t-print {
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__title {
+      font-size: 32px;
+    }
+  }
+
+  .hero-pane__accent {
+    color: var(--accent-400);
+  }
+
+  .hero-pane__tagline {
+    max-width: 640px;
+    margin: 0;
+    color: var(--text-2);
+  }
+
+  .hero-pane__proof {
+    margin: 0;
+    color: var(--text-0);
+  }
+
+  .hero-pane__proof-value {
+    color: var(--accent-400);
+  }
+
+  .hero-pane__ctas {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__ctas {
+      flex-direction: column;
+    }
+
+    .hero-pane__cta {
+      width: 100%;
+    }
+  }
+
+  .hero-pane__final {
+    margin: 6px 0 0;
+  }
+
+  .hero-pane__user {
+    color: var(--accent-400);
+  }
+
+  .hero-pane__sep {
+    color: var(--text-2);
+    white-space: pre;
+  }
+
+  /* --- Aside (right column / "diagnosis") -------------------------------- */
+  .hero-pane__aside {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__aside {
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+  }
+
+  .hero-pane__aside-bar {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--text-xs);
+    color: var(--text-2);
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__aside-bar {
+      padding: 12px 16px;
+    }
+  }
+
+  .hero-pane__aside-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px 24px 28px;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__aside-body {
+      padding: 20px 16px 24px;
+    }
+  }
+
+  .hero-pane__aside-comment {
+    margin: 0;
+  }
+
+  .hero-pane__checklist {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hero-pane__checklist li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-1);
+  }
+
+  .hero-pane__check {
+    position: relative;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  .hero-pane__check .t-tick {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .hero-pane__diagnosis {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 6px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--border);
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__diagnosis {
+      margin-top: 4px;
+      padding-top: 16px;
+    }
+  }
+
+  .hero-pane__diagnosis-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text-0);
+  }
+
+  @media (max-width: 900px) {
+    .hero-pane__diagnosis-title {
+      font-size: 22px;
+    }
+  }
+
+  .hero-pane__diagnosis-description {
+    margin: 0;
+    color: var(--text-2);
+  }
+
+  .hero-pane__diagnosis-cta {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+</style>
