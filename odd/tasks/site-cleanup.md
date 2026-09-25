@@ -36,7 +36,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
 | C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [x] |
 | C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [x] |
 | C5 | Mobile header clock layout | delegated writer | [x] |
-| C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [x] verified, delivery pending |
+| C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [x] |
 
 ## Progress
 
@@ -228,6 +228,12 @@ keys, finish the footer polish and fix the mobile header clock layout.
   their CSS removed). Checks: astro check 0 errors; test:seo passed (404 stays noindex, nofollow); built
   `404.html` has no English copy.
 
+- Delivered: PR #2 merged (54f0d2b) and deployed. Production check found trailing-slash URLs
+  (`/blog/<post>/`, `/en/work/`) returning 404 — Vercel `:path*`/`:slug` sources ignore a trailing slash.
+  Hotfix PR #3 (a4c3330): `(.*)` catch-alls + explicit slash variants, regression test
+  `tests/config/vercel-redirects.test.ts` (RED reproduced production: 13 failures; GREEN 90/90). Production
+  verified 26/26 (19 old URLs → 308 to the expected page, 7 live pages 200).
+
 ## Next step
 
-Delivery: ask owner to push `feature/site-cleanup` → PR → merge (production).
+Done.

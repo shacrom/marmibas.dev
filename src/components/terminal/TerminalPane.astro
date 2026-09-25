@@ -5,8 +5,8 @@
  *
  * DESIGN.md §8 contract: window border + 40px pane bar (violet dot +
  * `~/path` + `[index]`) over `--bg-1`, with scanline/vignette/optional
- * sweep overlays. Mobile (≤640px): full-bleed — no radius, no side
- * borders, no big shadow.
+ * sweep overlays. Mobile (≤640px): same window frame with an 8px radius and
+ * no big shadow; `.t-pane-gutter` insets and separates the panes.
  *
  * The default slot is the scrollable pane body. The named `after` slot
  * renders as a sibling AFTER the body but BEFORE the decorative overlays
@@ -170,11 +170,11 @@ const rootClass = ['t-pane', className].filter(Boolean).join(' ');
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
   }
 
-  /* Mobile: full-bleed — no radius, no side borders, no elevation shadow. */
+  /* Mobile keeps the full window frame (all four borders, smaller radius) so
+     stacked panes stay visually separate; only the heavy shadow is dropped. */
   @media (max-width: 640px) {
     .t-pane {
-      border-radius: 0;
-      border-inline: none;
+      border-radius: 8px;
       box-shadow: none;
     }
   }
