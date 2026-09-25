@@ -36,7 +36,7 @@ keys, finish the footer polish and fix the mobile header clock layout.
 | C3 | Remove orphaned i18n keys (`about.stats.*` and others) | delegated writer | [x] |
 | C4 | Footer polish: heading glow + staggered tree rows | delegated writer | [x] |
 | C5 | Mobile header clock layout | delegated writer | [x] |
-| C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [ ] |
+| C6 | Verification (checks, redirects in build output, visual QA 1440/390/320) + delivery (asked) | parent | [x] verified, delivery pending |
 
 ## Progress
 
@@ -219,6 +219,13 @@ keys, finish the footer polish and fix the mobile header clock layout.
 
 - C5 commit: 181a7ab.
 
+- C6 parent verification: npm test 58/58; check 0 errors; test:seo passed; lint 7 errors + 2 warnings (known base
+  minus removed files); build has no `dist/client/en` or `dist/client/blog`, sitemap without `/en/` or `/blog`,
+  llms.txt/robots.txt clean; vercel.json redirects reviewed (specific `/en/*` rules before the catch-all). Mobile
+  header measured at 300/310/320/390: clock centred, 14px from the menu button; at 310px (owner's screen) the page
+  still overflowed by 8px → brand logo made fluid (`clamp(104px, 36vw, 132px)`), now no overflow down to 300px.
+- Note: `404.astro` keeps its bilingual ES/EN copy on purpose (generic 404 for any broken URL) — ask owner.
+
 ## Next step
 
-C6 (parent-owned: final verification + delivery).
+Delivery: ask owner to push `feature/site-cleanup` → PR → merge (production).
