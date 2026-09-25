@@ -1,33 +1,27 @@
 ---
 /**
- * 404.astro — Bilingual not-found page (T-40).
+ * 404.astro — Not-found page (T-40).
  *
  * In a static Astro build, the 404 is served generically: the host (Vercel)
- * serves a single `404.html` for any unknown path, regardless of locale. We
- * therefore render BOTH languages in a single file — Spanish first (default
- * locale of the project), English directly below — so the visitor lands on
- * a screen they can parse in either language without us having to detect
- * locale at runtime.
+ * serves a single `404.html` for any unknown path. The site is Spanish-only
+ * (the English version was removed, see `odd/tasks/site-cleanup.md`), so the
+ * page is Spanish-only too.
  *
  * Structure (top → bottom):
  *   1. Eyebrow "404" (IBM Plex Mono uppercase, --accent-400).
- *   2. Bilingual heading: ES "Página no encontrada" / EN "Page not found"
- *      stacked, Space Mono display weight 600.
- *   3. Bilingual subtagline: ES + EN, --text-2.
- *   4. CTA row: "Volver al inicio" / "Back to home" → /
- *                "Trabajos" / "Work" → /trabajos
+ *   2. Heading "Página no encontrada", Space Mono display weight 600.
+ *   3. Subtagline, --text-2.
+ *   4. CTA row: "← Volver al inicio" → /, "Trabajos" → /trabajos
  *
  * SEO:
- *   - title: "404 — marmibas"
- *   - description: simple, bilingual cue.
- *   - noindex: true (404 must not be indexed).
+ *   - title: "Página no encontrada (404) | marmibas.dev"
+ *   - noindex + nofollow (404 must not be indexed).
  *
  * Tokens (DESIGN.md):
- *   §2 palette       → --text-0..2, --border, --accent-400
- *   §3 gradients     → --gradient-hero-ambient (subtle background), --gradient-cta
- *   §4 typography    → --font-display, --font-mono, --text-display, --text-lg
- *   §5 spacing       → 96/64 vertical rhythm, 12/16/24/40
- *   §8 hero          → eyebrow, ambient gradient, primary CTA pattern
+ *   palette     → --text-0..2, --border, --accent-400, --bg-0
+ *   gradients   → --gradient-hero-ambient (subtle background), --gradient-cta
+ *   typography  → --font-display, --font-mono, --text-display, --text-lg
+ *   spacing     → 96/64 vertical rhythm, 12/16/24/40
  */
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -39,35 +33,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   noindex={true}
   nofollow={true}
 >
-  <section class="not-found" aria-labelledby="not-found-title-es">
+  <section class="not-found" aria-labelledby="not-found-title">
     <div class="not-found__ambient" aria-hidden="true"></div>
 
     <div class="not-found__content">
       <p class="not-found__eyebrow" aria-hidden="true">404</p>
 
-      <h1 id="not-found-title-es" class="not-found__title">
-        <span lang="es">Página no encontrada</span>
-        <span class="not-found__title-divider" aria-hidden="true">·</span>
-        <span lang="en">Page not found</span>
-      </h1>
+      <h1 id="not-found-title" class="not-found__title">Página no encontrada</h1>
 
-      <p class="not-found__sub">
-        <span lang="es">El contenido que buscas se mudó o nunca existió.</span>
-        <span class="not-found__sub-divider" aria-hidden="true">·</span>
-        <span lang="en">The content you're looking for moved or never existed.</span>
-      </p>
+      <p class="not-found__sub">El contenido que buscas se mudó o nunca existió.</p>
 
       <div class="not-found__ctas">
-        <a class="cta cta--primary" href="/">
-          <span lang="es">← Volver al inicio</span>
-          <span class="cta__divider" aria-hidden="true">·</span>
-          <span lang="en">← Back to home</span>
-        </a>
-        <a class="cta cta--secondary" href="/trabajos">
-          <span lang="es">Trabajos</span>
-          <span class="cta__divider" aria-hidden="true">·</span>
-          <span lang="en">Work</span>
-        </a>
+        <a class="cta cta--primary" href="/">← Volver al inicio</a>
+        <a class="cta cta--secondary" href="/trabajos">Trabajos</a>
       </div>
     </div>
   </section>
@@ -110,8 +88,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   /* --------------------------------------------------------------------------
-   * Content stack — flex column, centered. Max-width keeps the bilingual
-   * text from spanning too wide on desktop.
+   * Content stack — flex column, centered. Max-width keeps the text from
+   * spanning too wide on desktop.
    * ------------------------------------------------------------------------ */
   .not-found__content {
     display: flex;
@@ -133,11 +111,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   /* --- Title ----------------------------------------------------------- */
-  /*
-   * Display heading (Space Mono). Uses --text-display (clamp 48-72px) for the
-   * giant feel requested by the brief. ES + EN stack on mobile, sit inline
-   * on desktop separated by a · divider.
-   */
+  /* Display heading (Space Mono). Uses --text-display (clamp 48-72px). */
   .not-found__title {
     font-family: var(--font-display);
     font-size: var(--text-display);
@@ -147,13 +121,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text-0);
     margin: 0;
     text-wrap: balance;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .not-found__title-divider {
-    display: none;
   }
 
   /* --- Subtagline ------------------------------------------------------ */
@@ -164,13 +131,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text-2);
     margin: 0;
     text-wrap: pretty;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .not-found__sub-divider {
-    display: none;
   }
 
   /* --- CTAs ------------------------------------------------------------ */
@@ -202,11 +162,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       box-shadow var(--motion-duration-fast) var(--motion-ease-out),
       transform var(--motion-duration-fast) var(--motion-ease-out);
     will-change: transform;
-  }
-
-  .cta__divider {
-    color: var(--text-3);
-    font-weight: 400;
   }
 
   /* --- Primary --------------------------------------------------------- */
@@ -250,37 +205,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   /* --------------------------------------------------------------------------
-   * Desktop: collapse the ES/EN stack into an inline row separated by ·
-   * so the bilingual heading reads as one unit. Below 720px we keep them
-   * stacked for legibility.
-   * ------------------------------------------------------------------------ */
-  @media (min-width: 720px) {
-    .not-found__title {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-    }
-    .not-found__title-divider {
-      display: inline;
-      color: var(--text-3);
-      font-weight: 400;
-    }
-    .not-found__sub {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
-    .not-found__sub-divider {
-      display: inline;
-      color: var(--text-3);
-    }
-  }
-
-  /* --------------------------------------------------------------------------
-   * Mobile tightens the rhythm and softens the display size so the bilingual
-   * stack does not blow past the viewport.
+   * Mobile tightens the rhythm and softens the display size so the heading
+   * does not blow past the viewport.
    * ------------------------------------------------------------------------ */
   @media (max-width: 640px) {
     .not-found__title {

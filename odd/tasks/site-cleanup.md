@@ -224,7 +224,9 @@ keys, finish the footer polish and fix the mobile header clock layout.
   llms.txt/robots.txt clean; vercel.json redirects reviewed (specific `/en/*` rules before the catch-all). Mobile
   header measured at 300/310/320/390: clock centred, 14px from the menu button; at 310px (owner's screen) the page
   still overflowed by 8px → brand logo made fluid (`clamp(104px, 36vw, 132px)`), now no overflow down to 300px.
-- Note: `404.astro` keeps its bilingual ES/EN copy on purpose (generic 404 for any broken URL) — ask owner.
+- 404: owner asked for Spanish only → `404.astro` now Spanish-only (heading, subtitle, CTAs; bilingual dividers and
+  their CSS removed). Checks: astro check 0 errors; test:seo passed (404 stays noindex, nofollow); built
+  `404.html` has no English copy.
 
 ## Next step
 
