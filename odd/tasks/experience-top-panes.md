@@ -96,6 +96,9 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
 
 - Owner tweak — `feat(experience): name the Marmibas pane path and prompt after Marmibas`: Marmibas pane bar `~/voxye` → `~/marmibas`, prompt `ls voxye/` → `ls marmibas/`
   (matches the factory pane's `~/fabricas` + `ls fabricas/`). Verified in the dev server HTML.
+- Owner tweak — `feat(experience): retitle the Marmibas pane "Software a medida"`: the pane now covers Marmibas as a
+  whole (Voxye is one project row), so "Software para reformas" was too narrow; the new heading matches the home
+  hero. Verified in the dev server HTML.
 
 ## Next step
 
