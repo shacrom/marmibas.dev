@@ -120,7 +120,7 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
   `npm test` 94/94, build OK, eslint + prettier on the 2 files clean; strings verified in the dev server HTML.
 - Delivery (owner: "haz commit y sube todos los cambios a producción", 2026-09-25): one PR to `main` with label
   `size:exception` (~1.7k changed lines in `src`, mostly the factory pane moved into `LockupPane` and the removed
-  timeline CSS; the owner asked to ship everything now rather than slice). To be merged with a merge commit like #5/#6;
+  timeline CSS; the owner asked to ship everything now rather than slice). Merged with a merge commit like #5/#6;
   Vercel deploys `main` to production. `fix/og-image` ships in its own PR in the same round.
 
 - P6 done — `53b2e9a feat(experience): link the stacked panes bottom to top`. New `src/components/work/PaneLink.astro`
@@ -129,7 +129,11 @@ Route evidence: P1+P2 touch 4+ non-trivial files (pane component, new pane, page
   `npm run check` 0 errors, eslint + prettier on the 2 files clean. Visual QA 1440/390 (reduced motion) OK; the
   upward motion itself not captured headless.
 
+- Delivered 2026-09-25: with the owner's OK the gh account was switched to `shacrom`; PR #8 (`size:exception`,
+  `type:feature`) merged as `b65f075` alongside PR #7 (OG image). Vercel preview checks passed and the production
+  deployment for `b65f075` succeeded; the live `/experiencia` HTML shows `~/plazasys`, "# Marca propia", the role
+  panes and the connectors, without "cliente principal". Head branches deleted after merge.
+
 ## Next step
 
-Delivery blocked: push to `shacrom/marmibas.dev` returned 403 for the git account in use; waiting for the owner
-to switch the account (nothing pushed yet).
+None — feature complete.
