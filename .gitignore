@@ -148,3 +148,6 @@ vite.config.ts.timestamp-*
 
 # Generated agent/review artifacts
 .atl/
+
+# Quote tool: client data — never commit it, the repo is public (quotes/out is covered by `out` above)
+quotes/private/
