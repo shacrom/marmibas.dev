@@ -1,0 +1,437 @@
+/*
+ * scope-blocks — print stylesheet (A4, headless Chrome 131 or newer).
+ *
+ * The document is one continuous flow: a full-bleed cover on its own named
+ * page, then the content. Pages are cut by CSS paged media, never by fixed
+ * 297mm blocks, so a quote of any length paginates. The running header and
+ * footer are page margin boxes; their per-quote text is emitted by
+ * template.mjs, their look is defined here.
+ *
+ * Chrome PDF quirks this file works around:
+ * - box-shadow and per-cell gradients leave visible seams: the highlighted
+ *   total uses a single background on the table row.
+ * - An image in a margin box renders at its intrinsic size and cannot be
+ *   resized from CSS: template.mjs sizes the wordmark inside the SVG.
+ */
+
+:root {
+  --charcoal: #3c3c3b;
+  --purple: #433075;
+  --lavender: #a58cf4;
+  --off-white: #fafafa;
+  --ink: #2b2b2a;
+  --muted: #6f6f6e;
+  --rule: #dedde3;
+  --tint: #f1edfc;
+  --cover: #0e0e10;
+  --title: 'Montserrat', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+  --body: 'Mulish', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ---------- Pages ---------- */
+
+/*
+ * Inner pages. The header rule sits 22.4mm from the top edge and the footer
+ * rule 18.6mm from the bottom edge; the rest of each margin is the gap between
+ * the rule and the content (8mm under the header, 4.2mm over the footer).
+ */
+@page {
+  size: A4;
+  margin: 30.66mm 19mm 23mm;
+
+  @top-left {
+    /* content: the wordmark image (template.mjs) */
+    margin-bottom: 8mm;
+    padding-bottom: 5mm;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: bottom;
+    text-align: left;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  @top-right {
+    /* content: the running header (template.mjs) */
+    margin-bottom: 8mm;
+    padding-bottom: 5mm;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: bottom;
+    text-align: right;
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: 7.2pt;
+    line-height: 4.42mm; /* the wordmark's height: both sit on one centre line */
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  @bottom-left {
+    /* content: the reference (template.mjs) */
+    margin-top: 4.2mm;
+    padding-top: 3.6mm;
+    border-top: 1px solid var(--rule);
+    vertical-align: top;
+    text-align: left;
+    font-family: var(--body);
+    font-size: 7.4pt;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  @bottom-center {
+    /* content: the date (template.mjs) */
+    margin-top: 4.2mm;
+    padding-top: 3.6mm;
+    border-top: 1px solid var(--rule);
+    vertical-align: top;
+    text-align: center;
+    font-family: var(--body);
+    font-size: 7.4pt;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  @bottom-right {
+    content: counter(page, decimal-leading-zero) ' / ' counter(pages, decimal-leading-zero);
+    margin-top: 4.2mm;
+    padding-top: 3.6mm;
+    border-top: 1px solid var(--rule);
+    vertical-align: top;
+    text-align: right;
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: 7.4pt;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+}
+
+/* The cover is full-bleed and carries no running header or footer. */
+@page cover {
+  margin: 0;
+
+  @top-left {
+    content: none;
+  }
+  @top-right {
+    content: none;
+  }
+  @bottom-left {
+    content: none;
+  }
+  @bottom-center {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  font-family: var(--body);
+  font-size: 10.2pt;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* ---------- Cover ---------- */
+
+.cover {
+  page: cover;
+  break-after: page;
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  padding: 30mm 24mm 28mm;
+  background:
+    radial-gradient(120mm 90mm at 88% 12%, rgba(165, 140, 244, 0.2), transparent 70%),
+    radial-gradient(140mm 110mm at 8% 96%, rgba(67, 48, 117, 0.55), transparent 72%), var(--cover);
+  color: var(--off-white);
+}
+
+.cover .wordmark {
+  display: block;
+}
+
+.cover .eyebrow {
+  margin-top: 44mm;
+  font-weight: 700;
+  font-size: 8.6pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lavender);
+}
+
+.cover h1 {
+  margin: 7mm 0 0;
+  max-width: 150mm;
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 31pt;
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+  /* A line break in the title data is kept; otherwise lines are balanced. */
+  white-space: pre-line;
+  text-wrap: balance;
+}
+
+.cover .subtitle {
+  margin-top: 6mm;
+  font-size: 13pt;
+  color: rgba(250, 250, 250, 0.72);
+}
+
+.cover .rule {
+  margin-top: 26mm;
+  height: 1px;
+  background: rgba(250, 250, 250, 0.16);
+}
+
+.cover .meta {
+  position: absolute;
+  left: 24mm;
+  right: 24mm;
+  bottom: 37.6mm;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: 9mm 6mm;
+  margin: 0;
+}
+
+.cover .meta dt {
+  font-size: 7.4pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(250, 250, 250, 0.55);
+}
+
+.cover .meta dd {
+  margin: 1.6mm 0 0;
+  font-weight: 700;
+  font-size: 10pt;
+  white-space: nowrap;
+}
+
+/* Only the client name may wrap: it is the one value of unbounded length. */
+.cover .meta dd.wrap {
+  white-space: normal;
+}
+
+.cover .tagline {
+  position: absolute;
+  left: 24mm;
+  bottom: 16mm;
+  font-size: 7.2pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(250, 250, 250, 0.42);
+}
+
+/* ---------- Inner pages ---------- */
+
+h2 {
+  margin: 7.5mm 0 3mm;
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 17pt;
+  line-height: 1.2;
+  color: var(--purple);
+  break-after: avoid;
+}
+
+/*
+ * The gap under the header rule belongs to the page margin. A heading that
+ * opens a page after a natural break has its margin dropped by the browser;
+ * the first heading follows the cover's forced break, so it drops it here.
+ */
+.sheet > h2:first-child {
+  margin-top: 0;
+}
+
+p {
+  margin: 0 0 3mm;
+  orphans: 2;
+  widows: 2;
+}
+
+.lead {
+  max-width: 160mm;
+  font-size: 10.8pt;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  position: relative;
+  margin-bottom: 1.25mm;
+  padding-left: 4.4mm;
+  break-inside: avoid;
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 1.5mm;
+  height: 1.5mm;
+  border-radius: 50%;
+  background: var(--lavender);
+}
+
+/* A closing list stays whole, with its heading, whenever it fits on a page. */
+.sheet > ul {
+  break-inside: avoid;
+}
+
+ul.cols {
+  columns: 2;
+  column-gap: 11mm;
+}
+
+ul.relaxed li {
+  margin-bottom: 2mm;
+}
+
+ul.relaxed li:last-child {
+  margin-bottom: 0;
+}
+
+/* Scope blocks. The space under a block is a margin so that a page break
+   after the block can drop it. */
+.block {
+  display: grid;
+  grid-template-columns: 10mm 1fr;
+  column-gap: 3mm;
+  margin-bottom: 4.45mm;
+  padding-top: 4mm;
+  border-top: 1px solid var(--rule);
+  break-inside: avoid;
+}
+
+h2 + .block {
+  padding-top: 1mm;
+  border-top: 0;
+}
+
+.block .num {
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 15pt;
+  line-height: 1.1;
+  color: var(--lavender);
+}
+
+.block h3 {
+  margin: 0 0 2mm;
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 11.4pt;
+  line-height: 1.25;
+  color: var(--charcoal);
+  break-after: avoid;
+}
+
+/* Amount table. It stays whole whenever it fits on a page; a longer one
+   breaks between rows and repeats its header. */
+table {
+  width: 100%;
+  margin-top: 1mm;
+  border-collapse: collapse;
+  break-inside: avoid;
+}
+
+thead {
+  break-inside: avoid;
+  break-after: avoid;
+}
+
+tr {
+  break-inside: avoid;
+}
+
+th,
+td {
+  padding: 2.35mm 4mm;
+  text-align: left;
+}
+
+th {
+  background: var(--purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 8.2pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+td {
+  border-bottom: 1px solid var(--rule);
+}
+
+th.amount,
+td.amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+td .n {
+  display: inline-block;
+  width: 6mm;
+  color: var(--lavender);
+  font-weight: 700;
+}
+
+/* The three total rows stay together and never open a page on their own. */
+tbody.totals {
+  break-inside: avoid;
+  break-before: avoid;
+}
+
+tr.subtotal td {
+  font-weight: 700;
+}
+
+tr.tax td {
+  color: var(--muted);
+}
+
+tr.total {
+  background: var(--tint) linear-gradient(to right, var(--purple) 1.2mm, transparent 1.2mm)
+    no-repeat;
+}
+
+tr.total td {
+  padding-top: 3.4mm;
+  padding-bottom: 3.4mm;
+  border-bottom: 0;
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 12.5pt;
+  color: var(--purple);
+}

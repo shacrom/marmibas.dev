@@ -1,0 +1,94 @@
+{
+  "template": "scope-blocks",
+  "reference": "MMB-DEMO-RES-2026-10",
+  "date": "2026-10-05",
+  "version": 1,
+  "client": "Talleres Ejemplo S.L.",
+  "title": "Reserva online de citas\nde taller",
+  "project": "Web de Talleres Ejemplo",
+  "runningHeader": "Talleres Ejemplo · Reserva de citas",
+  "object": "Reserva de citas de taller desde la web, con elección del servicio, del día y de la hora, confirmación por correo y gestión de la agenda desde un panel interno.",
+  "scope": [
+    {
+      "title": "Formulario de reserva",
+      "amount": 450,
+      "items": [
+        "Selección del servicio, del día y de la hora entre los huecos disponibles.",
+        "Datos del cliente y del vehículo: nombre, teléfono, correo, matrícula y modelo.",
+        "Comprobación de que el hueco sigue libre antes de confirmar.",
+        "Página de confirmación con el resumen de la cita.",
+        "Adaptado a móvil y a ordenador."
+      ]
+    },
+    {
+      "title": "Agenda y disponibilidad",
+      "amount": 300,
+      "items": [
+        "Horario de apertura y duración de cada servicio.",
+        "Días festivos y cierres puntuales.",
+        "Número de citas simultáneas según los elevadores disponibles."
+      ]
+    },
+    {
+      "title": "Panel interno del taller",
+      "amount": 500,
+      "items": [
+        "Listado de citas por día y por semana.",
+        "Alta, modificación y cancelación manual de citas.",
+        "Acceso con usuario y contraseña para el personal del taller.",
+        "Exportación de las citas a una hoja de cálculo, con los datos del cliente, del vehículo y del servicio solicitado."
+      ]
+    },
+    {
+      "title": "Avisos por correo",
+      "amount": 350,
+      "items": [
+        "Correo de confirmación al cliente con el día, la hora y el servicio reservado, y un enlace para cancelar la cita.",
+        "Aviso al taller con cada nueva reserva.",
+        "Recordatorio al cliente el día anterior.",
+        "Aviso al cliente si el taller modifica o cancela la cita."
+      ]
+    },
+    {
+      "title": "Puesta en marcha",
+      "amount": 400,
+      "items": [
+        "Publicación en la web actual del taller.",
+        "Carga inicial de servicios y horarios.",
+        "Formación al personal."
+      ]
+    }
+  ],
+  "vatRate": 21,
+  "sections": [
+    {
+      "title": "No incluido",
+      "columns": 2,
+      "items": [
+        "Alojamiento web, dominio y cuentas de correo.",
+        "Cambios de diseño en el resto de la web.",
+        "Pago online de la cita.",
+        "Avisos por SMS o WhatsApp.",
+        "Sincronización con calendarios externos.",
+        "Conexión con el programa de gestión del taller.",
+        "Mantenimiento y soporte posteriores a la entrega."
+      ]
+    },
+    {
+      "title": "Necesario por parte del cliente",
+      "items": [
+        "Acceso de administración a la web actual.",
+        "Listado de servicios con su duración y horario de apertura."
+      ]
+    },
+    {
+      "title": "Observaciones",
+      "spacing": "relaxed",
+      "items": [
+        "La reserva queda confirmada en el momento, sin validación previa del taller. Si el taller necesita revisar cada cita antes de confirmarla, se valora como ampliación.",
+        "Los correos se envían desde una cuenta del taller. Su entrega depende del servicio de correo contratado; el panel muestra si un envío ha fallado.",
+        "El presupuesto cubre un único taller. Gestionar varias sedes con agendas independientes es una ampliación posterior."
+      ]
+    }
+  ]
+}
