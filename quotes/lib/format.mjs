@@ -3,6 +3,9 @@
  * printed, plus the HTML escaping every data string goes through.
  */
 
+/** Non-breaking space: keeps a figure and its unit on the same line. */
+const NBSP = '\u00a0';
+
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 const longDate = new Intl.DateTimeFormat('es-ES', {
@@ -32,7 +35,18 @@ export function formatMoney(amount) {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(cents / 100);
-  return `${number}\u00a0€`;
+  return `${number}${NBSP}€`;
+}
+
+/**
+ * Format a percentage rate: `21` → `21 %`, `10.5` → `10,5 %`.
+ *
+ * @param {number} rate Rate as a percentage.
+ * @returns {string}
+ */
+export function formatPercent(rate) {
+  const number = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(rate);
+  return `${number}${NBSP}%`;
 }
 
 /**

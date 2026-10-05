@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, formatDate, formatMoney } from '../../quotes/lib/format.mjs';
+import { escapeHtml, formatDate, formatMoney, formatPercent } from '../../quotes/lib/format.mjs';
 
 /** Non-breaking space between the number and the euro sign. */
 const NBSP = '\u00a0';
@@ -28,6 +28,14 @@ describe('formatMoney', () => {
 
   it('treats float noise around a whole amount as the whole amount', () => {
     expect(formatMoney(0.1 + 0.2 + 99.7)).toBe(`100${NBSP}€`);
+  });
+});
+
+describe('formatPercent', () => {
+  it('prints a rate the Spanish way, with a non-breaking space before the sign', () => {
+    expect(formatPercent(21)).toBe(`21${NBSP}%`);
+    expect(formatPercent(10.5)).toBe(`10,5${NBSP}%`);
+    expect(formatPercent(0)).toBe(`0${NBSP}%`);
   });
 });
 

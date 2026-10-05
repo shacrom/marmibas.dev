@@ -22,6 +22,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "quote": "node quotes/build.mjs",
     "check": "astro check && tsc --noEmit",
     "format": "prettier --write .",
     "lint": "eslint . --max-warnings=0",
